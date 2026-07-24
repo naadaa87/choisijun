@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /fragments/
+
+Sitemap: https://choisijun.com/sitemap.xml

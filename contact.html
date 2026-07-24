@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>문의하기 — 최시준</title>
+  <meta name="description" content="공실개발 상담, 공간수익화 진단, 강의·인터뷰, 제휴 제안. 60초 자가진단 후 문의를 남겨주세요." />
+  <meta name="keywords" content="최시준, 공간수익화 전문가, 공실개발, 공간대여 창업, 무인공간, 쏘플파티룸 대표, 공간브랜딩, 자능사" />
+  <meta name="author" content="최시준 (Choi Si-jun)" />
+  <link rel="canonical" href="https://choisijun.com/contact.html" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="문의하기 — 최시준" />
+  <meta property="og:description" content="공실개발 상담, 공간수익화 진단, 강의·인터뷰, 제휴 제안. 60초 자가진단 후 문의를 남겨주세요." />
+  <meta property="og:url" content="https://choisijun.com/contact.html" />
+  <meta property="og:image" content="https://choisijun.com/assets/og-image.jpg" />
+  <meta property="og:locale" content="ko_KR" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="문의하기 — 최시준" />
+  <meta name="twitter:description" content="공실개발 상담, 공간수익화 진단, 강의·인터뷰, 제휴 제안. 60초 자가진단 후 문의를 남겨주세요." />
+  <meta name="twitter:image" content="https://choisijun.com/assets/og-image.jpg" />
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+  <link rel="stylesheet" href="styles.css?v=202607241427" />
+</head>
+<body data-page="contact">
+  <a class="skip-link" href="#main">본문 바로가기</a>
+  <div class="progress" aria-hidden="true"><span id="progressBar"></span></div>
+  <header class="header" id="header">
+    <div class="container header-inner">
+      <a class="logo" href="index.html" aria-label="최시준 홈">
+        <span class="logo-mark" aria-hidden="true"></span>
+        <span class="logo-text">CHOI SIJUN</span>
+      </a>
+      <nav class="nav" id="nav" aria-label="주 메뉴">
+        <a href="about.html">소개</a>
+        <a href="brands.html">브랜드</a>
+        <a href="community.html">커뮤니티</a>
+        <a href="books.html">전자책</a>
+        <a href="cases.html">사례</a>
+        <a href="services.html">서비스</a>
+        <a href="references.html">레퍼런스</a>
+        <a href="media.html">미디어</a>
+        <a href="contact.html" class="nav-cta is-active">문의하기</a>
+      </nav>
+      <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-label="메뉴 열기" aria-controls="nav">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="page-hero">
+      <div class="container">
+        <p class="eyebrow mono reveal">08 — CONTACT</p>
+        <h1 class="reveal">가장 빠른 시작은 <span class="accent">정확한 문의</span>입니다</h1>
+        <p class="lede reveal">먼저 60초 자가진단으로 상황을 점검하고, 유형에 맞는 문의를 남겨주세요.</p>
+      </div>
+    </section>
+
+    <!-- ===================== QUIZ ===================== -->
+    <section class="section section-quiz" id="quiz">
+      <div class="container">
+        <div class="quiz-box reveal">
+          <div class="quiz-head">
+            <p class="eyebrow mono" style="color:var(--signal);">SELF CHECK · 60 SEC</p>
+            <h2>내 공간, 수익화 가능할까?</h2>
+            <p class="lede">6개 문항 · 약 60초 — 부담 없이 점검해보세요.</p>
+          </div>
+          <div id="quizBody">
+            <p class="quiz-progress mono">Q <span id="quizStep">1</span> / 6</p>
+            <p class="quiz-q" id="quizQuestion">Q1. 현재 공간 상황은 어떤가요?</p>
+            <div class="quiz-opts" id="quizOptions"><noscript><p style="color:var(--concrete);">자가진단은 JavaScript가 필요합니다. 아래 문의 양식을 이용해주세요.</p></noscript></div>
+          </div>
+          <div id="quizResult" hidden>
+            <p class="quiz-score mono" id="quizScoreText"></p>
+            <h3 id="quizResultTitle"></h3>
+            <p id="quizResultDesc"></p>
+            <p class="quiz-disclaimer mono">※ 간이 진단이며, 실제 가능성은 상세 진단으로 확인해야 합니다.</p>
+            <div class="quiz-actions">
+              <a class="btn btn-primary" href="#contactForm" data-inquiry="diagnosis">이 결과로 진단 문의하기</a>
+              <button class="btn btn-ghost" id="quizRetry" type="button">다시 진단하기</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== INQUIRY GUIDE ===================== -->
+    <section class="section">
+      <div class="container">
+        <header class="section-head reveal">
+          <p class="eyebrow mono">BEFORE YOU WRITE</p>
+          <h2>이렇게 보내주시면 <span class="accent">더 빠릅니다</span></h2>
+        </header>
+        <div class="grid grid-3">
+          <article class="x-card reveal"><span class="x-num mono">공실개발 · 진단</span><h3>공간 기본정보</h3><p>대략적 위치(동 단위), 층·면적, 현재 상태(공실 기간, 월 고정비 수준)를 알려주시면 검토가 빨라집니다.</p></article>
+          <article class="x-card reveal"><span class="x-num mono">강의 · 인터뷰</span><h3>대상과 목적</h3><p>기관·매체명, 대상(규모), 희망 주제와 일정, 형식(강연/워크샵/서면·영상 인터뷰)을 함께 남겨주세요.</p></article>
+          <article class="x-card reveal"><span class="x-num mono">제휴 · 공동사업</span><h3>제안 개요</h3><p>회사/서비스 소개와 함께 '무엇을, 어떤 구조로' 함께하고 싶은지 한 문단이면 충분합니다.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== CONTACT FORM ===================== -->
+    <section class="section section-dark section-contact" id="contactSection">
+      <div class="container">
+        <header class="section-head reveal">
+          <p class="eyebrow mono">CONTACT</p>
+          <h2>문의하기</h2>
+          <p class="lede">아래 양식을 작성하고 '메일로 보내기'를 누르면 메일 앱이 열립니다. 편하신 채널로 직접 연락 주셔도 좋습니다.</p>
+        </header>
+        <div class="contact-grid">
+          <form class="contact-form reveal" id="contactForm">
+            <label class="cf-label">문의 유형
+              <select id="cfType">
+                <option value="공실개발 상담">공실개발 상담</option>
+                <option value="공간수익화 진단">공간수익화 진단</option>
+                <option value="창업 교육 문의">창업 교육 문의</option>
+                <option value="강의/세미나 문의">강의/세미나 문의</option>
+                <option value="인터뷰/미디어 문의">인터뷰/미디어 문의</option>
+                <option value="제휴/공동사업 문의">제휴/공동사업 문의</option>
+                <option value="전자책 구매/단체구매 문의">전자책 구매/단체구매 문의</option>
+              </select>
+            </label>
+            <div class="cf-row">
+              <label class="cf-label">성함 / 소속<input type="text" id="cfName" required maxlength="40" placeholder="홍길동 / ○○부동산" /></label>
+              <label class="cf-label">연락처 (이메일 또는 전화)<input type="text" id="cfContact" required maxlength="60" placeholder="회신받을 연락처" /></label>
+            </div>
+            <label class="cf-label">문의 내용<textarea id="cfMessage" rows="6" required maxlength="3000" placeholder="내용을 입력해주세요"></textarea></label>
+            <button type="submit" class="btn btn-primary btn-wide">메일로 보내기</button>
+            <p class="cf-note mono">※ 버튼을 누르면 사용 중인 메일 앱이 열리며, 내용이 자동으로 채워집니다.</p>
+          </form>
+          <aside class="contact-info reveal">
+            <div class="ci-item"><span class="mono">EMAIL</span><a href="mailto:runactivator@naver.com">runactivator@naver.com</a></div>
+            <div class="ci-item"><span class="mono">PHONE</span><a href="tel:010-2384-9580">010-2384-9580</a></div>
+            <div class="ci-item"><span class="mono">THREADS</span><a href="https://www.threads.com/@sijun.choi" target="_blank" rel="noopener">@sijun.choi</a></div>
+            <div class="ci-item"><span class="mono">INSTAGRAM</span><a href="https://www.instagram.com/sijun.choi" target="_blank" rel="noopener">@sijun.choi</a></div>
+            <div class="ci-item"><span class="mono">KAKAO 오픈프로필</span><a href="https://open.kakao.com/me/choisijun" target="_blank" rel="noopener">1:1 대화하기 ↗</a></div>
+            <div class="ci-item"><span class="mono">NAVER</span><a href="https://m.search.naver.com/search.naver?query=%EC%B5%9C%EC%8B%9C%EC%A4%80&amp;sm=mtp_hty.top&amp;where=m" target="_blank" rel="noopener">'최시준' 검색 결과 ↗</a></div>
+            <div class="ci-item"><span class="mono">BRAND 제휴문의 (쏘플)</span><a href="mailto:contact@socialfamily.co.kr">contact@socialfamily.co.kr</a></div>
+            <div class="ci-item"><span class="mono">BRAND 고객센터 (쏘플)</span><a href="tel:1544-3523">1544-3523</a></div>
+            <div class="ci-hours">
+              <p class="mono">RESPONSE</p>
+              <p>영업일 기준 1~2일 내 회신드립니다.</p>
+              <p>공간 관련 문의는 기본정보가 있을수록 회신이 빨라집니다.</p>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <p class="footer-logo">CHOI SIJUN<span class="accent">.</span></p>
+          <p>공간을 수익공간으로 바꾸는 사람.<br />공간수익화 · 공실개발 · 무인공간 · 공간대여 창업</p>
+        </div>
+        <nav class="footer-nav" aria-label="푸터 메뉴">
+          <div>
+            <p class="mono">PROFILE</p>
+            <a href="about.html">소개 · 스토리</a>
+            <a href="brands.html">브랜드 포트폴리오</a>
+            <a href="references.html">레퍼런스</a>
+            <a href="media.html">미디어 & 인사이트</a>
+          </div>
+          <div>
+            <p class="mono">WORK WITH ME</p>
+            <a href="cases.html">공실개발 사례</a>
+            <a href="services.html">서비스 안내</a>
+            <a href="books.html">전자책 스토어</a>
+            <a href="contact.html">자가진단 & 문의</a>
+            <a href="community.html">커뮤니티</a>
+          </div>
+          <div>
+            <p class="mono">PERSONAL</p>
+            <a href="https://www.threads.com/@sijun.choi" target="_blank" rel="noopener">Threads @sijun.choi</a>
+            <a href="https://www.instagram.com/sijun.choi" target="_blank" rel="noopener">Instagram @sijun.choi</a>
+            <a href="https://open.kakao.com/me/choisijun" target="_blank" rel="noopener">카카오톡 오픈프로필</a>
+            <a href="https://m.search.naver.com/search.naver?query=%EC%B5%9C%EC%8B%9C%EC%A4%80&sm=mtp_hty.top&where=m" target="_blank" rel="noopener">NAVER에서 '최시준' 검색</a>
+          </div>
+          <div>
+            <p class="mono">OFFICIAL · BUSINESS</p>
+            <a href="https://ssople.com" target="_blank" rel="noopener">쏘플파티룸</a>
+            <a href="https://vacancy.co.kr/" target="_blank" rel="noopener">공백 — 공실개발</a>
+            <a href="https://tgrzspace.pages.dev/" target="_blank" rel="noopener">TGRZ SPACE</a>
+            <a href="https://orbisestate.pages.dev/" target="_blank" rel="noopener">오르비스중개법인</a>
+            <a href="http://socialfamily.co.kr" target="_blank" rel="noopener">소셜패밀리</a>
+            <a href="https://www.instagram.com/ssople_partyroom/" target="_blank" rel="noopener">Instagram</a>
+          </div>
+        </nav>
+      </div>
+      <div class="footer-bottom">
+        <p class="mono">© <span id="year">2026</span> CHOI SIJUN. ALL RIGHTS RESERVED.</p>
+        <p class="mono">공간수익화 · 공실개발 · 무인공간 · 공간대여</p>
+      </div>
+    </div>
+  </footer>
+
+  <a class="float-cta" id="floatCta" href="contact.html">공실개발 상담하기</a>
+  <button class="to-top" id="toTop" aria-label="맨 위로">↑</button>
+
+  <script src="script.js?v=202607241427"></script>
+</body>
+</html>
