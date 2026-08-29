@@ -632,13 +632,13 @@ const SEED_REFS = [
   { id: 'r-06', year: '2020', category: '언론·미디어', title: '시사뉴스 — 직영점 50개 돌파 보도', desc: '"파티룸 창업 유행 선도" — 직영 중심 확장이 언론에 보도.', link: 'http://www.sisa-news.com/news/article.html?no=125421' },
   { id: 'r-07', year: '2020', category: '파트너십',   title: 'SPMS(공간관리시스템) 고도화', desc: '예약·출입·정산·CS를 통합 관리하는 자체 시스템 구축 — 전국 무인운영의 기반.', link: '' },
   { id: 'r-08', year: '2020', category: '강의·교육',  title: '파티룸 창업 설명회 — 신촌 · 강남', desc: '공간대여 창업을 주제로 한 오프라인 창업 설명회를 신촌·강남에서 개최, 성황리 종료.', link: '' },
-  { id: 'r-09', year: '2022', category: '공간개발',   title: '쏘플 100호점 돌파 — 4년 만에 전국 확장', desc: '홍대 1호점 이후 서울·경기·부산·대구·광주 등 전국 단위 확장 달성.', link: 'https://thevc.kr/socialfamily' },
+  { id: 'r-09', year: '2022', category: '공간개발',   title: '쏘플파티룸 100호점 돌파 — 4년 만에 전국 확장', desc: '홍대 1호점 이후 서울·경기·부산·대구·광주 등 전국 단위 확장 달성.', link: 'https://thevc.kr/socialfamily' },
   { id: 'r-10', year: '2022', category: '브랜드',     title: '공백 — 공실솔루션 브랜드 런칭', desc: '장기 공실·비선호 공간을 진단하고 수익공간으로 개발하는 공실개발 서비스 시작.', link: '' },
   { id: 'r-11', year: '2023', category: '브랜드',     title: '밍글 — 무인 디저트 카페 런칭', desc: '국내 최초 콘셉트의 무인 디저트 카페. 인건비 없는 F&B 운영구조 실험.', link: '' },
   { id: 'r-12', year: '2023', category: '브랜드',     title: '레스텔 — 도심 웰니스 스테이 런칭', desc: 'REST+HOTEL. 동양적 무드의 휴식 특화 스테이 공간(신촌).', link: '' },
   { id: 'r-13', year: '2024', category: '브랜드',     title: '워블 라운지 — 대형 모임공간 런칭', desc: '워크샵·행사·단체모임에 특화된 라운지형 공간 모델.', link: '' },
   { id: 'r-14', year: '2024', category: '강의·교육',  title: '기업 · 대학 · 퇴사학교 강연', desc: '공간수익화, 무인운영, 실행형 창업(자능사)을 주제로 한 강의 활동.', link: '' },
-  { id: 'r-15', year: '2025', category: '공간개발',   title: '전국 120여 개 공간 운영', desc: '연간 20만여 명이 방문하는 전국 단위 공간 네트워크 운영 — 모두 직접 설계·시공.', link: 'http://socialfamily.co.kr' },
+  { id: 'r-15', year: '2025', category: '공간개발',   title: '전국 120여 개 공간 운영', desc: '연간 20만여 명이 방문하는 전국 단위 공간 네트워크 운영 — 모두 직접 설계·시공.', link: 'https://ssople.com' },
   { id: 'r-16', year: '2025', category: '공간개발',   title: '비선호층 공실개발 프로젝트 다수 수행', desc: '고층·지하·장기 공실을 목적형 수익공간으로 전환 — 유형별 상세는 사례 페이지 참고.', link: 'cases.html' },
   { id: 'r-17', year: '2026', category: '강의·교육',  title: '공간대여 창업 아카데미 · 오너스클럽 운영', desc: '검증된 체크리스트 기반 창업 교육과 수료생 네트워크 운영.', link: '' },
   { id: 'r-18', year: '2026', category: '파트너십',   title: '중개법인 · 금융 파트너 협업 확대', desc: '공실 매물 개발 협업, NPL·개발 프로젝트 등 파트너십 확장 진행 중.', link: '' },
@@ -646,7 +646,12 @@ const SEED_REFS = [
   { id: 'r-20', year: '2016~', category: '강의·교육',  title: '고려대 · 한양대 · 이화여대 등 30여 개 대학 강연', desc: '중앙대, 부산대, 동국대, 홍익대, 전남대, 인천대, 순천향대 등 전국 대학 창업 강의·특강.', link: '' },
   { id: 'r-21', year: '2016~', category: '강의·교육',  title: "퇴사학교(T-School) 학과장 · '부업가정신' 2년 완판", desc: '직장인 대상 실행형 창업 강의로 2년간 완판 기록 — 자능사(自能士) 개념의 출발점.', link: '' },
   { id: 'r-22', year: '2015~', category: '언론·미디어', title: 'KBS 8시뉴스 · JTBC · 중국 CCTV · MBC 다큐 출연', desc: '청년 창업, 퇴사 트렌드, 공간 비즈니스를 주제로 한 방송 인터뷰·보도. EBS, 매경이코노미 등 지면 다수.', link: 'media.html' },
-  { id: 'r-23', year: '2016~', category: '파트너십',   title: '한국스타트업협회 위원장 · 청년허브 심사위원', desc: '청년허브 공간지원 심사위원, 로컬크리에이터 평가위원, 사단법인 청년위함 연구소장 등 대외 활동.', link: '' }
+  { id: 'r-23', year: '2016~', category: '파트너십',   title: '한국스타트업협회 위원장 · 청년허브 심사위원', desc: '청년허브 공간지원 심사위원, 로컬크리에이터 평가위원, 사단법인 청년위함 연구소장 등 대외 활동.', link: '' },
+  { id: 'r-24', year: '2026', category: '브랜드',     title: '공백 — 공실개발 플랫폼 vacancy.co.kr 오픈', desc: '공실 진단부터 수익공간 개발까지, 공실 솔루션 전용 사이트 구축·공개.', link: 'https://vacancy.co.kr/' },
+  { id: 'r-25', year: '2026', category: '공간개발',   title: 'TGRZ SPACE — 통건물 마스터리스 사업 런칭', desc: '건물 전체를 임차·개발·운영하는 통건물 전담 브랜드와 사이트 공개.', link: 'https://tgrzspace.pages.dev/' },
+  { id: 'r-26', year: '2026', category: '파트너십',   title: '오르비스중개법인 — 부동산 중개 파트너 운영', desc: '공실·수익형 매물의 발굴과 중개를 전담하는 직영 중개법인 사이트 공개.', link: 'https://orbisestate.pages.dev/' },
+  { id: 'r-27', year: '2026', category: '브랜드',     title: '개인 브랜드 허브 choisijun.com 구축', desc: '11개 페이지의 공식 홈페이지 오픈 — 사례·레퍼런스·미디어·커뮤니티·전자책을 한곳에.', link: 'index.html' },
+  { id: 'r-28', year: '2026', category: '강의·교육',  title: "전자책 시리즈 3종 기획 — '공실은 자산이다' 외", desc: "'예약되는 공간', '자능사(自能士)'까지 — 340개+ 공간의 판단기준을 담은 전자책 시리즈 준비.", link: 'books.html' }
 ];
 
 function loadUserRefs() {

@@ -15,8 +15,8 @@ PAGES = [
      "공간을 수익공간으로 바꾸는 사람, 최시준. 10년+ 340개+ 공간 기획·개발·운영, 국내 무인공간 사업 1위 쏘플파티룸 대표. 공실개발·공간수익화·무인공간 전문가."),
     ("about", "about.html", "소개", "소개 — 최시준 | 공간수익화 전문가",
      "현대엔지니어링 자산관리팀에서 전국 120여개 쏘플파티룸까지. 최시준의 스토리, 운영철학, 자능사(自能士) 개념."),
-    ("brands", "brands.html", "브랜드", "브랜드 — 최시준 | 쏘플·공백·밍글·레스텔·워블",
-     "쏘플파티룸, 공백, 밍글, 레스텔, 워블, 소셜팩토리 — 최시준이 만든 공간 브랜드 포트폴리오와 실험의 기록."),
+    ("brands", "brands.html", "브랜드", "브랜드 — 최시준 | 쏘플파티룸·공백·밍글·레스텔·워블",
+     "쏘플파티룸, 공백, 밍글, 레스텔, 워블 — 최시준이 직접 만들고 운영하는 공간 브랜드 포트폴리오와 실험의 기록."),
     ("community", "community.html", "커뮤니티", "커뮤니티 — 최시준 | 제휴·협업 라운지",
      "건물주·부동산·브랜드·예비창업자가 교류하는 공간. 제휴 제안, 질문, 정보공유 게시판."),
     ("books", "books.html", "전자책", "전자책 — 최시준 | 공간사업 실전 가이드",
@@ -59,10 +59,10 @@ def head(key, title, desc, fname):
           "https://www.threads.com/@sijun.choi",
           "https://www.instagram.com/sijun.choi",
           "https://ssople.com",
-          "http://socialfamily.co.kr",
           "https://www.instagram.com/ssople_partyroom/"
         ],
-        "knowsAbout": ["공간수익화", "공실개발", "무인공간 운영", "공간대여 창업", "공간브랜딩"]
+        "knowsAbout": ["공간수익화", "공실개발", "무인공간 운영", "공간대여 창업", "공간브랜딩"],
+        "worksFor": {{ "@type": "Organization", "name": "㈜블랭크" }}
       }},
       {{
         "@type": "ProfessionalService",
@@ -167,13 +167,12 @@ FOOTER = """  </main>
             <a href="https://vacancy.co.kr/" target="_blank" rel="noopener">공백 — 공실개발</a>
             <a href="https://tgrzspace.pages.dev/" target="_blank" rel="noopener">TGRZ SPACE</a>
             <a href="https://orbisestate.pages.dev/" target="_blank" rel="noopener">오르비스중개법인</a>
-            <a href="http://socialfamily.co.kr" target="_blank" rel="noopener">소셜패밀리</a>
             <a href="https://www.instagram.com/ssople_partyroom/" target="_blank" rel="noopener">Instagram</a>
           </div>
         </nav>
       </div>
       <div class="footer-bottom">
-        <p class="mono">© <span id="year">2026</span> CHOI SIJUN. ALL RIGHTS RESERVED.</p>
+        <p class="mono">© <span id="year">2026</span> CHOI SIJUN · ㈜블랭크. ALL RIGHTS RESERVED.</p>
         <p class="mono">공간수익화 · 공실개발 · 무인공간 · 공간대여</p>
       </div>
     </div>
