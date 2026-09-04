@@ -96,7 +96,7 @@ create policy "public write" on community_posts for insert with check (true);
 create table community_comments (
   id uuid primary key default gen_random_uuid(),
   created_at timestamptz default now(),
-  post_id uuid not null,
+  post_id uuid not null references community_posts(id) on delete cascade,
   author text not null,
   content text not null
 );
@@ -104,15 +104,20 @@ alter table community_comments enable row level security;
 create policy "public read"  on community_comments for select using (true);
 create policy "public write" on community_comments for insert with check (true);
 
--- ③ 레퍼런스
-create table references (
+-- ③ 레퍼런스 (테이블명 주의: references 는 SQL 예약어라 site_references 사용)
+create table site_references (
   id uuid primary key default gen_random_uuid(),
   created_at timestamptz default now(),
-  category text, year text, title text, "desc" text, image text, link text
+  category text,
+  year text,
+  title text,
+  "desc" text,
+  image text,
+  link text
 );
-alter table references enable row level security;
-create policy "public read"  on references for select using (true);
-create policy "public write" on references for insert with check (true);
+alter table site_references enable row level security;
+create policy "public read"  on site_references for select using (true);
+create policy "public write" on site_references for insert with check (true);
 ```
 
 3. Settings → API에서 **Project URL**과 **anon public key** 복사
@@ -124,7 +129,7 @@ const COMMUNITY_BACKEND = {
   supabaseAnonKey: '붙여넣기',
   table: 'community_posts',
   commentsTable: 'community_comments',
-  referencesTable: 'references'
+  referencesTable: 'site_references'
 };
 ```
 

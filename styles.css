@@ -1373,3 +1373,12 @@ html, body { overflow-x: hidden; }
 @media (max-width: 768px) {
   .hero .hero-visual { display: none; }
 }
+
+/* ---------- 문의 폼 상태 메시지 ---------- */
+.cf-status {
+  margin-top: 14px; padding: 13px 16px; border-radius: 6px;
+  font-size: 0.9rem; line-height: 1.6;
+}
+.cf-status.is-ok   { background: rgba(255,71,18,0.10); border: 1px solid var(--signal); color: #fff; }
+.cf-status.is-wait { background: rgba(255,255,255,0.06); border: 1px solid var(--line-dark); color: var(--concrete-soft); }
+.cf-status.is-err  { background: rgba(200,40,40,0.12); border: 1px solid #C0392B; color: #FFD7D2; }

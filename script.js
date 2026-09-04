@@ -14,11 +14,17 @@ const COMMUNITY_BACKEND = {
   supabaseAnonKey: '',    // Supabase anon public key
   table: 'community_posts',
   commentsTable: 'community_comments',
-  referencesTable: 'references'
+  referencesTable: 'site_references'
 };
 
 /* [설정 2] 문의 수신 이메일 — 실제 이메일로 교체하세요 */
 const CONTACT_EMAIL = 'runactivator@naver.com';
+
+/* [설정 2-1] 문의 폼 수신 (선택)
+   - 비워두면: 방문자의 메일 앱이 열리는 방식(mailto)으로 동작
+   - Web3Forms(무료) 액세스 키를 넣으면: 버튼 한 번으로 메일함에 바로 접수
+     https://web3forms.com 에서 이메일만 입력하면 키가 발급됩니다 (가입 불필요) */
+const FORM_ACCESS_KEY = '';
 
 /* [설정 3] 레퍼런스 등록용 관리자 코드 — 반드시 변경하세요!
    (정적 사이트 특성상 소스에 노출되는 '가벼운 잠금'입니다.
@@ -350,7 +356,22 @@ const INQUIRY_MAP = {
     el.addEventListener('click', () => setType(el.dataset.inquiry));
   });
 
-  form.addEventListener('submit', (e) => {
+  /* 상태 메시지 영역 */
+  let statusEl = $('#cfStatus');
+  if (!statusEl) {
+    statusEl = document.createElement('p');
+    statusEl.id = 'cfStatus';
+    statusEl.className = 'cf-status';
+    statusEl.hidden = true;
+    form.appendChild(statusEl);
+  }
+  const showStatus = (text, kind) => {
+    statusEl.textContent = text;
+    statusEl.className = 'cf-status is-' + kind;
+    statusEl.hidden = false;
+  };
+
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const type = typeSel ? typeSel.value : '문의';
     const name = ($('#cfName') || {}).value || '';
@@ -358,8 +379,45 @@ const INQUIRY_MAP = {
     const msg = ($('#cfMessage') || {}).value || '';
     const subject = `[${type}] ${name}님 문의`;
     const bodyText = `문의 유형: ${type}\n성함/소속: ${name}\n연락처: ${contact}\n\n문의 내용:\n${msg}\n\n— 최시준 홈페이지에서 발송`;
+    const btn = form.querySelector('button[type="submit"]');
+
+    /* 폼 수신 키가 설정된 경우: 직접 전송 */
+    if (FORM_ACCESS_KEY) {
+      const original = btn ? btn.textContent : '';
+      if (btn) { btn.disabled = true; btn.textContent = '보내는 중…'; }
+      showStatus('문의를 전송하고 있습니다…', 'wait');
+      try {
+        const res = await fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({
+            access_key: FORM_ACCESS_KEY,
+            subject: subject,
+            from_name: '최시준 홈페이지',
+            문의유형: type, 성함소속: name, 연락처: contact, 문의내용: msg
+          })
+        });
+        const data = await res.json();
+        if (data && data.success) {
+          form.reset();
+          showStatus('문의가 정상적으로 접수되었습니다. 영업일 기준 1~2일 내 회신드리겠습니다. 감사합니다.', 'ok');
+        } else {
+          throw new Error('send failed');
+        }
+      } catch (_) {
+        showStatus('전송에 실패했습니다. 메일 앱으로 대신 열어드립니다.', 'err');
+        window.location.href =
+          `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyText)}`;
+      } finally {
+        if (btn) { btn.disabled = false; btn.textContent = original; }
+      }
+      return;
+    }
+
+    /* 기본: 메일 앱 열기 */
     window.location.href =
       `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyText)}`;
+    showStatus('메일 앱이 열립니다. 창이 열리지 않으면 ' + CONTACT_EMAIL + ' 로 보내주세요.', 'wait');
   });
 })();
 
