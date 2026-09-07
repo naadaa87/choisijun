@@ -891,24 +891,21 @@ body.js-anim .reveal { opacity: 0; transform: translateY(22px); }
 
 /* ---------- Page hero (서브페이지 상단) ---------- */
 .page-hero {
-  background: var(--navy-900); color: #fff;
+  background: var(--paper); color: var(--ink);
   padding: calc(var(--header-h) + 84px) 0 74px;
   background-image:
-    linear-gradient(rgba(255,255,255,0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.045) 1px, transparent 1px);
+    linear-gradient(rgba(18,18,18,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(18,18,18,0.05) 1px, transparent 1px);
   background-size: 44px 44px;
-  border-bottom: 1px solid var(--navy-800);
+  border-bottom: 1px solid var(--line);
 }
 .page-hero h1 {
   font-size: clamp(1.9rem, 4.4vw, 3rem);
   font-weight: 800; line-height: 1.25; letter-spacing: -0.035em;
   margin: 14px 0 18px;
 }
-.page-hero .lede { color: var(--concrete-soft); max-width: 700px; }
-.page-hero .stats { border-color: var(--line-dark); max-width: 880px; }
-.page-hero .stat { border-color: var(--line-dark); }
-.page-hero .stat-num { color: #fff; }
-.page-hero .stat-label { color: var(--concrete-soft); }
+.page-hero .lede { color: var(--concrete); max-width: 700px; }
+.page-hero .stats { max-width: 880px; }
 
 /* ---------- Directory cards (index) ---------- */
 .dir-grid { gap: 18px; }
@@ -1201,8 +1198,8 @@ body.js-anim .reveal { opacity: 0; transform: translateY(22px); }
 }
 .social-row a:hover { border-color: var(--signal); color: var(--signal-deep); background: rgba(255,71,18,0.06); }
 /* 어두운 배경 위에서 쓸 때 */
-.section-dark .social-row a, .page-hero .social-row a { color: #EDEDEA; background: rgba(255,255,255,0.04); border-color: var(--line-dark); }
-.section-dark .social-row .mono, .page-hero .social-row .mono { color: var(--concrete-soft); }
+.section-dark .social-row a { color: #EDEDEA; background: rgba(255,255,255,0.04); border-color: var(--line-dark); }
+.section-dark .social-row .mono { color: var(--concrete-soft); }
 
 /* 메인 디렉터리 3×3 정렬 */
 .dir-grid { grid-template-columns: repeat(3, 1fr); }
@@ -1290,8 +1287,6 @@ body.nav-locked { overflow: hidden; }
   }
   .stat { background: var(--paper); border: 0 !important; padding: 16px 14px; }
   .stat-num { font-size: 1.5rem; }
-  .page-hero .stats { background: var(--line-dark); border-color: var(--line-dark); }
-  .page-hero .stat { background: var(--navy-900); }
 
   /* 서브페이지 히어로 */
   .page-hero h1 { font-size: clamp(1.55rem, 7vw, 2.1rem); }
