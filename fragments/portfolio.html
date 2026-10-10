@@ -1,0 +1,278 @@
+    <!-- ===================== PAGE HERO ===================== -->
+    <section class="page-hero">
+      <div class="container">
+        <p class="eyebrow mono reveal">07 — SPACE PORTFOLIO</p>
+        <h1 class="reveal">340개+ 공간 가운데,<br /><span class="accent">기록으로 확인한 {{PF_SPACES}}개</span>를 공개합니다</h1>
+        <p class="lede reveal">파티룸에서 모임공간, 공유주거, F&amp;B, 행사홀까지 — {{PF_YEAR_MIN}}년부터 지금까지 기획·운영에 함께한 공간의 기록입니다. 지역·유형·브랜드별로 찾아보세요.</p>
+        <ul class="stats pf-kpis reveal" aria-label="포트폴리오 요약">
+          <li class="stat"><span class="stat-num">{{PF_SPACES}}</span><span class="stat-label mono">공개 공간 기록</span></li>
+          <li class="stat"><span class="stat-num">{{PF_SIDO}}</span><span class="stat-label mono">시·도</span></li>
+          <li class="stat"><span class="stat-num">{{PF_OFF_PCT}}<small>%</small></span><span class="stat-label mono">지하·3층 이상</span></li>
+          <li class="stat"><span class="stat-num">{{PF_SIZE_MIN}}~{{PF_SIZE_MAX}}<small>평</small></span><span class="stat-label mono">공간 규모</span></li>
+        </ul>
+        <p class="stat-foot mono">지점 {{PF_PLACES}}곳 기준이며, 같은 건물 안의 개별 룸 {{PF_ROOM_SPACES}}실은 공간 수에 각각 포함했습니다. 층 비율은 층 정보가 확인된 {{PF_FLOOR_KNOWN}}곳 기준입니다.</p>
+      </div>
+    </section>
+
+    <!-- ===================== DISTRIBUTION ===================== -->
+    <section class="section">
+      <div class="container">
+        <header class="section-head reveal">
+          <p class="eyebrow mono">AT A GLANCE</p>
+          <h2>어디에, <span class="accent">어떤 공간</span>을</h2>
+          <p class="lede">공간 수 기준입니다. 막대를 누르면 아래 전체 목록이 그 조건으로 걸러집니다.</p>
+        </header>
+        <div class="pf-dist">
+          <div class="pf-dist-card reveal">
+            <h3>권역별</h3>
+            <p class="pf-dist-sub mono">{{PF_SIDO}}개 시·도 · {{PF_AREAS}}개 지역</p>
+            {{PF_REGION_BARS}}
+          </div>
+          <div class="pf-dist-card reveal">
+            <h3>유형별</h3>
+            <p class="pf-dist-sub mono">{{PF_TYPES}}가지 유형</p>
+            {{PF_TYPE_BARS}}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== PATTERNS ===================== -->
+    <section class="section section-tint">
+      <div class="container">
+        <header class="section-head reveal">
+          <p class="eyebrow mono">PATTERNS</p>
+          <h2>기록에서 읽히는 <span class="accent">네 가지</span></h2>
+          <p class="lede">공간 하나하나보다, 모아 놓았을 때 보이는 것들이 있습니다.</p>
+        </header>
+        <div class="grid grid-4 pf-insights">
+          <article class="pf-insight reveal">
+            <p class="pf-insight-fig">{{PF_OFF_PCT}}<small>%</small></p>
+            <h3>지하와 고층에서 답을 찾았습니다</h3>
+            <p>층 정보가 확인된 {{PF_FLOOR_KNOWN}}곳 가운데 {{PF_OFF_FLOOR}}곳이 지하({{PF_BASEMENT}}곳)이거나 3층 이상({{PF_UPPER}}곳)입니다. 목적이 분명한 공간이라면 1층이 아니어도 예약이 들어옵니다.</p>
+            <a class="pf-insight-link mono" href="portfolio.html?floor=off#pf-archive">해당 공간 보기 →</a>
+          </article>
+          <article class="pf-insight reveal">
+            <p class="pf-insight-fig">{{PF_TOP_AREA_N}}<small>개</small></p>
+            <h3>한 상권을 깊게 팠습니다</h3>
+            <p>{{PF_AREA_TOP4}}. 수요가 확인된 상권에서는 이름과 콘셉트를 달리해 공간을 늘렸습니다. 수원 인계동 한 상권에는 게임파티룸만 여섯 곳이 모였습니다.</p>
+            <a class="pf-insight-link mono" href="portfolio.html?q={{PF_TOP_AREA}}#pf-archive">{{PF_TOP_AREA}} 공간 보기 →</a>
+          </article>
+          <article class="pf-insight reveal">
+            <p class="pf-insight-fig">10<small>실</small></p>
+            <h3>한 건물을 여러 공간으로 나눴습니다</h3>
+            <p>천안 흥파티는 두 개 층의 호실을 객실형 파티룸 10실로, 강화 올어바웃은 컬러룸 5실로 구성했습니다. 2026년 건대에서는 층마다 목적이 다른 공간 네 곳을 한 건물에 담았습니다.</p>
+            <a class="pf-insight-link mono" href="#pf-spotlight">건대 사례 보기 →</a>
+          </article>
+          <article class="pf-insight reveal">
+            <p class="pf-insight-fig">{{PF_TYPES}}<small>가지</small></p>
+            <h3>파티룸에서 생활 전반으로</h3>
+            <p>파티룸으로 시작해 게임파티룸, 모임·교육 공간, 공유주거, F&amp;B, 행사홀까지. 같은 운영 원칙을 서로 다른 수요에 적용해 왔습니다.</p>
+            <a class="pf-insight-link mono" href="brands.html">브랜드 보기 →</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== SPOTLIGHT 2026 ===================== -->
+    <section class="section" id="pf-spotlight">
+      <div class="container">
+        <header class="section-head reveal">
+          <p class="eyebrow mono">SPOTLIGHT · 2026</p>
+          <h2>건대입구, <span class="accent">한 건물에 네 개의 공간</span></h2>
+          <p class="lede">층마다 다른 수요를 배치해 하루 종일 쓰이는 건물을 만드는 구성입니다. 낮에는 모임·교육·코워킹, 저녁과 주말에는 행사와 게임, 그리고 언제든 들르는 무인 카페.</p>
+        </header>
+        <div class="pf-spot reveal">
+          <ol class="pf-stack" aria-label="층별 구성">
+            <li>
+              <span class="pf-stack-floor mono">4F</span>
+              <div><h3>소셜팩토리 건대</h3><p>모임룸 5개 · 24시간 코워킹 30석 · 독립사무실 4실</p></div>
+            </li>
+            <li>
+              <span class="pf-stack-floor mono">2F</span>
+              <div><h3>메가스팟 건대</h3><p>약 150평 개방형 행사홀 · 천장고 4.3m · 200인치 스크린 · 50~130명</p></div>
+            </li>
+            <li>
+              <span class="pf-stack-floor mono">1F</span>
+              <div><h3>밍글 건대</h3><p>24시간 무인 디저트카페</p></div>
+            </li>
+            <li>
+              <span class="pf-stack-floor mono">1F</span>
+              <div><h3>플레이션 건대 미니</h3><p>PC·콘솔·보드게임 게임파티룸 · 4~10명</p></div>
+            </li>
+          </ol>
+          <div class="pf-spot-rooms">
+            <p class="mono pf-spot-label">4F 소셜팩토리 건대 — 룸 구성</p>
+            <table class="pf-room-table">
+              <thead><tr><th scope="col">구획</th><th scope="col">주요 용도</th><th scope="col">인원</th></tr></thead>
+              <tbody>
+                <tr><td>1번룸</td><td>클래스 · 정기모임 · 설명회</td><td>25~30명</td></tr>
+                <tr><td>2번룸</td><td>강연 · 발표 · 토크</td><td>30~35명</td></tr>
+                <tr><td>3번룸</td><td>회의 · 면접</td><td>12~18명</td></tr>
+                <tr><td>4번룸</td><td>워크숍 · 클래스</td><td>30~35명</td></tr>
+                <tr><td>5번룸</td><td>강연 · 상영 · 촬영</td><td>25~30명</td></tr>
+                <tr><td>코워킹</td><td>24시간 개인 좌석</td><td>30석</td></tr>
+                <tr><td>독립사무실 A~D</td><td>단기 독립 사무</td><td>1~3명</td></tr>
+              </tbody>
+            </table>
+            <p class="case-note mono">※ 2026년 10월 공간소개서 기준. 공간별 개장 일정은 다릅니다.</p>
+            <div class="bf-actions">
+              <a class="btn btn-line btn-sm" href="portfolio.html?q=건대#pf-archive">건대 공간 모두 보기</a>
+              <a class="btn btn-primary btn-sm" href="contact.html?inquiry=vacancy">건물 단위 개발 문의</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== FEATURED ===================== -->
+    <section class="section section-tint">
+      <div class="container">
+        <header class="section-head reveal">
+          <p class="eyebrow mono">FEATURED</p>
+          <h2>대표 공간 <span class="accent">아홉 곳</span></h2>
+          <p class="lede">처음 문을 연 공간부터 가장 높은 층, 가장 큰 공간, 한 건물을 나눈 공간까지 골랐습니다.</p>
+        </header>
+        <div class="grid grid-3 pf-feats">
+          <article class="pf-feat reveal">
+            <div class="pf-feat-fig"><span class="pf-feat-big">2015</span><span class="mono">START</span></div>
+            <div class="pf-feat-body">
+              <p class="pf-feat-meta mono">소셜팩토리 · 서울 홍대</p>
+              <h3>소셜팩토리 홍대 1호점</h3>
+              <p>2015년 10월, 홍대의 지하 2층에서 문을 연 첫 공간입니다. 메인홀과 다인실을 두고 스터디·회의·모임 대관을 함께 운영하며 공간사업의 기본기를 다졌습니다.</p>
+              <ul class="pf-specs"><li>지하 2층</li><li>40평</li><li>2015</li></ul>
+            </div>
+          </article>
+          <article class="pf-feat reveal">
+            <div class="pf-feat-fig"><span class="pf-feat-big">3</span><span class="mono">CO-LIVING</span></div>
+            <div class="pf-feat-body">
+              <p class="pf-feat-meta mono">쉐어하우스 M · 동대입구 · 신촌 · 건대</p>
+              <h3>쉐어하우스 M</h3>
+              <p>2017년 12월, 동대입구·신촌·건대 세 곳의 공유주거를 같은 달에 열었습니다. 잠깐 머무는 공간에서 사는 공간까지 운영의 폭을 넓힌 경험입니다.</p>
+              <ul class="pf-specs"><li>공유주거</li><li>3곳</li><li>2017</li></ul>
+              <a class="pf-feat-link mono" href="portfolio.html?brand=쉐어하우스%20M#pf-archive">공간 보기 →</a>
+            </div>
+          </article>
+          <article class="pf-feat reveal">
+            <div class="pf-feat-fig"><span class="pf-feat-big">9</span><span class="mono">THEME ROOMS</span></div>
+            <div class="pf-feat-body">
+              <p class="pf-feat-meta mono">두둠칫 · 서울</p>
+              <h3>두둠칫 테마 파티룸</h3>
+              <p>북유럽, 고양이, 화이트가든, 플라밍고, 어반스케치. 공간마다 다른 테마를 입힌 파티룸 브랜드를 함께 운영했습니다. 쏘플파티룸으로 이어진 출발점입니다.</p>
+              <ul class="pf-specs"><li>테마 파티룸</li><li>9곳</li><li>2017~2018</li></ul>
+              <a class="pf-feat-link mono" href="portfolio.html?brand=두둠칫#pf-archive">공간 보기 →</a>
+            </div>
+          </article>
+          <article class="pf-feat reveal">
+            <div class="pf-feat-fig"><span class="pf-feat-big">B1</span><span class="mono">MAKER SPACE</span></div>
+            <div class="pf-feat-body">
+              <p class="pf-feat-meta mono">소셜팩토리 · 서울 홍대</p>
+              <h3>메이커스 홍대</h3>
+              <p>지하 1층 40평을 3D프린터·레이저·목공·가죽·도예 프로그램이 돌아가는 제작 공간으로 꾸몄습니다. 빌려주는 공간을 활동이 일어나는 공간으로 넓힌 사례입니다.</p>
+              <ul class="pf-specs"><li>지하 1층</li><li>40평</li><li>2018</li></ul>
+            </div>
+          </article>
+          <article class="pf-feat reveal">
+            <div class="pf-feat-fig"><span class="pf-feat-big">110<small>평</small></span><span class="mono">CAFE + MEETING</span></div>
+            <div class="pf-feat-body">
+              <p class="pf-feat-meta mono">소셜팩토리 · 서울 신촌</p>
+              <h3>소셜팩토리 신촌</h3>
+              <p>카페와 모임 공간을 한 층에 결합한 약 110평 규모의 복합공간입니다. 같은 해 인천에도 비슷한 규모의 '버라이어티'를 열었습니다.</p>
+              <ul class="pf-specs"><li>약 110평</li><li>2018</li></ul>
+              <a class="pf-feat-link mono" href="portfolio.html?brand=소셜팩토리#pf-archive">소셜팩토리 공간 보기 →</a>
+            </div>
+          </article>
+          <article class="pf-feat reveal">
+            <div class="pf-feat-fig"><span class="pf-feat-big">14F</span><span class="mono">ROOFTOP</span></div>
+            <div class="pf-feat-body">
+              <p class="pf-feat-meta mono">쏘플파티룸 · 서울 선유도</p>
+              <h3>선유도 루프탑</h3>
+              <p>14층 꼭대기에서 실내보다 넓은 54평 테라스를 쓰는 루프탑 파티룸입니다. 높은 층이 오히려 전망이라는 강점이 됩니다.</p>
+              <ul class="pf-specs"><li>실내 34평</li><li>테라스 54평</li><li>20~30명</li></ul>
+            </div>
+          </article>
+          <article class="pf-feat reveal">
+            <div class="pf-feat-fig"><span class="pf-feat-big">90<small>평</small></span><span class="mono">BBQ TERRACE</span></div>
+            <div class="pf-feat-body">
+              <p class="pf-feat-meta mono">쏘플파티룸 · 경기 의왕</p>
+              <h3>의왕 벨루체</h3>
+              <p>실내 60평에 바비큐 테라스 30평을 더했습니다. 아카이브 속 파티룸 가운데 가장 큰 공간으로, 단체 모임과 야외 파티를 한 번에 받습니다.</p>
+              <ul class="pf-specs"><li>1층</li><li>90평</li><li>최대 35명</li></ul>
+            </div>
+          </article>
+          <article class="pf-feat reveal">
+            <div class="pf-feat-fig"><span class="pf-feat-big">7</span><span class="mono">GAME PARTY ROOM</span></div>
+            <div class="pf-feat-body">
+              <p class="pf-feat-meta mono">플레이션 · 신촌 · 건대 · 구의 · 영등포 · 구리</p>
+              <h3>플레이션</h3>
+              <p>PC·콘솔·보드게임을 갖춘 게임파티룸 브랜드입니다. 신촌에만 세 곳, 지하 2층부터 5층까지 층을 가리지 않고 자리를 잡았습니다.</p>
+              <ul class="pf-specs"><li>게임파티룸 7곳</li><li>10~33평</li></ul>
+              <a class="pf-feat-link mono" href="portfolio.html?brand=플레이션#pf-archive">공간 보기 →</a>
+            </div>
+          </article>
+          <article class="pf-feat reveal">
+            <div class="pf-feat-fig"><span class="pf-feat-big">10<small>실</small></span><span class="mono">ONE BUILDING</span></div>
+            <div class="pf-feat-body">
+              <p class="pf-feat-meta mono">쏘플파티룸 · 충남 천안</p>
+              <h3>천안 흥파티</h3>
+              <p>한 건물의 7층과 9층 호실을 객실형 파티룸 10실로 나눴습니다. 호스텔형 6실과 테라스형 4실로 이용 목적을 구분했습니다.</p>
+              <ul class="pf-specs"><li>7층 · 9층</li><li>10실</li></ul>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== ARCHIVE ===================== -->
+    <section class="section" id="pf-archive">
+      <div class="container">
+        <header class="section-head reveal">
+          <p class="eyebrow mono">FULL ARCHIVE</p>
+          <h2>전체 아카이브 <span class="accent">{{PF_PLACES}}곳</span></h2>
+          <p class="lede">공간명이나 지역으로 검색하고, 권역·브랜드·층·유형으로 좁혀보세요. 같은 건물 안의 개별 룸은 한 카드로 묶었습니다.</p>
+        </header>
+
+        <div class="pf-tools" id="pfTools" hidden>
+          <label class="pf-search">
+            <span class="sr-only">공간 검색</span>
+            <input type="search" id="pfSearch" placeholder="공간명·지역 검색 (예: 홍대, 루프탑)" autocomplete="off" />
+          </label>
+          <label><span class="sr-only">권역</span>
+            <select id="pfRegion"><option value="">전체 권역</option>{{PF_REGION_OPTIONS}}</select></label>
+          <label><span class="sr-only">브랜드</span>
+            <select id="pfBrand"><option value="">전체 브랜드</option>{{PF_BRAND_OPTIONS}}</select></label>
+          <label><span class="sr-only">층</span>
+            <select id="pfFloor"><option value="">전체 층</option>{{PF_FLOOR_OPTIONS}}</select></label>
+          <label><span class="sr-only">정렬</span>
+            <select id="pfSort"><option value="">추천순</option><option value="region">지역순</option><option value="size">규모 큰 순</option><option value="name">이름순</option></select></label>
+        </div>
+        <div class="board-filters pf-types" id="pfTypes" role="group" aria-label="공간 유형" hidden>
+          <button class="f-chip is-active" type="button" data-type="">전체 <em>{{PF_SPACES}}</em></button>
+          {{PF_TYPE_CHIPS}}
+        </div>
+        <div class="pf-status">
+          <p class="pf-count mono" id="pfCount" aria-live="polite"></p>
+          <button class="pf-reset mono" type="button" id="pfReset" hidden>필터 초기화</button>
+        </div>
+
+        <div class="pf-grid" id="pfGrid">
+{{PF_CARDS}}
+        </div>
+        <p class="board-empty" id="pfEmpty" hidden>조건에 맞는 공간이 없습니다. 검색어나 필터를 바꿔보세요.</p>
+        <div class="pf-more"><button class="btn btn-line" type="button" id="pfMore" hidden>더 보기</button></div>
+
+        <p class="case-note mono pf-note">※ 최시준 공간 레퍼런스 아카이브(2026년 10월 기준) 가운데 공개할 수 있는 기록만 정리했습니다. 개별 주소·계약 조건·운영 형태와 현재 운영 여부는 표시하지 않으며, 공간마다 참여 범위(기획·개발·오픈·운영·위탁관리)가 다릅니다. 면적은 자료 기준이며 일부는 테라스를 포함합니다. 나머지 기록도 확인을 마치는 대로 더하겠습니다.</p>
+      </div>
+    </section>
+
+    <!-- ===================== CTA ===================== -->
+    <section class="section section-dark">
+      <div class="container" style="text-align:center;">
+        <h2 class="reveal" style="font-size:clamp(1.5rem,3vw,2.1rem);font-weight:800;letter-spacing:-0.03em;margin-bottom:14px;">다음 기록은 <span class="accent">당신의 공간</span>일 수 있습니다</h2>
+        <p class="lede reveal" style="max-width:620px;margin:0 auto 28px;">비어 있는 층, 수익이 나지 않는 매장, 통으로 빈 건물. 어떤 공간이 맞을지 함께 살펴보겠습니다.</p>
+        <div class="hero-cta reveal" style="justify-content:center;">
+          <a class="btn btn-primary" href="contact.html?inquiry=vacancy">공실개발 상담하기</a>
+          <a class="btn btn-ghost" href="cases.html">유형별 사례 보기</a>
+        </div>
+      </div>
+    </section>

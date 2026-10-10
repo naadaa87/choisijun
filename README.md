@@ -1,179 +1,188 @@
-# 최시준 개인 브랜딩 홈페이지 (멀티페이지 v2)
+# 최시준 홈페이지 운영 안내
 
-순수 HTML/CSS/JS 정적 사이트 — 프레임워크·빌드 과정 없이 **Cloudflare Pages에 zip 업로드만으로 배포**됩니다.
+choisijun.com · 2026년 10월 최종본
+
+HTML·CSS·JS로 만든 정적 사이트입니다. GitHub 저장소(`naadaa87/choisijun`)에 저장(Commit)하면 Cloudflare Pages가 1~2분 안에 자동으로 배포합니다. 따로 설치할 프로그램은 없습니다.
+
+함께 들어 있는 안내서
+
+- `GITHUB-배포가이드.md` — GitHub와 Cloudflare를 처음 연결할 때
+- `기능활성화-가이드.md` — 게시판·답글·레퍼런스 등록·문의 폼을 실제로 작동시킬 때
 
 ---
 
 ## 1. 페이지 구성
 
-| 파일 | 내용 |
-|---|---|
-| `index.html` | 메인 — 히어로(공실→수익 다이어그램), 핵심지표, 페이지 안내, 대표사례, 언론, 커뮤니티 최근글, 자가진단 배너 |
-| `about.html` | 소개 — 스토리, 타임라인, 운영원칙 4, 자능사(自能士), 미니 인터뷰 Q&A, 강의활동 |
-| `brands.html` | 브랜드 — 쏘플(플래그십 상세) + 공백·밍글·레스텔·워블·소셜팩토리 + SPMS + 실험의 기록 |
-| `cases.html` | 사례 — 공실개발 7개 유형(탭) + 6단계 프로세스 + "이런 공간을 찾습니다" |
-| `services.html` | 서비스 — 전문분야 6 + 서비스 5종 상세 + 협업구조 4 + FAQ 7 |
-| `references.html` | **레퍼런스 아카이브** — 카테고리 필터 + 기본 18건 내장 + **관리자 등록 기능(이미지 업로드 포함)** |
-| `media.html` | 미디어 — 언론보도 아카이브 + 공식 채널 + **칼럼 3편 전문** |
-| `community.html` | **커뮤니티 게시판** — 제휴·협업 카테고리, 글쓰기 + **답글(댓글)** 기능 |
-| `books.html` | **전자책 스토어** — 도서 3종 카드(표지·목차·구매버튼) + 외부결제 안내 + 단체구매 CTA |
-| `contact.html` | 문의 — 60초 자가진단 + 유형별 문의 안내 + 문의폼(mailto) + 연락처·개인 SNS |
-| `404.html` | 없는 주소 접속 시 자동 표시 (Cloudflare Pages 기본 지원) |
+메뉴 순서와 각 페이지 상단 번호(01~10)를 똑같이 맞춰 두었습니다.
 
-공통 파일: `styles.css`, `script.js`, `robots.txt`, `sitemap.xml`, `assets/favicon.svg`
-
-> `gen.py`와 `fragments/` 폴더는 **페이지를 다시 생성할 때 쓰는 개발용 도구**입니다.
-> 배포에는 필요 없지만, 나중에 헤더/푸터를 한 번에 수정하고 싶을 때
-> `fragments/` 안의 본문이나 `gen.py`의 헤더/푸터를 고친 뒤 `python3 gen.py`를 실행하면
-> 모든 페이지가 일괄 재생성됩니다. (직접 HTML을 수정하셔도 무방합니다)
+| 번호 | 파일 | 내용 |
+|---|---|---|
+| 메인 | `index.html` | 첫 화면(공실→수익 흐름도·핵심 지표), 쇼릴, 하는 일, 페이지 안내, 포트폴리오 요약, 언론, 커뮤니티 최근 글, 비즈니스 네트워크, 60초 자가진단 |
+| 01 | `about.html` | 소개 — 스토리, 경력, 타임라인(~2015 → NOW), 운영 원칙, 미니 인터뷰, 강의 활동 |
+| 02 | `brands.html` | 브랜드 — 쏘플파티룸, 플레이션, 공백, 밍글, 레스텔, 잭슨빌피자, 메이저리그 멘토링, 소셜팩토리 + 운영 시스템 SPMS + 실험의 기록 |
+| 03 | `community.html` | 커뮤니티 — 제휴·협업 게시판(글·답글), 환영하는 제안, 이용 규칙 |
+| 04 | `books.html` | 전자책 — 『공실은 자산이다』, 『예약되는 공간』, 구매 방법 |
+| 05 | `cases.html` | 사례 — 공실 유형 7가지, 6단계 진행 과정, 건물주·중개사 안내 |
+| 06 | `services.html` | 서비스 — 전문 분야, 서비스 5종, 협업 구조, 자주 묻는 질문 |
+| 07 | `portfolio.html` | **포트폴리오(새 페이지)** — 공개 공간 186개, 권역·유형 분포, 기록에서 보이는 패턴 4가지, 2026 건대 복합공간, 대표 공간 9곳, 검색·필터가 되는 전체 목록 |
+| 08 | `references.html` | 레퍼런스 — 공간개발·브랜드·강의·파트너십·언론 기록 31건 + 관리자 등록 |
+| 09 | `media.html` | 미디어 — 쇼릴 2026, 언론 보도, 공식 채널, 칼럼 3편 |
+| 10 | `contact.html` | 문의하기 — 60초 자가진단, 문의 유형 안내, 문의 폼, 연락처 |
+| — | `404.html` | 없는 주소로 들어왔을 때 보이는 화면 |
 
 ---
 
-## 2. 배포 방법
+## 2. 폴더 구조
 
-### 방법 A — GitHub 연동 (권장, 자동 배포)
-수정 → GitHub 저장 → 자동 반영. 설정 방법은 **`GITHUB-배포가이드.md`** 참고.
-
-### 방법 B — zip 직접 업로드 (기존 방식)
-
-1. `choisijun-homepage-v2.zip` 압축 해제 → **파일들이 zip 최상위**에 있는지 확인 (`index.html`이 바로 보여야 함)
-2. Cloudflare 대시보드 → **Workers & Pages → Create → Pages → Upload assets**
-3. 폴더째 드래그&드롭 → Deploy
-4. 수정 후 재배포했다면 **Ctrl+Shift+R(강력 새로고침)** 또는 시크릿 창으로 캐시를 우회해 확인
-
----
-
-## 3. 배포 전 교체 체크리스트 ✅
-
-| 항목 | 상태 / 위치 |
-|---|---|
-| 📧 이메일 · 📞 전화 | ✅ 소개서 기준 반영됨 (`runactivator@naver.com` / `010-2384-9580`) — 변경 시 `contact.html` + `script.js`의 `CONTACT_EMAIL` |
-| 🔑 **레퍼런스 관리자 코드** | ⚠️ `script.js` 상단 `ADMIN_CODE` (현재 `sijun-2026`) — **배포 전 꼭 변경!** |
-| 💬 카카오/SNS | ✅ 오픈프로필·Threads·Instagram·NAVER 검색 링크 반영됨 (푸터·문의·커뮤니티·메인) |
-| 📚 **전자책 구매 링크** | ⚠️ `books.html`의 각 `data-store-link` 버튼 href를 크몽/스마트스토어 판매 URL로 교체 — 교체 전에는 '전자책 구매 문의'로 연결됨. 제목·목차·설명도 실제 도서에 맞게 수정 |
-| 🌐 도메인 | ✅ `https://choisijun.com` 반영됨 (canonical · OG · sitemap · robots) |
-| 🖼️ og-image | `assets/og-image.jpg`(카톡/SNS 공유 썸네일, 1200×630) 1장만 추가하면 됩니다 — 프로필·강의·방송·지도 사진은 소개서에서 추출해 이미 적용됨 |
-| 🏷️ "1위" 표기 | 소개서·공식 사이트 기준이며 "자사 기준" 각주를 달아두었습니다. 표현 조정 원하시면 `index.html`, `brands.html` |
-
----
-
-## 3.5 캐시 문제 예방 (자동 적용됨)
-
-모든 페이지의 CSS/JS 주소에 **빌드 시각 버전**이 자동으로 붙습니다 (`styles.css?v=202607…`).
-덕분에 재배포 후 옛 디자인이 캐시로 남는 문제가 원천 차단됩니다.
-- 내용 수정 후에는 `python3 gen.py` 한 번 실행 → 버전이 갱신된 HTML로 재배포하세요.
-- 그래도 즉시 반영이 필요하면: Cloudflare 대시보드 → choisijun.com 존 → **Caching → Purge Everything**
-
-## 4. 게시판 & 레퍼런스 저장 방식 (중요)
-
-두 기능 모두 **두 가지 모드**로 동작합니다.
-
-### 데모 모드 (기본, 지금 상태)
-- 별도 서버 없이 작동하지만, 글·답글·등록 레퍼런스가 **작성자 본인 브라우저(localStorage)에만 저장**됩니다.
-- 다른 방문자에게는 보이지 않습니다. 화면에도 "DEMO" 안내가 표시됩니다.
-
-### 공유 모드 (Supabase 무료 플랜, 5분 설정)
-모든 방문자가 함께 보는 실제 게시판/아카이브가 됩니다.
-
-1. https://supabase.com 가입 → New Project
-2. SQL Editor에서 아래 실행:
-
-```sql
--- ① 게시글
-create table community_posts (
-  id uuid primary key default gen_random_uuid(),
-  created_at timestamptz default now(),
-  author text not null,
-  category text default '질문',
-  title text not null,
-  content text not null
-);
-alter table community_posts enable row level security;
-create policy "public read"  on community_posts for select using (true);
-create policy "public write" on community_posts for insert with check (true);
-
--- ② 답글(댓글)
-create table community_comments (
-  id uuid primary key default gen_random_uuid(),
-  created_at timestamptz default now(),
-  post_id uuid not null references community_posts(id) on delete cascade,
-  author text not null,
-  content text not null
-);
-alter table community_comments enable row level security;
-create policy "public read"  on community_comments for select using (true);
-create policy "public write" on community_comments for insert with check (true);
-
--- ③ 레퍼런스 (테이블명 주의: references 는 SQL 예약어라 site_references 사용)
-create table site_references (
-  id uuid primary key default gen_random_uuid(),
-  created_at timestamptz default now(),
-  category text,
-  year text,
-  title text,
-  "desc" text,
-  image text,
-  link text
-);
-alter table site_references enable row level security;
-create policy "public read"  on site_references for select using (true);
-create policy "public write" on site_references for insert with check (true);
+```
+choisijun/
+├── index.html ~ 404.html   ← 완성된 페이지 12개 (gen.py가 만드는 결과물)
+├── fragments/              ← 페이지 본문 원본 — 글을 고칠 때는 여기
+├── data/portfolio.json     ← 포트폴리오 공개 데이터
+├── assets/                 ← 사진, 파비콘, 공유용 썸네일
+│   └── video/              ← 쇼릴 영상(1080p·720p)과 첫 장면 이미지
+├── styles.css, script.js   ← 디자인 / 기능
+├── gen.py                  ← 페이지 생성기
+├── _headers                ← 캐시·보안 설정
+├── robots.txt, sitemap.xml ← 검색엔진용
+└── README.md 외 안내서 2개
 ```
 
-3. Settings → API에서 **Project URL**과 **anon public key** 복사
-4. `script.js` 최상단에 붙여넣기:
+---
 
-```js
-const COMMUNITY_BACKEND = {
-  supabaseUrl: 'https://xxxx.supabase.co',
-  supabaseAnonKey: '붙여넣기',
-  table: 'community_posts',
-  commentsTable: 'community_comments',
-  referencesTable: 'site_references'
-};
-```
+## 3. 고치고 반영하는 방법
 
-5. 재배포 → 화면 안내가 "LIVE"로 바뀌면 완료
+1. GitHub 저장소에서 고칠 파일을 열고 연필 아이콘(Edit) → 수정 → **Commit changes**
+2. Cloudflare가 `python3 gen.py`를 실행해 페이지 12개를 다시 만들고 배포합니다 (1~2분)
+3. 시크릿 창에서 확인
 
-**운영 팁**
-- 광고글/부적절한 글 삭제: Supabase 대시보드 → Table Editor에서 행 삭제 (공유 모드)
-- 데모 모드에서 글 삭제: 작성 시 입력한 비밀번호로 게시판에서 직접 삭제 가능
-- 답글은 삭제 버튼이 없습니다(대시보드에서 관리) — 도배 방지가 필요해지면 말씀 주세요.
+알아둘 점
+
+- 본문은 `fragments/` 안의 같은 이름 파일을 고치세요. 최상단의 `about.html` 같은 파일은 배포할 때마다 새로 만들어지기 때문에, 그쪽을 고치면 다음 배포 때 덮어써집니다.
+- Cloudflare 빌드 설정이 **Build command `python3 gen.py` / Build output directory `/`** 인지 한 번 확인해 주세요 (Pages 프로젝트 → Settings → Builds & deployments). 빌드 명령이 비어 있으면 `fragments/`와 `data/`를 고쳐도 사이트에 반영되지 않습니다.
+- 빌드가 실패해도 사이트는 직전 배포 상태로 그대로 유지됩니다. 실패 이유는 Deployments 탭의 로그에서 볼 수 있습니다.
 
 ---
 
-## 5. 레퍼런스 등록 기능 사용법 (관리자 전용)
+## 4. 포트폴리오 데이터 (`data/portfolio.json`)
 
-1. 레퍼런스 페이지 → **＋ 레퍼런스 등록**
-2. 관리자 코드 입력 (기본 `sijun-2026` — `script.js`의 `ADMIN_CODE`에서 변경)
-3. 카테고리/연도/제목/설명 입력 + 이미지 **파일 첨부**(자동으로 900px 리사이즈) 또는 이미지 URL
-4. 등록 → 즉시 카드로 표시
+### 무엇을 공개했나
 
-> ⚠️ 정적 사이트 특성상 관리자 코드는 소스에 노출되는 "가벼운 잠금"입니다.
-> 무단 등록 방지용으로는 충분하지만, 강한 보안이 필요하면 Supabase 정책(RLS)으로 등록을 제한하는 방식을 권장합니다.
-> 기본 내장된 18건의 아카이브는 `script.js`의 `SEED_REFS` 배열에서 직접 수정/추가할 수 있습니다.
+- 원본: 공간 레퍼런스 아카이브(2026-10-10 기준) 201건
+- 공개: **186개 공간**. 같은 건물에서 룸 단위로 운영한 7곳(27실)은 한 장으로 묶어 카드는 166장입니다.
+- 제외 15건: 개발 검토·계획 단계로 보관된 기록, 워크숍 라운지 기록, 여러 지점을 묶은 대표 기록, 후보·오픈 예정 기록, 중복으로 보이는 기록
+- 자료마다 평수가 다르게 적힌 3곳(플레이션 건대 미니, 밍글 건대, 소셜팩토리 건대)은 평수를 빼고 공개했습니다.
+- 사진은 아직 넣지 않았습니다. 아카이브에 '확인 후 사용'으로 표시되어 있어서, 쓸 사진을 직접 골라주시면 대표 공간부터 추가하는 것을 권합니다.
+
+### 공개하지 않는 정보
+
+주소·호수, 운영 방식, 현재 운영 상태, 개인별 참여 범위, 출처와 사진 경로, 금액. 저장소가 공개(Public) 상태라 이 파일도 누구나 볼 수 있으니, 이런 정보는 넣지 마세요.
+
+### 항목 설명 (공간 하나 = `items` 안의 `{ }` 하나)
+
+| 항목 | 뜻 | 예 |
+|---|---|---|
+| `id` | 아카이브의 공간 ID (룸 묶음 카드는 `GRP-`로 시작) | `"CSJ-DD-002"` |
+| `name` | 카드 제목 | `"홍대 오렌지카운티"` |
+| `group` | 브랜드 필터에 쓰는 이름 | `"겜플렉스·듀플렉스"` |
+| `brand` | 카드 위에 보이는 브랜드 | `"겜플렉스"` |
+| `network` | 쏘플파티룸 네트워크로 운영된 경우 표시 (아니면 `null`) | `"쏘플파티룸"` |
+| `type` / `subtype` | 공간 유형 / 세부 설명 (없으면 `null`) | `"모임·교육 공간"` / `"메이커·공예·워크숍"` |
+| `region` / `sido` / `area` | 권역 / 시·도 / 상권 | `"서울"` / `"서울"` / `"홍대"` |
+| `floor` / `floorClass` | 층 표시 / `basement`(지하)·`ground`(1~2층)·`upper`(3층 이상) | `"B1"` / `"basement"` |
+| `size` / `sizePrefix` / `sizeDetail` | 평수(숫자) / 앞에 붙는 말 / 상세 | `65` / `""` / `"실내 30평 · 테라스 35평"` |
+| `capMin` / `capMax` | 수용 인원 | `8` / `30` |
+| `year` | 오픈 연도 | `2018` |
+| `tags` | 특징 태그 | `["루프탑", "바비큐"]` |
+| `desc` | 한 줄 설명 | `"고양이 테마 파티룸"` |
+| `rooms` / `roomNote` | 룸 묶음 카드의 룸 목록 / 설명 | `["에메랄드", "오닉스"]` |
+| `spaces` | 이 카드가 공간 몇 개인지 (보통 `1`) | `1` |
+
+### 고치는 방법
+
+- **작은 수정**(오타, 평수, 연도, 설명): GitHub에서 `data/portfolio.json` → 연필 아이콘 → Ctrl+F로 공간 이름 검색 → 값 수정 → Commit
+- 글자는 큰따옴표 안에, 숫자는 따옴표 없이 씁니다. 값이 없으면 `null`.
+- 상단 지표(공간 수, 시·도 수, 비율), 막대그래프, 필터 옆 숫자는 배포할 때 `items`를 보고 **자동으로 다시 계산**됩니다. 파일 안의 `stats`는 참고용입니다.
+- 쉼표 하나만 빠져도 빌드가 멈춥니다. 이때도 사이트는 이전 상태 그대로이고, Deployments 로그에 몇 번째 줄이 문제인지 나옵니다.
+- **큰 수정**(공간을 수십 개 추가하는 등)은 엑셀 아카이브를 먼저 고친 뒤 Claude에게 전달해, 지금과 같은 공개 기준으로 JSON을 다시 만드는 편이 안전합니다.
+
+포트폴리오 목록은 주소로 공유할 수 있습니다. 예: `portfolio.html?brand=플레이션#pf-archive`, `portfolio.html?floor=off#pf-archive`(지하 + 3층 이상), `portfolio.html?q=홍대`
 
 ---
 
-## 6. 콘텐츠 수정 위치 빠른 안내
+## 5. 쇼릴 (`assets/video/`)
 
-- 언론 기사 추가: `media.html`의 `press-card` 블록 복사 후 수정 (주석 표시해둠)
-- 칼럼 추가: `media.html`의 `col-item` 블록 복사
-- 사례 추가: `cases.html`의 탭 버튼 + `case-panel` 한 쌍 복사
-- 자가진단 문항: `script.js`의 `QUIZ` 배열
-- 전자책 추가: `books.html`의 `book-card` 블록 복사 (표지 색상은 `book-cover` / `bc-alt` / `bc-dark` 3종)
-- 게시판 환영글(시드): `script.js`의 `SEED_POSTS`
+| 파일 | 용도 |
+|---|---|
+| `showreel-2026-1080.mp4` | 데스크톱 (1920×1080, 약 3.7MB) |
+| `showreel-2026-720.mp4` | 모바일 (1280×720, 약 1.6MB) |
+| `showreel-poster.jpg` | 재생 전 첫 화면 |
+
+- 메인: 화면에 절반쯤 보이면 소리 없이 자동 재생합니다. 방문자가 직접 멈추면 다시 자동 재생하지 않습니다.
+- 미디어: 자동 재생 없이, 누르면 소리와 함께 재생합니다.
+- 기기에서 '동작 줄이기'나 데이터 절약 모드를 켠 방문자에게는 자동 재생하지 않고, 영상도 미리 받지 않습니다.
+- 영상 아래 장면 버튼(최시준, 340+ 공간, 쏘플파티룸 …)을 누르면 그 장면으로 바로 이동합니다.
+
+### 영상을 바꿀 때
+
+1. MP4(H.264)로 준비합니다. 파일 하나당 25MB 이하 (Cloudflare Pages 한도)
+2. `/assets/` 파일은 방문자 브라우저에 1년간 저장되므로 **새 이름**으로 올리는 것이 안전합니다. 예: `showreel-2027-1080.mp4`
+3. `fragments/index.html`과 `fragments/media.html`에서 영상 주소(`data-src-lg`, `data-src-sm`, `<source src>`, `poster`)를 새 이름으로 바꾸고 Commit
+4. 길이나 장면 구성이 달라졌다면 같은 곳의 장면 버튼 `data-t`(초 단위)도 고쳐 주세요. `gen.py`의 `VideoObject`(`uploadDate`, `duration`)까지 맞추면 검색엔진에 보이는 정보도 정확해집니다.
 
 ---
 
-## 7. v3 업데이트 요약 (소개서 반영)
+## 6. 공개 전 확인할 것
 
-- 디자인 톤 변경: 기존 홈페이지·소개서와 동일한 **화이트 + 블랙 + 오렌지레드** 팔레트, 소개서의 오렌지 더블바 모티프 적용
-- 실적 지표 340개+ 반영, "국내 무인공간 사업 1위(자사 기준)" 문구 추가
-- 소개(about): 現/前 **경력 전체 리스트**, 기업·기관·대학 **강의처 태그(50여 곳)**, TEDx 무대·강의 현장 실사진
-- 브랜드: 잭슨빌피자 · 메이저리그 멘토링 추가(8개), 쏘플 **전국 지도 실사진**
-- 미디어: **JTBC · KBS · 중국 CCTV 방송 스틸컷** 카드 + MBC 다큐/EBS/지면 매체 정리
-- 레퍼런스: 기업 강연 / 대학 강연 / 퇴사학교 완판 / 방송 출연 / 협회·심사 5건 추가 (총 23건)
-- 문의: 실제 연락처 반영, 브랜드 공식 채널 정리
+| 항목 | 지금 상태 | 위치 |
+|---|---|---|
+| 레퍼런스 관리자 코드 | 기본값 그대로 — **꼭 바꿔 주세요** | `script.js` 상단 `ADMIN_CODE` |
+| 게시판 공유 저장 (Supabase) | 미설정. 지금은 글이 작성자 브라우저에만 저장됨 | `기능활성화-가이드.md` PART A |
+| 문의 폼 바로 접수 (Web3Forms) | 미설정. 지금은 방문자의 메일 앱이 열림 | `기능활성화-가이드.md` PART B |
+| 전자책 판매 링크 | 판매처 주소로 교체 필요. 교체 전에는 구매 문의로 연결됨 | `fragments/books.html`의 `data-store-link` 버튼 |
+| 쏘플파티룸 지점 수 | 사이트는 '120여 개', 쇼릴은 '140개 지점'. 한 가지로 맞출지 결정 필요 | 사이트 문구는 `fragments/` 전체와 `gen.py` |
+| 포트폴리오 사진 | 아직 없음. 쓸 사진을 고르면 추가 | `assets/` |
+| 연락처 | 소개서 기준으로 반영됨 | `fragments/contact.html`, `script.js`의 `CONTACT_EMAIL` |
 
-즐거운 운영 되세요! 🏗️
+> 관리자 코드는 소스에 그대로 보이는 '가벼운 잠금'입니다. 아무나 등록하지 못하게 막는 정도로는 충분하지만, 더 강하게 막으려면 Supabase 권한 설정(RLS)으로 등록을 제한하세요.
+
+---
+
+## 7. 자주 고치는 곳
+
+- 언론 기사 추가: `fragments/media.html`의 `press-card` 블록을 복사해 수정
+- 칼럼 추가: `fragments/media.html`의 `col-item` 블록 복사
+- 사례 추가: `fragments/cases.html`의 탭 버튼과 `case-panel`을 한 쌍으로 복사
+- 전자책 추가: `fragments/books.html`의 `book-card` 블록 복사
+- 포트폴리오의 패턴·스포트라이트·대표 공간 문구: `fragments/portfolio.html`
+- 레퍼런스 기본 목록: `script.js`의 `SEED_REFS`
+- 게시판 첫 안내 글: `script.js`의 `SEED_POSTS`
+- 자가진단 문항: `script.js`의 `QUIZ`
+- 메뉴, 푸터, 페이지 제목과 검색 결과 설명: `gen.py`의 `PAGES`, `FOOTER`
+
+---
+
+## 8. 캐시
+
+- 배포할 때마다 CSS·JS 주소에 버전 번호가 붙어(`styles.css?v=…`) 옛 디자인이 남지 않습니다.
+- HTML은 매번 새로 확인하고, `/assets/`의 사진·영상은 1년간 브라우저에 저장됩니다. 사진이나 영상을 바꿀 때는 새 이름으로 올리세요.
+- 급하게 반영해야 할 때: Cloudflare → choisijun.com → Caching → **Purge Everything**
+
+---
+
+## 9. 변경 기록
+
+**2026.10 — 이번 최종본**
+
+- 포트폴리오 페이지 신설: 아카이브 201건 중 186개 공간 공개, 권역·유형 분포, 패턴 4가지, 2026 건대 복합공간, 대표 공간 9곳, 검색·필터·정렬 목록(주소로 공유 가능)
+- 쇼릴 2026: 메인(보이면 소리 없이 자동 재생)과 미디어(눌러서 재생), 장면 바로가기
+- 메뉴에 포트폴리오 추가(서비스와 레퍼런스 사이), 페이지 번호 01~10 정리
+- 브랜드: 플레이션 추가로 여덟 개 브랜드, 쏘플파티룸·소셜팩토리 카드에서 공간 기록으로 연결
+- 소개: 2017년(두둠칫·쉐어하우스 M) 추가, 강의 지표, NOW 문구 갱신(AI 에이전트 13종, 마이웍스)
+- 메인: 포트폴리오 요약 추가, 비즈니스 네트워크에 마이웍스 추가
+- 레퍼런스: 마이웍스·쇼릴·포트폴리오 공개 기록 추가
+- 검색엔진: 포트폴리오 페이지 sitemap 등록, 쇼릴 영상 정보 추가, `data/`·안내서는 검색 제외
+
+**2026.09**
+
+- 페이지 상단을 밝은 톤으로 변경, 브랜드 정리, GitHub 연동 배포, 게시판·문의 폼 활성화 준비

@@ -683,7 +683,7 @@ const LS_REFS_KEY = 'csj_references_v1';
 
 const SEED_REFS = [
   { id: 'r-01', year: '2015', category: '브랜드',     title: '소셜팩토리 오픈 — 공간사업의 시작', desc: '복합모임공간(스터디룸·세미나실) 창업. 공간이 수익을 만드는 구조를 처음으로 직접 설계·운영.', link: '' },
-  { id: 'r-02', year: '2018', category: '브랜드',     title: '쏘플파티룸(SSOPLE) 홍대 1호점 런칭', desc: '프라이빗 공간대여 브랜드 쏘플 시작. 예약제 파티룸 모델의 원형을 만든 프로젝트.', link: 'https://ssople.com' },
+  { id: 'r-02', year: '2018', category: '브랜드',     title: '쏘플파티룸(SSOPLE) 홍대 1호점 런칭', desc: '프라이빗 공간대여 브랜드 쏘플파티룸 시작. 예약제 파티룸 모델의 원형을 만든 프로젝트.', link: 'https://ssople.com' },
   { id: 'r-03', year: '2018', category: '언론·미디어', title: '아레나 옴므 플러스 인터뷰', desc: '라이프스타일 매거진 ARENA HOMME+와 공간대여 사업을 주제로 진행한 인터뷰(지면).', link: '' },
   { id: 'r-04', year: '2019', category: '파트너십',   title: '㈜소셜패밀리 법인 설립', desc: '공간 운영·플랫폼 사업 법인화. 직영 확장의 기반 구축.', link: '' },
   { id: 'r-05', year: '2019', category: '파트너십',   title: '프라이머 배치 15기 선정', desc: '국내 대표 스타트업 액셀러레이터 프라이머 15기 선정 — 이후 반년 만에 5배 이상 성장.', link: 'https://www.rocketpunch.com/companies/socialfamily' },
@@ -707,9 +707,12 @@ const SEED_REFS = [
   { id: 'r-24', year: '2026', category: '브랜드',     title: '공백 — 공실개발 플랫폼 vacancy.co.kr 오픈', desc: '공실 진단부터 수익공간 개발까지, 공실 솔루션 전용 사이트 구축·공개.', link: 'https://vacancy.co.kr/' },
   { id: 'r-25', year: '2026', category: '공간개발',   title: 'TGRZ SPACE — 통건물 마스터리스 사업 런칭', desc: '건물 전체를 임차·개발·운영하는 통건물 전담 브랜드와 사이트 공개.', link: 'https://tgrzspace.pages.dev/' },
   { id: 'r-26', year: '2026', category: '파트너십',   title: '오르비스중개법인 — 부동산 중개 파트너 운영', desc: '공실·수익형 매물의 발굴과 중개를 전담하는 직영 중개법인 사이트 공개.', link: 'https://orbisestate.pages.dev/' },
-  { id: 'r-27', year: '2026', category: '브랜드',     title: '개인 브랜드 허브 choisijun.com 구축', desc: '11개 페이지의 공식 홈페이지 오픈 — 사례·레퍼런스·미디어·커뮤니티·전자책을 한곳에.', link: 'index.html' },
+  { id: 'r-27', year: '2026', category: '브랜드',     title: '개인 브랜드 허브 choisijun.com 구축', desc: '사례·포트폴리오·레퍼런스·미디어·커뮤니티·전자책을 한곳에 모은 공식 홈페이지.', link: 'index.html' },
   { id: 'r-28', year: '2026', category: '강의·교육',  title: "전자책 시리즈 2종 기획 — '공실은 자산이다' 외", desc: "'예약되는 공간'까지 — 340개+ 공간의 판단기준을 담은 전자책 시리즈 준비.", link: 'books.html' },
-  { id: 'r-29', year: '2026', category: '파트너십',   title: 'AI 업무 에이전트 8종 구축 — 운영 자동화 확장', desc: '문의 선별, CS 응대, 리뷰 모니터링, 공실 매물 스크리닝, 레퍼런스 아카이빙, 운영 이상감지, 콘텐츠 자산화, 강연 설계 — AI 기반 자동화 도구를 실무에 적용.', link: '' }
+  { id: 'r-29', year: '2026', category: '파트너십',   title: 'AI 에이전트 13종 구축 — 콘텐츠 제작부터 상권 분석까지', desc: '콘텐츠 자산화, 문의 선별·답변 초안, CS 응대, 리뷰 모니터링, 공실 매물·상권 스크리닝, 레퍼런스 아카이빙, 운영 이상감지, 강연 설계, 주간 브리핑, 가맹점 지원, 관계·기회 관리까지 실무에 적용.', link: '' },
+  { id: 'r-30', year: '2026', category: '파트너십',   title: '마이웍스 — 혼자 경영하는 사람의 업무 운영 시스템', desc: '업무·프로젝트·할 일을 한곳에서 관리하고, 사람과 AI로 연결하는 업무 운영 시스템을 만들어 공개.', link: 'https://myworkspro.pages.dev/' },
+  { id: 'r-31', year: '2026', category: '언론·미디어', title: '쇼릴 2026 공개', desc: '340개+ 공간부터 쏘플파티룸, AI 에이전트, 마이웍스, 강의와 전자책까지 15초로 담은 모션 쇼릴.', link: 'media.html#showreel' },
+  { id: 'r-32', year: '2026', category: '공간개발',   title: '공간 레퍼런스 아카이브 정리 · 포트폴리오 공개', desc: '2015~2026년 공간 기록을 검증해 공개 가능한 공간을 지역·유형·브랜드별 포트폴리오로 정리.', link: 'portfolio.html' }
 ];
 
 function loadUserRefs() {
@@ -903,4 +906,263 @@ function fileToResizedDataUrl(file) {
     }
     render();
   })();
+})();
+
+
+/* =========================================================
+   [index · media] 쇼릴 — 화면에 보일 때만 무음 자동재생
+   - 동작 줄이기(reduced motion) / 데이터 절약 모드에서는 자동재생 안 함
+   - 사용자가 직접 멈추면 다시 자동재생하지 않음
+   ========================================================= */
+(function showreelModule() {
+  const reels = $$('.reel');
+  if (!reels.length) return;
+  const saveData = Boolean(navigator.connection && navigator.connection.saveData);
+
+  reels.forEach((reel) => {
+    const v = $('video', reel);
+    if (!v) return;
+    const big = $('.reel-big', reel);
+    const controls = $('.reel-controls', reel);
+    const btnPlay = $('.reel-play', reel);
+    const btnSound = $('.reel-sound', reel);
+    const btnFull = $('.reel-full', reel);
+    const chapters = $$('.reel-chapters [data-t]', reel);
+
+    v.controls = false;                 // 자바스크립트가 동작할 때만 맞춤 컨트롤 사용
+    if (big) big.hidden = false;
+    if (controls) controls.hidden = false;
+
+    const small = window.matchMedia('(max-width: 768px)').matches;
+    const src = (small ? v.dataset.srcSm : v.dataset.srcLg) || v.currentSrc;
+    let sourced = false;
+    let userPaused = false;
+    let pendingSeek = null;
+
+    const ensureSrc = () => {
+      if (sourced || !src) return;
+      v.src = src;
+      sourced = true;
+    };
+    const setSoundUI = () => {
+      if (!btnSound) return;
+      btnSound.setAttribute('aria-pressed', String(!v.muted));
+      btnSound.textContent = v.muted ? '소리 켜기' : '소리 끄기';
+    };
+    const play = () => {
+      ensureSrc();
+      const p = v.play();
+      if (p && typeof p.catch === 'function') p.catch(() => reel.classList.remove('is-playing'));
+    };
+
+    v.addEventListener('play', () => { reel.classList.add('is-playing', 'is-started'); });
+    v.addEventListener('pause', () => { reel.classList.remove('is-playing'); });
+    v.addEventListener('loadedmetadata', () => {
+      if (pendingSeek !== null) { v.currentTime = pendingSeek; pendingSeek = null; }
+    });
+    v.addEventListener('timeupdate', () => {
+      let active = null;
+      chapters.forEach((c) => { if (v.currentTime + 0.05 >= parseFloat(c.dataset.t)) active = c; });
+      chapters.forEach((c) => c.classList.toggle('is-active', c === active));
+    });
+
+    if (big) big.addEventListener('click', () => {
+      userPaused = false;
+      v.muted = false; setSoundUI();
+      play();
+    });
+    if (btnPlay) btnPlay.addEventListener('click', () => {
+      if (v.paused) { userPaused = false; play(); }
+      else { userPaused = true; v.pause(); }
+    });
+    if (btnSound) btnSound.addEventListener('click', () => {
+      v.muted = !v.muted; setSoundUI();
+      if (v.paused) { userPaused = false; play(); }
+    });
+    if (btnFull) btnFull.addEventListener('click', () => {
+      const frame = $('.reel-frame', reel);
+      if (frame && frame.requestFullscreen) frame.requestFullscreen().catch(() => {});
+      else if (v.webkitEnterFullscreen) v.webkitEnterFullscreen();
+    });
+    chapters.forEach((c) => c.addEventListener('click', () => {
+      const t = parseFloat(c.dataset.t) || 0;
+      ensureSrc();
+      if (v.readyState >= 1) v.currentTime = t; else pendingSeek = t;
+      userPaused = false;
+      play();
+    }));
+
+    const auto = reel.dataset.autoplay === 'true' && !prefersReducedMotion && !saveData;
+    if (auto && 'IntersectionObserver' in window) {
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((en) => {
+          if (en.isIntersecting) { if (!userPaused && v.paused) play(); }
+          else if (!v.paused) v.pause();
+        });
+      }, { threshold: 0.45 });
+      io.observe(v);
+    }
+    setSoundUI();
+  });
+})();
+
+/* =========================================================
+   [portfolio] 공간 아카이브 탐색 — 검색·필터·정렬·더 보기
+   카드는 gen.py가 정적으로 만들어 두고, 여기서는 보이기/숨기기만 한다.
+   ========================================================= */
+(function portfolioModule() {
+  const grid = $('#pfGrid');
+  if (!grid) return;
+  const cards = $$('.pf-card', grid);
+  const order = new Map(cards.map((c, i) => [c, i]));
+  const tools = $('#pfTools');
+  const typeBox = $('#pfTypes');
+  const search = $('#pfSearch');
+  const selRegion = $('#pfRegion');
+  const selBrand = $('#pfBrand');
+  const selFloor = $('#pfFloor');
+  const selSort = $('#pfSort');
+  const chips = $$('#pfTypes .f-chip');
+  const countEl = $('#pfCount');
+  const emptyEl = $('#pfEmpty');
+  const moreBtn = $('#pfMore');
+  const resetBtn = $('#pfReset');
+  const archive = $('#pf-archive');
+  const PAGE = 24;
+  let limit = PAGE;
+  let type = '';
+
+  if (tools) tools.hidden = false;
+  if (typeBox) typeBox.hidden = false;
+
+  const val = (el) => (el ? el.value : '');
+  const setVal = (el, v) => {
+    if (!el) return;
+    const ok = !v || Array.from(el.options).some((o) => o.value === v);
+    el.value = ok ? v : '';
+  };
+  const setType = (t) => {
+    type = t || '';
+    chips.forEach((c) => {
+      const on = (c.dataset.type || '') === type;
+      c.classList.toggle('is-active', on);
+      c.setAttribute('aria-pressed', String(on));
+    });
+  };
+
+  function matches(c) {
+    const d = c.dataset;
+    if (type && d.type !== type) return false;
+    const r = val(selRegion); if (r && d.region !== r) return false;
+    const b = val(selBrand); if (b && d.group !== b) return false;
+    const f = val(selFloor);
+    if (f === 'off') { if (d.floor !== 'basement' && d.floor !== 'upper') return false; }
+    else if (f && d.floor !== f) return false;
+    const q = val(search).trim().toLowerCase();
+    if (q) {
+      const terms = q.split(/\s+/);
+      if (!terms.every((t) => d.q.includes(t))) return false;
+    }
+    return true;
+  }
+
+  function writeURL() {
+    const p = new URLSearchParams();
+    if (val(search).trim()) p.set('q', val(search).trim());
+    if (val(selRegion)) p.set('region', val(selRegion));
+    if (val(selBrand)) p.set('brand', val(selBrand));
+    if (val(selFloor)) p.set('floor', val(selFloor));
+    if (type) p.set('type', type);
+    if (val(selSort)) p.set('sort', val(selSort));
+    const qs = p.toString();
+    try {
+      history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '') + (location.hash || ''));
+    } catch (_) { /* file:// 등 */ }
+  }
+
+  function apply(resetLimit) {
+    if (resetLimit) limit = PAGE;
+    const list = cards.filter(matches);
+    const sort = val(selSort);
+    if (sort === 'size') list.sort((a, b) => (+b.dataset.size || 0) - (+a.dataset.size || 0) || order.get(a) - order.get(b));
+    else if (sort === 'name') list.sort((a, b) => a.dataset.name.localeCompare(b.dataset.name, 'ko'));
+    else if (sort === 'region') list.sort((a, b) => (+a.dataset.ri - +b.dataset.ri) || a.dataset.area.localeCompare(b.dataset.area, 'ko') || a.dataset.name.localeCompare(b.dataset.name, 'ko'));
+    else list.sort((a, b) => order.get(a) - order.get(b));
+
+    const frag = document.createDocumentFragment();
+    list.forEach((c) => frag.appendChild(c));
+    cards.forEach((c) => { if (!list.includes(c)) frag.appendChild(c); });
+    grid.appendChild(frag);
+
+    cards.forEach((c) => { c.hidden = true; });
+    list.slice(0, limit).forEach((c) => { c.hidden = false; });
+
+    const spaces = list.reduce((s, c) => s + (+c.dataset.spaces || 1), 0);
+    const shown = Math.min(limit, list.length);
+    if (countEl) {
+      countEl.innerHTML = '<strong>' + list.length + '곳</strong> · 공간 ' + spaces + '개' +
+        (shown < list.length ? ' · ' + shown + '곳 표시 중' : '');
+    }
+    if (emptyEl) emptyEl.hidden = list.length > 0;
+    if (moreBtn) {
+      const rest = list.length - shown;
+      moreBtn.hidden = rest <= 0;
+      moreBtn.textContent = '더 보기 (' + rest + '곳 남음)';
+    }
+    const active = Boolean(type || val(selRegion) || val(selBrand) || val(selFloor) || val(search).trim());
+    if (resetBtn) resetBtn.hidden = !active;
+    writeURL();
+  }
+
+  function readURL(url) {
+    const p = new URLSearchParams(url.search);
+    if (search) search.value = p.get('q') || '';
+    setVal(selRegion, p.get('region') || '');
+    setVal(selBrand, p.get('brand') || '');
+    setVal(selFloor, p.get('floor') || '');
+    setVal(selSort, p.get('sort') || '');
+    setType(p.get('type') || '');
+  }
+
+  const scrollToArchive = () => {
+    if (archive) archive.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'start' });
+  };
+
+  let timer = null;
+  if (search) search.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(() => apply(true), 160); });
+  [selRegion, selBrand, selFloor, selSort].forEach((el) => { if (el) el.addEventListener('change', () => apply(true)); });
+  chips.forEach((c) => c.addEventListener('click', () => {
+    setType(c.dataset.type || '');
+    if (typeof centerChip === 'function') centerChip(c);
+    apply(true);
+  }));
+  if (moreBtn) moreBtn.addEventListener('click', () => { limit += PAGE; apply(false); });
+  if (resetBtn) resetBtn.addEventListener('click', () => {
+    if (search) search.value = '';
+    [selRegion, selBrand, selFloor, selSort].forEach((el) => setVal(el, ''));
+    setType('');
+    apply(true);
+  });
+
+  // 분포 막대 → 아래 목록 필터
+  $$('.pf-bar').forEach((b) => b.addEventListener('click', () => {
+    const kind = b.dataset.pfFilter;
+    const v = b.dataset.pfValue;
+    if (kind === 'region') setVal(selRegion, v);
+    if (kind === 'type') setType(v);
+    apply(true);
+    scrollToArchive();
+  }));
+
+  // 같은 페이지 안의 필터 링크는 새로고침 없이 처리
+  $$('a[href^="portfolio.html?"]').forEach((a) => a.addEventListener('click', (e) => {
+    e.preventDefault();
+    const url = new URL(a.getAttribute('href'), location.href);
+    readURL(url);
+    apply(true);
+    scrollToArchive();
+  }));
+
+  readURL(new URL(location.href));
+  apply(true);
 })();

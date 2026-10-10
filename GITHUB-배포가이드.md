@@ -1,7 +1,31 @@
 # GitHub 연동 배포 가이드 (choisijun.com)
 
-앞으로 **파일 수정 → GitHub에 저장 → 자동 배포**로 운영하기 위한 설정 안내입니다.
-한 번만 세팅하면 이후로는 zip 업로드가 필요 없습니다.
+**파일 수정 → GitHub에 저장 → 자동 배포**로 운영하기 위한 안내입니다.
+
+- 저장소: https://github.com/naadaa87/choisijun
+- 사이트: https://choisijun.com
+
+이미 GitHub와 Cloudflare를 연결해 두셨다면 바로 아래 **이번 최종본 올리기**만 하시면 됩니다.
+처음 연결하는 경우에는 그 아래 STEP 1부터 진행하세요.
+
+---
+
+## 이번 최종본 올리기 (이미 연결해 둔 경우, 약 5분)
+
+1. `choisijun-homepage-FINAL.zip` 압축을 풉니다
+2. https://github.com/naadaa87/choisijun 접속 → **Add file → Upload files**
+3. 압축을 푼 폴더를 열고, **안에 있는 파일과 폴더 전부**를 선택해 업로드 화면에 끌어다 놓습니다
+   - `assets`, `data`, `fragments` 폴더와 `_headers` 파일도 함께 넣어야 합니다 (폴더째 끌어다 놓으면 안의 구조가 그대로 올라갑니다)
+   - 전체 50개 파일, 가장 큰 파일 3.7MB → GitHub 웹 업로드 한도(한 번에 100개, 파일당 25MB) 안에 들어옵니다
+   - 이름이 같은 파일은 새 버전으로 자동 교체됩니다
+4. 아래 **Commit changes** 클릭
+5. Cloudflare 대시보드 → Workers & Pages → 프로젝트 → **Deployments**에서 `Success` 확인 (1~2분)
+6. 시크릿 창에서 https://choisijun.com/portfolio.html 이 열리면 완료
+
+> 확인해 주세요: 프로젝트 → Settings → Builds & deployments의 **Build command가 `python3 gen.py`** 인지 봐주세요.
+> 비어 있어도 사이트는 열리지만, 나중에 `fragments/`나 `data/portfolio.json`을 고쳤을 때 반영되지 않습니다.
+
+> `.gitignore`처럼 점(.)으로 시작하는 파일은 맥에서 기본적으로 숨겨져 보이지 않습니다. 이 파일은 빠져도 사이트에는 영향이 없습니다.
 
 ---
 
@@ -25,7 +49,7 @@ Cloudflare Pages는 **zip 업로드로 만든 프로젝트를 나중에 Git 연�
 1. https://github.com 가입 후 로그인
 2. 우측 상단 **＋ → New repository**
 3. 설정
-   - Repository name: `choisijun-homepage`
+   - Repository name: `choisijun`
    - **Public** 또는 **Private** 아무거나 (Private도 Cloudflare 연동됩니다)
    - "Add a README file" 체크 **해제**
 4. **Create repository**
@@ -36,18 +60,18 @@ Cloudflare Pages는 **zip 업로드로 만든 프로젝트를 나중에 Git 연�
 2. 이 zip의 압축을 푼 **폴더 안의 내용물 전체**를 드래그&드롭
    - ⚠️ 폴더째가 아니라 **안에 있는 파일들**을 넣어야 합니다
    - `index.html`이 저장소 최상단에 보여야 정상입니다
-   - `assets`, `fragments` 폴더도 함께 올라갑니다
+   - `assets`, `data`, `fragments` 폴더도 함께 올라갑니다
 3. 하단 **Commit changes** 클릭
 
-> 💡 `.gitignore`, `_headers` 같이 점(.)이나 밑줄(_)로 시작하는 파일도 반드시 포함하세요.
-> 드래그가 안 되면 파일 탐색기에서 '숨김 파일 보기'를 켜주세요.
+> 💡 밑줄(_)로 시작하는 `_headers`는 캐시 설정 파일이라 반드시 포함하세요.
+> 점(.)으로 시작하는 `.gitignore`는 숨김 파일이라 안 보일 수 있는데, 빠져도 사이트에는 영향이 없습니다.
 
 ---
 
 ## STEP 2. Cloudflare Pages에 새 프로젝트 연결
 
 1. Cloudflare 대시보드 → **Workers & Pages** → **Create** → **Pages** → **Connect to Git**
-2. **GitHub 인증** → 방금 만든 `choisijun-homepage` 저장소 선택 → **Begin setup**
+2. **GitHub 인증** → 방금 만든 `choisijun` 저장소 선택 → **Begin setup**
 3. 빌드 설정을 아래처럼 입력합니다
 
 | 항목 | 값 |
@@ -92,8 +116,12 @@ Cloudflare Pages는 **zip 업로드로 만든 프로젝트를 나중에 Git 연�
 > 빌드가 이곳의 내용을 읽어 최종 페이지(`about.html` 등)를 다시 만들어 줍니다.
 > (빌드 명령어를 비워두셨다면 최상단의 `about.html`을 직접 고치세요)
 
-### 사진을 바꿀 때
-- 저장소의 `assets` 폴더 → **Add file → Upload files** → 같은 이름으로 덮어쓰기
+### 사진·영상을 바꿀 때
+- 저장소의 `assets` 폴더 → **Add file → Upload files**
+- 사진과 영상은 방문자 브라우저에 1년간 저장됩니다. 같은 이름으로 덮어쓰면 한동안 예전 것이 보일 수 있으니, **새 이름으로 올리고 `fragments/`의 주소를 바꾸는 방법**을 권합니다 (README 5번 참고)
+
+### 포트폴리오 공간 정보를 고칠 때
+- `data/portfolio.json` → 연필 아이콘 → 수정 → Commit. 숫자·그래프는 배포할 때 자동으로 다시 계산됩니다 (README 4번 참고)
 
 ### 배포 상태 확인
 - Cloudflare → 프로젝트 → **Deployments** 탭에서 성공/실패와 로그를 볼 수 있습니다
@@ -107,13 +135,15 @@ Cloudflare Pages는 **zip 업로드로 만든 프로젝트를 나중에 Git 연�
 ## 파일 구조 참고
 
 ```
-choisijun-homepage/
-├── index.html ~ 404.html   ← 완성된 페이지 11개 (자동 생성물)
-├── styles.css, script.js   ← 디자인 / 기능
-├── assets/                 ← 사진, 파비콘
+choisijun/
+├── index.html ~ 404.html   ← 완성된 페이지 12개 (자동 생성물)
 ├── fragments/              ← 페이지 본문 원본 (여기를 수정)
+├── data/portfolio.json     ← 포트폴리오 공개 데이터
+├── assets/                 ← 사진, 파비콘
+│   └── video/              ← 쇼릴 영상과 첫 장면 이미지
+├── styles.css, script.js   ← 디자인 / 기능
 ├── gen.py                  ← 페이지 생성기
 ├── _headers                ← 캐시·보안 설정
 ├── robots.txt, sitemap.xml ← 검색엔진용
-└── README.md               ← 전체 운영 안내
+└── README.md               ← 전체 운영 안내 (포트폴리오 데이터·쇼릴 교체 방법 포함)
 ```

@@ -45,10 +45,10 @@
 
         <div class="hero-stats-block">
           <ul class="stats reveal" aria-label="핵심 지표">
-            <li class="stat"><span class="stat-num"><span class="count" data-count="10">10</span>년+</span><span class="stat-label mono">공간사업 경력</span></li>
-            <li class="stat"><span class="stat-num"><span class="count" data-count="340">340</span>개+</span><span class="stat-label mono">공간 기획·운영</span></li>
-            <li class="stat"><span class="stat-num"><span class="count" data-count="120">120</span>여 개</span><span class="stat-label mono">쏘플파티룸 전국</span></li>
-            <li class="stat"><span class="stat-num"><span class="count" data-count="20">20</span>만+</span><span class="stat-label mono">연간 공간 방문객</span></li>
+            <li class="stat"><span class="stat-num"><span class="count" data-count="10">10</span><small>년+</small></span><span class="stat-label mono">공간사업 경력</span></li>
+            <li class="stat"><span class="stat-num"><span class="count" data-count="340">340</span><small>개+</small></span><span class="stat-label mono">공간 기획·운영</span></li>
+            <li class="stat"><span class="stat-num"><span class="count" data-count="120">120</span><small>여 개</small></span><span class="stat-label mono">쏘플파티룸 전국</span></li>
+            <li class="stat"><span class="stat-num"><span class="count" data-count="20">20</span><small>만+</small></span><span class="stat-label mono">연간 공간 방문객</span></li>
           </ul>
           <p class="stat-foot mono">* 자사 기준 · 직접 기획·개발·운영한 공간 누적. 상세 내역은 상담 시 확인해드립니다.</p>
           <div class="social-row reveal" aria-label="개인 SNS">
@@ -68,6 +68,46 @@
         <span>공실개발</span><span>공간수익화</span><span>무인공간</span><span>공간대여 창업</span><span>마스터리스</span><span>건물 밸류업</span><span>예약제 운영</span><span>공간브랜딩</span><span>공실개발</span><span>공간수익화</span><span>무인공간</span><span>공간대여 창업</span><span>마스터리스</span><span>건물 밸류업</span><span>예약제 운영</span><span>공간브랜딩</span>
       </div>
     </div>
+
+    <!-- ===================== SHOWREEL ===================== -->
+    <section class="section reel-section" id="showreel">
+      <div class="container">
+        <header class="section-head reveal">
+          <p class="eyebrow mono">SHOWREEL 2026</p>
+          <h2>15초로 보는 <span class="accent">최시준</span></h2>
+          <p class="lede">340개+ 공간과 쏘플파티룸, AI 에이전트와 마이웍스, 강의와 전자책까지. 지금 하고 있는 일을 한 번에 담았습니다.</p>
+        </header>
+        <figure class="reel reveal" data-autoplay="true">
+          <div class="reel-frame">
+            <video class="reel-video" poster="assets/video/showreel-poster.jpg" muted playsinline loop preload="none" controls
+              data-src-lg="assets/video/showreel-2026-1080.mp4" data-src-sm="assets/video/showreel-2026-720.mp4"
+              aria-label="최시준 쇼릴 2026 — 15초, 배경음악">
+              <source src="assets/video/showreel-2026-720.mp4" type="video/mp4" />
+            </video>
+            <button class="reel-big" type="button" hidden>쇼릴 재생 · 15초</button>
+            <div class="reel-controls" hidden>
+              <button class="reel-play" type="button" aria-label="재생 또는 일시정지"><span class="reel-ico-pause"></span><span class="reel-ico-play"></span></button>
+              <button class="reel-sound" type="button" aria-pressed="false">소리 켜기</button>
+              <button class="reel-full" type="button" aria-label="전체 화면으로 보기">⤢</button>
+            </div>
+          </div>
+          <figcaption>
+            <div class="reel-chapters" aria-label="장면 바로가기">
+              <span class="mono">SCENES</span>
+              <button type="button" data-t="2.1">최시준</button>
+              <button type="button" data-t="4.0">340+ 공간</button>
+              <button type="button" data-t="5.6">쏘플파티룸</button>
+              <button type="button" data-t="7.6">AI 에이전트 13종</button>
+              <button type="button" data-t="9.6">마이웍스</button>
+              <button type="button" data-t="11.0">홈페이지</button>
+              <button type="button" data-t="12.0">강의</button>
+              <button type="button" data-t="12.5">전자책</button>
+              <button type="button" data-t="13.6">연결점</button>
+            </div>
+          </figcaption>
+        </figure>
+      </div>
+    </section>
 
     <!-- ===================== 3 PILLARS ===================== -->
     <section class="section">
@@ -118,7 +158,7 @@
           <a class="dir-card reveal" href="brands.html">
             <span class="mono dir-num">02</span>
             <h3>브랜드 · Brands</h3>
-            <p>쏘플파티룸 · 공백 · 밍글 · 레스텔 등 일곱 개 브랜드와 SPMS, 실험의 기록.</p>
+            <p>쏘플파티룸 · 플레이션 · 공백 · 밍글 · 레스텔 등 여덟 개 브랜드와 SPMS, 실험의 기록.</p>
             <span class="dir-go mono">READ →</span>
           </a>
           <a class="dir-card reveal" href="community.html">
@@ -145,44 +185,65 @@
             <p>공실개발 컨설팅부터 창업 교육, 강의, 제휴·공동사업까지 협업 방식 안내.</p>
             <span class="dir-go mono">READ →</span>
           </a>
-          <a class="dir-card reveal" href="references.html">
+          <a class="dir-card reveal" href="portfolio.html">
             <span class="mono dir-num">07</span>
+            <h3>포트폴리오 · Portfolio</h3>
+            <p>기록으로 확인한 {{PF_SPACES}}개 공간. 지역·유형·브랜드별로 찾아보는 공간 아카이브.</p>
+            <span class="dir-go mono">BROWSE →</span>
+          </a>
+          <a class="dir-card reveal" href="references.html">
+            <span class="mono dir-num">08</span>
             <h3>레퍼런스 · References</h3>
             <p>프로젝트·강의·언론의 기록을 모은 아카이브. 계속 업데이트됩니다.</p>
             <span class="dir-go mono">READ →</span>
           </a>
           <a class="dir-card reveal" href="media.html">
-            <span class="mono dir-num">08</span>
-            <h3>미디어 · Media</h3>
-            <p>방송·언론 보도와 공식 채널, 그리고 판단기준을 담은 칼럼.</p>
-            <span class="dir-go mono">READ →</span>
-          </a>
-          <a class="dir-card reveal" href="contact.html">
             <span class="mono dir-num">09</span>
-            <h3>문의 · Contact</h3>
-            <p>60초 자가진단 후, 상황에 맞는 유형으로 문의를 남겨주세요.</p>
-            <span class="dir-go mono">GO →</span>
+            <h3>미디어 · Media</h3>
+            <p>쇼릴과 방송·언론 보도, 공식 채널, 판단기준을 담은 칼럼.</p>
+            <span class="dir-go mono">READ →</span>
           </a>
         </div>
       </div>
     </section>
 
-    <!-- ===================== FEATURED CASE ===================== -->
-    <section class="section">
+    <!-- ===================== PORTFOLIO HIGHLIGHT ===================== -->
+    <section class="section section-tint">
       <div class="container">
         <header class="section-head reveal">
-          <p class="eyebrow mono">FEATURED CASE</p>
-          <h2>공실은 문제가 아니라,<br /><span class="accent">아직 설계되지 않은 자산</span>입니다</h2>
+          <p class="eyebrow mono">SPACE PORTFOLIO</p>
+          <h2>340개+ 가운데,<br /><span class="accent">기록으로 확인한 {{PF_SPACES}}개</span>의 공간</h2>
+          <p class="lede">파티룸에서 모임공간, 공유주거, F&amp;B, 행사홀까지. {{PF_YEAR_MIN}}년부터 이어온 공간을 지역·유형·브랜드별로 정리해 공개합니다.</p>
         </header>
-        <article class="case-panel reveal">
-          <h3 class="case-title">엘리베이터 없는 고층 공실 <span class="arrow">→</span> 목적형 공간대여</h3>
-          <div class="bsa">
-            <div class="bsa-col bsa-before"><span class="mono">BEFORE</span><p>접근성이 낮아 임차 문의가 끊긴 고층 공실. 임대료를 낮춰도 장기 공실이 이어지는 상태.</p></div>
-            <div class="bsa-col bsa-strategy"><span class="mono">STRATEGY</span><p>'지나가다 들르는 공간'이 아니라 '목적을 갖고 찾아오는 공간'으로 전환. 프라이빗 모임·촬영 수요에 맞춘 콘셉트와 예약제 운영구조 설계.</p></div>
-            <div class="bsa-col bsa-after"><span class="mono">AFTER</span><p>시간 단위 예약 기반의 운영수익 구조 확보. 접근성의 약점이 '프라이빗함'이라는 강점으로 전환.</p></div>
-          </div>
-          <p class="case-note mono">※ 수치·성과는 프로젝트별로 상이합니다. <a href="cases.html">유형별 사례 전체 보기 →</a></p>
-        </article>
+        <ul class="stats pf-kpis reveal" aria-label="포트폴리오 요약">
+          <li class="stat"><span class="stat-num">{{PF_SPACES}}</span><span class="stat-label mono">공개 공간 기록</span></li>
+          <li class="stat"><span class="stat-num">{{PF_SIDO}}</span><span class="stat-label mono">시·도</span></li>
+          <li class="stat"><span class="stat-num">{{PF_OFF_PCT}}<small>%</small></span><span class="stat-label mono">지하·3층 이상</span></li>
+          <li class="stat"><span class="stat-num">{{PF_YEAR_MIN}}–{{PF_YEAR_MAX}}</span><span class="stat-label mono">기록 기간</span></li>
+        </ul>
+        <p class="stat-foot mono reveal">* 층 비율은 층 정보가 확인된 {{PF_FLOOR_KNOWN}}곳 기준입니다.</p>
+        <div class="pf-mini-grid">
+          <a class="pf-mini reveal" href="portfolio.html?q=선유도#pf-archive">
+            <span class="pf-feat-big">14F</span><span class="mono">ROOFTOP</span>
+            <h3>선유도 루프탑</h3><p>14층 꼭대기, 실내보다 넓은 54평 테라스</p>
+          </a>
+          <a class="pf-mini reveal" href="portfolio.html?q=메이커스#pf-archive">
+            <span class="pf-feat-big">B1</span><span class="mono">MAKER SPACE</span>
+            <h3>메이커스 홍대</h3><p>지하 1층을 제작 프로그램이 돌아가는 공간으로</p>
+          </a>
+          <a class="pf-mini reveal" href="portfolio.html?q=천안#pf-archive">
+            <span class="pf-feat-big">10<small>실</small></span><span class="mono">ONE BUILDING</span>
+            <h3>천안 흥파티</h3><p>두 개 층 호실을 객실형 파티룸 10실로</p>
+          </a>
+          <a class="pf-mini reveal" href="portfolio.html#pf-spotlight">
+            <span class="pf-feat-big">4</span><span class="mono">MIXED-USE 2026</span>
+            <h3>건대 복합공간</h3><p>한 건물에 모임·행사·게임·무인카페</p>
+          </a>
+        </div>
+        <div class="hero-cta reveal" style="margin-top:28px;">
+          <a class="btn btn-primary" href="portfolio.html">포트폴리오 전체 보기</a>
+          <a class="btn btn-line" href="cases.html">유형별 공실개발 사례</a>
+        </div>
       </div>
     </section>
 
@@ -239,7 +300,7 @@
         <header class="section-head reveal">
           <p class="eyebrow mono">BUSINESS NETWORK</p>
           <h2>함께 운영하는 <span class="accent">사업들</span></h2>
-          <p class="lede">공간의 발굴부터 개발, 운영, 중개까지 — 각 단계를 전담하는 사업 사이트입니다.</p>
+          <p class="lede">공간의 발굴부터 개발·운영·중개, 그리고 혼자 경영하는 사람을 위한 업무 시스템까지. 각 사업의 사이트로 이어집니다.</p>
         </header>
         <div class="biz-grid">
           <a class="biz-card reveal" href="https://ssople.com" target="_blank" rel="noopener">
@@ -256,6 +317,10 @@
           </a>
           <a class="biz-card reveal" href="https://orbisestate.pages.dev/" target="_blank" rel="noopener">
             <div><span class="mono">REAL ESTATE BROKERAGE</span><h3>오르비스중개법인</h3><p>공실·수익형 매물의 발굴과 중개 파트너</p></div>
+            <span class="biz-go">↗</span>
+          </a>
+          <a class="biz-card is-wide reveal" href="https://myworkspro.pages.dev/" target="_blank" rel="noopener">
+            <div><span class="mono">WORK OPERATING SYSTEM</span><h3>마이웍스<span class="biz-new">NEW</span></h3><p>혼자 경영하는 사람의 업무 운영 시스템 — 업무·프로젝트·할 일을 한곳에서 관리하고, 사람과 AI로 연결합니다.</p></div>
             <span class="biz-go">↗</span>
           </a>
         </div>

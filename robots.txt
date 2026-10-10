@@ -1,5 +1,7 @@
 User-agent: *
 Allow: /
 Disallow: /fragments/
+Disallow: /data/
+Disallow: /*.md$
 
 Sitemap: https://choisijun.com/sitemap.xml
