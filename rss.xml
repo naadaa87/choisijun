@@ -6,7 +6,7 @@
     <atom:link href="https://choisijun.com/rss.xml" rel="self" type="application/rss+xml" />
     <description>최시준 공식 홈페이지의 새 소식 — 공간 포트폴리오, 공실개발 사례, 브랜드, 강의·미디어.</description>
     <language>ko</language>
-    <lastBuildDate>Sun, 11 Oct 2026 19:36:40 +0900</lastBuildDate>
+    <lastBuildDate>Sun, 11 Oct 2026 20:56:09 +0900</lastBuildDate>
     <item>
       <title>건물 한 채를 층마다 다른 공간으로 — 통건물 공실을 포트폴리오로 | 최시준</title>
       <link>https://choisijun.com/insights/whole-building-portfolio</link>
@@ -101,6 +101,13 @@
       <pubDate>Sun, 11 Oct 2026 09:00:00 +0900</pubDate>
     </item>
     <item>
+      <title>커뮤니티 — 건물주·중개사·창업자 제휴 라운지 | 최시준</title>
+      <link>https://choisijun.com/community</link>
+      <guid isPermaLink="true">https://choisijun.com/community</guid>
+      <description>건물주, 부동산 중개사, 브랜드, 예비 창업자가 제휴를 제안하고 질문을 나누는 게시판입니다. 공실·공간사업 이야기를 남겨주세요.</description>
+      <pubDate>Sun, 11 Oct 2026 09:00:00 +0900</pubDate>
+    </item>
+    <item>
       <title>전자책 — 공실개발·공간대여 창업 실전 가이드 | 최시준</title>
       <link>https://choisijun.com/books</link>
       <guid isPermaLink="true">https://choisijun.com/books</guid>
@@ -178,6 +185,20 @@
       <pubDate>Sun, 11 Oct 2026 09:00:00 +0900</pubDate>
     </item>
     <item>
+      <title>개인정보처리방침 | 최시준 · ㈜블랭크</title>
+      <link>https://choisijun.com/privacy</link>
+      <guid isPermaLink="true">https://choisijun.com/privacy</guid>
+      <description>최시준 홈페이지(choisijun.com)를 운영하는 ㈜블랭크의 개인정보처리방침입니다. 수집 항목, 이용 목적, 보관 기간, 처리 위탁, 이용자 권리를 안내합니다.</description>
+      <pubDate>Sun, 11 Oct 2026 09:00:00 +0900</pubDate>
+    </item>
+    <item>
+      <title>이용약관 | 최시준 · ㈜블랭크</title>
+      <link>https://choisijun.com/terms</link>
+      <guid isPermaLink="true">https://choisijun.com/terms</guid>
+      <description>최시준 홈페이지(choisijun.com) 회원 서비스 이용약관입니다. 회원가입, 커뮤니티 이용, 게시물 관리, 탈퇴에 관한 내용을 안내합니다.</description>
+      <pubDate>Sun, 11 Oct 2026 09:00:00 +0900</pubDate>
+    </item>
+    <item>
       <title>서울 파티룸·모임공간 포트폴리오 143곳 — 홍대·신촌·건대·강남 | 최시준</title>
       <link>https://choisijun.com/portfolio-seoul</link>
       <guid isPermaLink="true">https://choisijun.com/portfolio-seoul</guid>
@@ -241,13 +262,6 @@
       <guid isPermaLink="true">https://choisijun.com/insights/rental-business-is-structure</guid>
       <description>실패하는 공간대여 창업에는 공통된 순서가 있습니다. 인테리어에 반하고, 매물을 계약하고, 마지막에 수익을 계산합니다. 340개+ 공간에서 반복해 본 &#x27;거꾸로 된 순서&#x27;와 올바른 순서 네 단계.</description>
       <category>생각</category>
-      <pubDate>Mon, 07 Sep 2026 09:00:00 +0900</pubDate>
-    </item>
-    <item>
-      <title>커뮤니티 — 건물주·중개사·창업자 제휴 라운지 | 최시준</title>
-      <link>https://choisijun.com/community</link>
-      <guid isPermaLink="true">https://choisijun.com/community</guid>
-      <description>건물주, 부동산 중개사, 브랜드, 예비 창업자가 제휴를 제안하고 질문을 나누는 게시판입니다. 공실·공간사업 이야기를 남겨주세요.</description>
       <pubDate>Mon, 07 Sep 2026 09:00:00 +0900</pubDate>
     </item>
   </channel>

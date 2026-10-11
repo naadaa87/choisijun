@@ -86,10 +86,11 @@
         <header class="section-head reveal">
           <p class="eyebrow mono">CONTACT</p>
           <h2>문의하기</h2>
-          <p class="lede">아래 양식을 작성하고 '메일로 보내기'를 누르면 메일 앱이 열립니다. 편하신 채널로 직접 연락 주셔도 좋습니다.</p>
+          <p class="lede">아래 양식을 보내주시면 영업일 기준 1~2일 안에 회신드립니다. 편하신 채널로 직접 연락 주셔도 좋습니다.</p>
         </header>
         <div class="contact-grid">
           <form class="contact-form reveal" id="contactForm">
+            <p class="cf-member" id="cfMember" hidden></p>
             <label class="cf-label">문의 유형
               <select id="cfType">
                 <option value="공실개발 상담">공실개발 상담</option>
@@ -107,8 +108,9 @@
               <label class="cf-label">연락처 (이메일 또는 전화)<input type="text" id="cfContact" required maxlength="60" placeholder="회신받을 연락처" /></label>
             </div>
             <label class="cf-label">문의 내용<textarea id="cfMessage" rows="6" required maxlength="3000" placeholder="내용을 입력해주세요"></textarea></label>
-            <button type="submit" class="btn btn-primary btn-wide">메일로 보내기</button>
-            <p class="cf-note mono">※ 버튼을 누르면 사용 중인 메일 앱이 열리며, 내용이 자동으로 채워집니다.</p>
+            <label class="cf-agree"><input type="checkbox" id="cfAgree" required /> <span>[필수] 문의 답변을 위해 성함·연락처·문의 내용을 수집·이용하는 데 동의합니다. <a href="privacy.html" target="_blank" rel="noopener">개인정보처리방침</a></span></label>
+            <button type="submit" class="btn btn-primary btn-wide">문의 보내기</button>
+            <p class="cf-note mono" id="cfNote">※ 버튼을 누르면 사용 중인 메일 앱이 열리고 내용이 자동으로 채워집니다.</p>
           </form>
           <aside class="contact-info reveal">
             <div class="ci-item"><span class="mono">COMPANY</span><a href="about.html">㈜블랭크 · 대표 최시준</a></div>

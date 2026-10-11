@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>마이페이지 | 최시준</title>
+  <meta name="description" content="내 정보, 문의 진행 상황, 커뮤니티에 쓴 글을 확인합니다." />
+  <meta name="keywords" content="" />
+  <meta name="author" content="최시준 (Choi Si-jun)" />
+  <meta name="robots" content="noindex, follow" />
+  <meta name="naver-site-verification" content="cf8c1e53207368dfc835be00dbfec35c99599cc2" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="최시준" />
+  <meta property="og:title" content="마이페이지 | 최시준" />
+  <meta property="og:description" content="내 정보, 문의 진행 상황, 커뮤니티에 쓴 글을 확인합니다." />
+  <meta property="og:url" content="https://choisijun.com/account" />
+  <meta property="og:image" content="https://choisijun.com/assets/og/account.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="마이페이지 | 최시준" />
+  <meta property="og:locale" content="ko_KR" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="마이페이지 | 최시준" />
+  <meta name="twitter:description" content="내 정보, 문의 진행 상황, 커뮤니티에 쓴 글을 확인합니다." />
+  <meta name="twitter:image" content="https://choisijun.com/assets/og/account.jpg" />
+  <meta name="theme-color" content="#F8F7F4" />
+  <link rel="alternate" type="application/rss+xml" title="최시준 — 새 소식" href="https://choisijun.com/rss.xml" />
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" media="print" onload="this.media='all'" />
+  <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" /></noscript>
+  <link rel="stylesheet" href="/styles.css?v=202610112056" />
+</head>
+<body data-page="account">
+  <a class="skip-link" href="#main">본문 바로가기</a>
+  <div class="progress" aria-hidden="true"><span id="progressBar"></span></div>
+  <header class="header" id="header">
+    <div class="container header-inner">
+      <a class="logo" href="/" aria-label="CHOI SIJUN 최시준 — 홈">
+        <span class="logo-mark" aria-hidden="true"></span>
+        <span class="logo-text">CHOI SIJUN</span>
+      </a>
+      <nav class="nav" id="nav" aria-label="주 메뉴">
+        <a href="/about">소개</a>
+        <a href="/brands">브랜드</a>
+        <a href="/community">커뮤니티</a>
+        <a href="/books">전자책</a>
+        <a href="/cases">사례</a>
+        <a href="/services">서비스</a>
+        <a href="/portfolio">포트폴리오</a>
+        <a href="/references">레퍼런스</a>
+        <a href="/media">미디어</a>
+        <a href="/insights">인사이트</a>
+        <a class="nav-account is-active" href="/login" data-account-link aria-label="로그인 · 회원가입"><svg class="na-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg><span class="na-text">로그인</span></a>
+        <a href="/contact" class="nav-cta">문의하기</a>
+      </nav>
+      <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-label="메뉴 열기" aria-controls="nav">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- ===================== MY PAGE ===================== -->
+    <section class="page-hero auth-hero">
+      <div class="container">
+        <nav class="crumbs mono" aria-label="현재 위치"><a href="/">홈</a><span aria-hidden="true">/</span><span aria-current="page">마이페이지</span></nav>
+        <p class="eyebrow mono">MY PAGE</p>
+        <h1 id="accTitle">마이페이지</h1>
+        <p class="lede" id="accLede">내 정보와 문의 진행 상황, 커뮤니티에 남긴 글을 한곳에서 확인합니다.</p>
+      </div>
+    </section>
+
+    <section class="section auth-section">
+      <div class="container">
+        <p class="auth-msg" id="accMsg" role="status" hidden></p>
+
+        <!-- 로그인 전 -->
+        <div class="acc-guest" id="accGuest" hidden>
+          <p>로그인하면 마이페이지를 볼 수 있습니다.</p>
+          <div class="hero-cta"><a class="btn btn-primary" href="/login?next=%2Faccount">로그인</a><a class="btn btn-line" href="/login#signup">회원가입</a></div>
+        </div>
+
+        <!-- 로그인 후 -->
+        <div class="acc-grid" id="accMain" hidden>
+
+          <!-- 비밀번호 재설정 링크로 들어온 경우 -->
+          <article class="acc-card acc-card-wide" id="accReset" hidden>
+            <h2>새 비밀번호 설정</h2>
+            <p class="acc-help">메일 링크로 들어오셨습니다. 앞으로 사용할 비밀번호를 정해 주세요.</p>
+            <form class="auth-form" id="resetPassForm" novalidate>
+              <div class="auth-row">
+                <label>새 비밀번호<input type="password" id="npPass" autocomplete="new-password" minlength="8" required placeholder="영문·숫자 포함 8자 이상" /></label>
+                <label>새 비밀번호 확인<input type="password" id="npPass2" autocomplete="new-password" minlength="8" required placeholder="한 번 더 입력" /></label>
+              </div>
+              <button class="btn btn-primary" type="submit">비밀번호 저장</button>
+            </form>
+          </article>
+
+          <!-- 내 정보 -->
+          <article class="acc-card" id="my-info">
+            <h2>내 정보</h2>
+            <form class="auth-form" id="profileForm" novalidate>
+              <label>이름<input type="text" id="pfName" maxlength="20" required /></label>
+              <label>이메일<input type="email" id="pfEmail" disabled /></label>
+              <label>회원 유형
+                <select id="pfType">
+                  <option value="">선택 안 함</option>
+                  <option>건물주 · 임대인</option>
+                  <option>공인중개사 · 중개법인</option>
+                  <option>예비창업자</option>
+                  <option>공간 운영자</option>
+                  <option>기업 · 기관 담당자</option>
+                  <option>기타</option>
+                </select>
+              </label>
+              <label><span>휴대폰 <small>(선택)</small></span><input type="tel" id="pfPhone" maxlength="20" placeholder="010-0000-0000" /></label>
+              <label class="acc-check"><input type="checkbox" id="pfMarketing" /> <span>새 글 · 세미나 · 전자책 소식을 이메일로 받겠습니다</span></label>
+              <button class="btn btn-primary" type="submit">저장</button>
+            </form>
+          </article>
+
+          <!-- 비밀번호 변경 -->
+          <article class="acc-card" id="my-password">
+            <h2>비밀번호 변경</h2>
+            <form class="auth-form" id="passForm" novalidate>
+              <label>새 비밀번호<input type="password" id="cpPass" autocomplete="new-password" minlength="8" required placeholder="영문·숫자 포함 8자 이상" /></label>
+              <label>새 비밀번호 확인<input type="password" id="cpPass2" autocomplete="new-password" minlength="8" required placeholder="한 번 더 입력" /></label>
+              <button class="btn btn-line" type="submit">비밀번호 변경</button>
+            </form>
+            <div class="acc-actions">
+              <button class="btn btn-line" type="button" id="logoutBtn">로그아웃</button>
+            </div>
+          </article>
+
+          <!-- 내 문의 -->
+          <article class="acc-card acc-card-wide" id="my-inquiries">
+            <div class="acc-head">
+              <h2>내 문의</h2>
+              <a class="btn btn-sm btn-primary" href="/contact#contactForm">새 문의하기</a>
+            </div>
+            <ul class="acc-list" id="myInquiries"><li class="acc-empty">불러오는 중…</li></ul>
+          </article>
+
+          <!-- 내 글 -->
+          <article class="acc-card acc-card-wide" id="my-posts">
+            <div class="acc-head">
+              <h2>커뮤니티에 쓴 글</h2>
+              <a class="btn btn-sm btn-line" href="/community">커뮤니티로</a>
+            </div>
+            <ul class="acc-list" id="myPosts"><li class="acc-empty">불러오는 중…</li></ul>
+          </article>
+
+          <!-- 관리자 -->
+          <article class="acc-card acc-card-wide acc-admin" id="adminBox" hidden>
+            <div class="acc-head">
+              <h2>관리자 — 받은 문의</h2>
+              <p class="acc-stat mono" id="adminStat"></p>
+            </div>
+            <div class="board-filters" id="adminFilters" role="group" aria-label="문의 상태">
+              <button class="f-chip is-active" type="button" data-status="">전체</button>
+              <button class="f-chip" type="button" data-status="접수">접수</button>
+              <button class="f-chip" type="button" data-status="진행중">진행중</button>
+              <button class="f-chip" type="button" data-status="완료">완료</button>
+            </div>
+            <ul class="acc-list acc-admin-list" id="adminInquiries"></ul>
+          </article>
+
+          <!-- 탈퇴 -->
+          <article class="acc-card acc-card-wide acc-danger">
+            <h2>회원 탈퇴</h2>
+            <p class="acc-help">탈퇴하면 회원 정보가 바로 삭제됩니다. 커뮤니티에 쓴 글과 보내신 문의는 작성자 정보 없이 남습니다. 글까지 지우려면 탈퇴 전에 직접 삭제해 주세요.</p>
+            <button class="btn btn-line" type="button" id="deleteBtn">회원 탈퇴</button>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <p class="footer-logo">CHOI SIJUN<span class="accent">.</span></p>
+          <p>공간을 수익공간으로 바꾸는 사람.<br />공실개발 · 공간수익화 · 무인공간 · 공간대여 창업</p>
+        </div>
+        <nav class="footer-nav" aria-label="푸터 메뉴">
+          <div>
+            <p class="mono">PROFILE</p>
+            <a href="/about">소개 · 스토리</a>
+            <a href="/brands">브랜드</a>
+            <a href="/socialfactory">소셜팩토리</a>
+            <a href="/portfolio">공간 포트폴리오</a>
+            <a href="/references">레퍼런스</a>
+            <a href="/media">미디어 & 쇼릴</a>
+          </div>
+          <div>
+            <p class="mono">WORK WITH ME</p>
+            <a href="/cases">공실개발 사례</a>
+            <a href="/services">서비스 안내</a>
+            <a href="/books">전자책 스토어</a>
+            <a href="/contact">자가진단 & 문의</a>
+            <a href="/community">커뮤니티</a>
+          </div>
+          <div>
+            <p class="mono">READ</p>
+            <a href="/insights">인사이트</a>
+            <a href="/faq">자주 묻는 질문</a>
+            <a href="/glossary">공간사업 용어 사전</a>
+            <a href="rss.xml">RSS 구독</a>
+          </div>
+          <div>
+            <p class="mono">PERSONAL</p>
+            <a href="https://www.threads.com/@sijun.choi" target="_blank" rel="noopener">Threads @sijun.choi</a>
+            <a href="https://www.instagram.com/sijun.choi" target="_blank" rel="noopener">Instagram @sijun.choi</a>
+            <a href="https://open.kakao.com/me/choisijun" target="_blank" rel="noopener">카카오톡 오픈프로필</a>
+            <a href="https://m.search.naver.com/search.naver?query=%EC%B5%9C%EC%8B%9C%EC%A4%80&amp;sm=mtp_hty.top&amp;where=m" target="_blank" rel="noopener">NAVER에서 '최시준' 검색</a>
+          </div>
+          <div>
+            <p class="mono">OFFICIAL · BUSINESS</p>
+            <a href="https://ssople.com" target="_blank" rel="noopener">쏘플파티룸</a>
+            <a href="https://vacancy.co.kr/" target="_blank" rel="noopener">공백 — 공실개발</a>
+            <a href="https://tgrzspace.pages.dev/" target="_blank" rel="noopener">TGRZ SPACE</a>
+            <a href="https://orbisestate.pages.dev/" target="_blank" rel="noopener">오르비스중개법인</a>
+            <a href="https://myworkspro.pages.dev/" target="_blank" rel="noopener">마이웍스</a>
+            <a href="https://www.instagram.com/ssople_partyroom/" target="_blank" rel="noopener">쏘플파티룸 Instagram</a>
+          </div>
+        </nav>
+      </div>
+      <p class="footer-regions mono"><span>지역별 포트폴리오</span> <a href="/portfolio-seoul">서울</a> · <a href="/portfolio-gyeonggi">경기</a> · <a href="/portfolio-incheon">인천</a> · <a href="/portfolio-chungcheong">충청권</a> · <a href="/portfolio-gyeongsang">경상권</a> · <a href="/portfolio-jeolla">전라권</a></p>
+      <div class="footer-bottom">
+        <p class="mono">© <span id="year">2026</span> CHOI SIJUN · ㈜블랭크. ALL RIGHTS RESERVED.</p>
+        <p class="mono footer-legal"><a href="/privacy"><strong>개인정보처리방침</strong></a><a href="/terms">이용약관</a><a href="/login" data-account-link><span class="na-text">로그인</span></a></p>
+      </div>
+    </div>
+  </footer>
+
+  <a class="float-cta" id="floatCta" href="/contact">공실개발 상담하기</a>
+  <button class="to-top" id="toTop" aria-label="맨 위로">↑</button>
+
+  <script src="/site-config.js?v=202610112056" defer></script>
+  <script src="/script.js?v=202610112056" defer></script>
+</body>
+</html>

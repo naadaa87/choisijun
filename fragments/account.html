@@ -1,0 +1,113 @@
+    <!-- ===================== MY PAGE ===================== -->
+    <section class="page-hero auth-hero">
+      <div class="container">
+        <p class="eyebrow mono">MY PAGE</p>
+        <h1 id="accTitle">마이페이지</h1>
+        <p class="lede" id="accLede">내 정보와 문의 진행 상황, 커뮤니티에 남긴 글을 한곳에서 확인합니다.</p>
+      </div>
+    </section>
+
+    <section class="section auth-section">
+      <div class="container">
+        <p class="auth-msg" id="accMsg" role="status" hidden></p>
+
+        <!-- 로그인 전 -->
+        <div class="acc-guest" id="accGuest" hidden>
+          <p>로그인하면 마이페이지를 볼 수 있습니다.</p>
+          <div class="hero-cta"><a class="btn btn-primary" href="login.html?next=%2Faccount">로그인</a><a class="btn btn-line" href="login.html#signup">회원가입</a></div>
+        </div>
+
+        <!-- 로그인 후 -->
+        <div class="acc-grid" id="accMain" hidden>
+
+          <!-- 비밀번호 재설정 링크로 들어온 경우 -->
+          <article class="acc-card acc-card-wide" id="accReset" hidden>
+            <h2>새 비밀번호 설정</h2>
+            <p class="acc-help">메일 링크로 들어오셨습니다. 앞으로 사용할 비밀번호를 정해 주세요.</p>
+            <form class="auth-form" id="resetPassForm" novalidate>
+              <div class="auth-row">
+                <label>새 비밀번호<input type="password" id="npPass" autocomplete="new-password" minlength="8" required placeholder="영문·숫자 포함 8자 이상" /></label>
+                <label>새 비밀번호 확인<input type="password" id="npPass2" autocomplete="new-password" minlength="8" required placeholder="한 번 더 입력" /></label>
+              </div>
+              <button class="btn btn-primary" type="submit">비밀번호 저장</button>
+            </form>
+          </article>
+
+          <!-- 내 정보 -->
+          <article class="acc-card" id="my-info">
+            <h2>내 정보</h2>
+            <form class="auth-form" id="profileForm" novalidate>
+              <label>이름<input type="text" id="pfName" maxlength="20" required /></label>
+              <label>이메일<input type="email" id="pfEmail" disabled /></label>
+              <label>회원 유형
+                <select id="pfType">
+                  <option value="">선택 안 함</option>
+                  <option>건물주 · 임대인</option>
+                  <option>공인중개사 · 중개법인</option>
+                  <option>예비창업자</option>
+                  <option>공간 운영자</option>
+                  <option>기업 · 기관 담당자</option>
+                  <option>기타</option>
+                </select>
+              </label>
+              <label><span>휴대폰 <small>(선택)</small></span><input type="tel" id="pfPhone" maxlength="20" placeholder="010-0000-0000" /></label>
+              <label class="acc-check"><input type="checkbox" id="pfMarketing" /> <span>새 글 · 세미나 · 전자책 소식을 이메일로 받겠습니다</span></label>
+              <button class="btn btn-primary" type="submit">저장</button>
+            </form>
+          </article>
+
+          <!-- 비밀번호 변경 -->
+          <article class="acc-card" id="my-password">
+            <h2>비밀번호 변경</h2>
+            <form class="auth-form" id="passForm" novalidate>
+              <label>새 비밀번호<input type="password" id="cpPass" autocomplete="new-password" minlength="8" required placeholder="영문·숫자 포함 8자 이상" /></label>
+              <label>새 비밀번호 확인<input type="password" id="cpPass2" autocomplete="new-password" minlength="8" required placeholder="한 번 더 입력" /></label>
+              <button class="btn btn-line" type="submit">비밀번호 변경</button>
+            </form>
+            <div class="acc-actions">
+              <button class="btn btn-line" type="button" id="logoutBtn">로그아웃</button>
+            </div>
+          </article>
+
+          <!-- 내 문의 -->
+          <article class="acc-card acc-card-wide" id="my-inquiries">
+            <div class="acc-head">
+              <h2>내 문의</h2>
+              <a class="btn btn-sm btn-primary" href="contact.html#contactForm">새 문의하기</a>
+            </div>
+            <ul class="acc-list" id="myInquiries"><li class="acc-empty">불러오는 중…</li></ul>
+          </article>
+
+          <!-- 내 글 -->
+          <article class="acc-card acc-card-wide" id="my-posts">
+            <div class="acc-head">
+              <h2>커뮤니티에 쓴 글</h2>
+              <a class="btn btn-sm btn-line" href="community.html">커뮤니티로</a>
+            </div>
+            <ul class="acc-list" id="myPosts"><li class="acc-empty">불러오는 중…</li></ul>
+          </article>
+
+          <!-- 관리자 -->
+          <article class="acc-card acc-card-wide acc-admin" id="adminBox" hidden>
+            <div class="acc-head">
+              <h2>관리자 — 받은 문의</h2>
+              <p class="acc-stat mono" id="adminStat"></p>
+            </div>
+            <div class="board-filters" id="adminFilters" role="group" aria-label="문의 상태">
+              <button class="f-chip is-active" type="button" data-status="">전체</button>
+              <button class="f-chip" type="button" data-status="접수">접수</button>
+              <button class="f-chip" type="button" data-status="진행중">진행중</button>
+              <button class="f-chip" type="button" data-status="완료">완료</button>
+            </div>
+            <ul class="acc-list acc-admin-list" id="adminInquiries"></ul>
+          </article>
+
+          <!-- 탈퇴 -->
+          <article class="acc-card acc-card-wide acc-danger">
+            <h2>회원 탈퇴</h2>
+            <p class="acc-help">탈퇴하면 회원 정보가 바로 삭제됩니다. 커뮤니티에 쓴 글과 보내신 문의는 작성자 정보 없이 남습니다. 글까지 지우려면 탈퇴 전에 직접 삭제해 주세요.</p>
+            <button class="btn btn-line" type="button" id="deleteBtn">회원 탈퇴</button>
+          </article>
+        </div>
+      </div>
+    </section>

@@ -31,7 +31,7 @@
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" media="print" onload="this.media='all'" />
   <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" /></noscript>
-  <link rel="stylesheet" href="/styles.css?v=202610111936" />
+  <link rel="stylesheet" href="/styles.css?v=202610112056" />
   <script type="application/ld+json">
 {
  "@context": "https://schema.org",
@@ -189,6 +189,7 @@
         <a href="/references">레퍼런스</a>
         <a href="/media">미디어</a>
         <a href="/insights">인사이트</a>
+        <a class="nav-account" href="/login" data-account-link aria-label="로그인 · 회원가입"><svg class="na-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg><span class="na-text">로그인</span></a>
         <a href="/contact" class="nav-cta is-active" aria-current="page">문의하기</a>
       </nav>
       <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-label="메뉴 열기" aria-controls="nav">
@@ -287,10 +288,11 @@
         <header class="section-head reveal">
           <p class="eyebrow mono">CONTACT</p>
           <h2>문의하기</h2>
-          <p class="lede">아래 양식을 작성하고 '메일로 보내기'를 누르면 메일 앱이 열립니다. 편하신 채널로 직접 연락 주셔도 좋습니다.</p>
+          <p class="lede">아래 양식을 보내주시면 영업일 기준 1~2일 안에 회신드립니다. 편하신 채널로 직접 연락 주셔도 좋습니다.</p>
         </header>
         <div class="contact-grid">
           <form class="contact-form reveal" id="contactForm">
+            <p class="cf-member" id="cfMember" hidden></p>
             <label class="cf-label">문의 유형
               <select id="cfType">
                 <option value="공실개발 상담">공실개발 상담</option>
@@ -308,8 +310,9 @@
               <label class="cf-label">연락처 (이메일 또는 전화)<input type="text" id="cfContact" required maxlength="60" placeholder="회신받을 연락처" /></label>
             </div>
             <label class="cf-label">문의 내용<textarea id="cfMessage" rows="6" required maxlength="3000" placeholder="내용을 입력해주세요"></textarea></label>
-            <button type="submit" class="btn btn-primary btn-wide">메일로 보내기</button>
-            <p class="cf-note mono">※ 버튼을 누르면 사용 중인 메일 앱이 열리며, 내용이 자동으로 채워집니다.</p>
+            <label class="cf-agree"><input type="checkbox" id="cfAgree" required /> <span>[필수] 문의 답변을 위해 성함·연락처·문의 내용을 수집·이용하는 데 동의합니다. <a href="/privacy" target="_blank" rel="noopener">개인정보처리방침</a></span></label>
+            <button type="submit" class="btn btn-primary btn-wide">문의 보내기</button>
+            <p class="cf-note mono" id="cfNote">※ 버튼을 누르면 사용 중인 메일 앱이 열리고 내용이 자동으로 채워집니다.</p>
           </form>
           <aside class="contact-info reveal">
             <div class="ci-item"><span class="mono">COMPANY</span><a href="/about">㈜블랭크 · 대표 최시준</a></div>
@@ -384,7 +387,7 @@
       <p class="footer-regions mono"><span>지역별 포트폴리오</span> <a href="/portfolio-seoul">서울</a> · <a href="/portfolio-gyeonggi">경기</a> · <a href="/portfolio-incheon">인천</a> · <a href="/portfolio-chungcheong">충청권</a> · <a href="/portfolio-gyeongsang">경상권</a> · <a href="/portfolio-jeolla">전라권</a></p>
       <div class="footer-bottom">
         <p class="mono">© <span id="year">2026</span> CHOI SIJUN · ㈜블랭크. ALL RIGHTS RESERVED.</p>
-        <p class="mono">공실개발 · 공간수익화 · 무인공간 · 공간대여</p>
+        <p class="mono footer-legal"><a href="/privacy"><strong>개인정보처리방침</strong></a><a href="/terms">이용약관</a><a href="/login" data-account-link><span class="na-text">로그인</span></a></p>
       </div>
     </div>
   </footer>
@@ -392,6 +395,7 @@
   <a class="float-cta" id="floatCta" href="/contact">공실개발 상담하기</a>
   <button class="to-top" id="toTop" aria-label="맨 위로">↑</button>
 
-  <script src="/script.js?v=202610111936" defer></script>
+  <script src="/site-config.js?v=202610112056" defer></script>
+  <script src="/script.js?v=202610112056" defer></script>
 </body>
 </html>

@@ -3,6 +3,7 @@ Allow: /
 Disallow: /fragments/
 Disallow: /data/
 Disallow: /content/
+Disallow: /setup/
 Disallow: /*.md$
 Disallow: /search-verification.txt
 

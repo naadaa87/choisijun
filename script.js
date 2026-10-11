@@ -2,34 +2,26 @@
    최시준 개인 브랜딩 홈페이지 — 공통 스크립트 (멀티페이지)
    순수 Vanilla JS · 프레임워크/빌드 불필요
    ---------------------------------------------------------
-   [설정 1] 게시판·레퍼런스 백엔드 (선택)
-   - 아래 값이 비어 있으면: localStorage "데모 모드"
-     (작성 글이 본인 브라우저에만 저장됨 — 다른 방문자와 공유 X)
-   - Supabase 무료 프로젝트를 만들어 값을 채우면:
-     모든 방문자가 함께 쓰는 실제 공유 게시판/아카이브로 동작
-   - 테이블 생성 SQL과 설정 방법: README.md 참고
+   설정값(Supabase · Web3Forms · 문의 이메일)은 site-config.js 에 있습니다.
+   - Supabase 값이 비어 있으면: "데모 모드"
+     (게시판 글이 본인 브라우저에만 저장, 회원가입은 준비 중 안내)
+   - 값을 채우면: 회원가입·로그인, 공유 게시판, 문의 기록이 실제로 작동
+   - 설정 순서: 기능활성화-가이드.md
    ========================================================= */
+const SITE_CFG = window.SITE_CONFIG || {};
 const COMMUNITY_BACKEND = {
-  supabaseUrl: '',        // 예: 'https://xxxx.supabase.co'
-  supabaseAnonKey: '',    // Supabase anon public key
+  supabaseUrl: String(SITE_CFG.supabaseUrl || '').trim().replace(/\/+$/, ''),
+  supabaseAnonKey: String(SITE_CFG.supabaseKey || '').trim(),
   table: 'community_posts',
   commentsTable: 'community_comments',
-  referencesTable: 'site_references'
+  referencesTable: 'site_references',
+  inquiriesTable: 'inquiries',
+  profilesTable: 'profiles'
 };
-
-/* [설정 2] 문의 수신 이메일 — 실제 이메일로 교체하세요 */
-const CONTACT_EMAIL = 'runactivator@naver.com';
-
-/* [설정 2-1] 문의 폼 수신 (선택)
-   - 비워두면: 방문자의 메일 앱이 열리는 방식(mailto)으로 동작
-   - Web3Forms(무료) 액세스 키를 넣으면: 버튼 한 번으로 메일함에 바로 접수
-     https://web3forms.com 에서 이메일만 입력하면 키가 발급됩니다 (가입 불필요) */
-const FORM_ACCESS_KEY = '';
-
-/* [설정 3] 레퍼런스 등록용 관리자 코드 — 반드시 변경하세요!
-   (정적 사이트 특성상 소스에 노출되는 '가벼운 잠금'입니다.
-    무단 등록 방지용이며, 완전한 보안이 필요하면 Supabase 정책을 사용하세요) */
-const ADMIN_CODE = 'sijun-2026';
+const CONTACT_EMAIL = SITE_CFG.contactEmail || 'runactivator@naver.com';
+const FORM_ACCESS_KEY = String(SITE_CFG.formAccessKey || '').trim();
+const ADMIN_CODE = SITE_CFG.demoAdminCode || '';
+const SOCIAL_LOGIN = Array.isArray(SITE_CFG.socialLogin) ? SITE_CFG.socialLogin : [];
 
 /* =========================================================
    공통 유틸
@@ -50,7 +42,7 @@ function formatDate(iso) {
   const p = (n) => String(n).padStart(2, '0');
   return `${d.getFullYear()}.${p(d.getMonth() + 1)}.${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
 }
-/* 삭제 비밀번호용 간단 해시 (보안용이 아닌 우발적 삭제 방지용) */
+/* 삭제 비밀번호용 간단 해시 (보안용이 아닌 우발적 삭제 방지용 — 데모 모드 전용) */
 function simpleHash(str) {
   let h = 5381;
   for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) >>> 0;
@@ -61,31 +53,276 @@ function centerChip(el) {
   if (!el || !el.scrollIntoView) return;
   el.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', inline: 'center', block: 'nearest' });
 }
+/* 로그인 후 돌아갈 주소 — 같은 사이트 안의 경로만 허용 */
+function safeNext(raw, fallback = '/account') {
+  const v = String(raw || '');
+  return (v.startsWith('/') && !v.startsWith('//') && !v.includes('\\')) ? v : fallback;
+}
+function loginUrl(next) {
+  const here = location.pathname.replace(/\.html$/, '');
+  if (!next && (here === '/login' || here === '/account')) return '/login';
+  return '/login?next=' + encodeURIComponent(next || (location.pathname + location.search));
+}
 
-function sbHeaders(extra = {}) {
-  return Object.assign({
-    apikey: COMMUNITY_BACKEND.supabaseAnonKey,
-    Authorization: `Bearer ${COMMUNITY_BACKEND.supabaseAnonKey}`,
-    'Content-Type': 'application/json'
-  }, extra);
+/* ---------- Supabase REST ---------- */
+function sbHeaders(extra = {}, token) {
+  const key = COMMUNITY_BACKEND.supabaseAnonKey;
+  const h = { apikey: key, 'Content-Type': 'application/json' };
+  /* 로그인 토큰이 있으면 그것을, 없으면 예전 방식(anon JWT) 키일 때만 Bearer로 보낸다.
+     새 방식 Publishable key(sb_publishable_…)는 apikey 헤더로만 보낸다. */
+  const bearer = token || (key.startsWith('eyJ') ? key : '');
+  if (bearer) h.Authorization = `Bearer ${bearer}`;
+  return Object.assign(h, extra);
 }
 function sbUrl(table) {
   return `${COMMUNITY_BACKEND.supabaseUrl}/rest/v1/${table}`;
 }
-async function sbSelect(table, query) {
-  const res = await fetch(`${sbUrl(table)}?${query}`, { headers: sbHeaders() });
+async function sbSelect(table, query, token) {
+  const res = await fetch(`${sbUrl(table)}?${query}`, { headers: sbHeaders({}, token) });
   if (!res.ok) throw new Error('fetch failed');
   return res.json();
 }
-async function sbInsert(table, row) {
+async function sbInsert(table, row, opts = {}) {
   const res = await fetch(sbUrl(table), {
     method: 'POST',
-    headers: sbHeaders({ Prefer: 'return=representation' }),
+    headers: sbHeaders({ Prefer: opts.minimal ? 'return=minimal' : 'return=representation' }, opts.token),
     body: JSON.stringify(row)
   });
   if (!res.ok) throw new Error('insert failed');
+  return opts.minimal ? null : res.json();
+}
+async function sbUpdate(table, filter, patch, token) {
+  const res = await fetch(`${sbUrl(table)}?${filter}`, {
+    method: 'PATCH',
+    headers: sbHeaders({ Prefer: 'return=representation' }, token),
+    body: JSON.stringify(patch)
+  });
+  if (!res.ok) throw new Error('update failed');
   return res.json();
 }
+async function sbDelete(table, filter, token) {
+  const res = await fetch(`${sbUrl(table)}?${filter}`, { method: 'DELETE', headers: sbHeaders({}, token) });
+  if (!res.ok) throw new Error('delete failed');
+}
+async function sbCount(table, filter, token) {
+  const res = await fetch(`${sbUrl(table)}?select=id${filter ? '&' + filter : ''}`, {
+    method: 'HEAD', headers: sbHeaders({ Prefer: 'count=exact' }, token)
+  });
+  if (!res.ok) throw new Error('count failed');
+  const range = res.headers.get('content-range') || '';
+  const total = Number(range.split('/')[1]);
+  return Number.isFinite(total) ? total : null;
+}
+
+/* =========================================================
+   회원 인증 (Supabase Auth) — 이메일 가입 · 로그인 · 비밀번호 찾기 · 간편 로그인
+   - 세션은 이 브라우저의 localStorage 에 보관
+   - 메일 인증·비밀번호 재설정 링크로 돌아오면 주소의 #access_token 을 읽어 로그인 처리
+   ========================================================= */
+const AUTH_STORE = 'csj_auth_v1';
+
+const AUTH_ERRORS = [
+  [/already registered|already been registered|user_already_exists/i, '이미 가입된 이메일입니다. 로그인하거나 비밀번호 찾기를 이용해 주세요.'],
+  [/invalid login credentials|invalid_credentials/i, '이메일 또는 비밀번호가 맞지 않습니다.'],
+  [/email not confirmed|email_not_confirmed/i, '메일 인증이 아직 끝나지 않았습니다. 가입할 때 받은 메일의 링크를 눌러 주세요.'],
+  [/rate limit|over_email_send_rate_limit|too many/i, '요청이 많아 잠시 막혀 있습니다. 몇 분 뒤 다시 시도해 주세요.'],
+  [/password should be|weak_password|at least/i, '비밀번호가 너무 짧거나 단순합니다. 영문과 숫자를 섞어 8자 이상으로 정해 주세요.'],
+  [/same_password|should be different/i, '지금 쓰는 비밀번호와 다른 비밀번호를 입력해 주세요.'],
+  [/signup.*disabled|signups not allowed/i, '지금은 새 회원가입을 받지 않고 있습니다.'],
+  [/invalid.*email|email_address_invalid|unable to validate email/i, '이메일 주소를 다시 확인해 주세요.'],
+  [/not authorized|email_address_not_authorized/i, '메일 발송 설정이 아직 끝나지 않았습니다. 운영자에게 문의해 주세요.'],
+  [/otp_expired|expired/i, '링크의 유효 시간이 지났습니다. 다시 요청해 주세요.'],
+  [/failed to fetch|network/i, '서버에 연결하지 못했습니다. 인터넷 연결을 확인해 주세요.']
+];
+function authMessage(err) {
+  const raw = String((err && (err.message || err.msg || err.error_description || err.error)) || err || '');
+  for (const [re, msg] of AUTH_ERRORS) if (re.test(raw) || re.test(String(err && err.code || ''))) return msg;
+  return '처리하지 못했습니다. 잠시 후 다시 시도해 주세요.';
+}
+
+const Auth = (function authCore() {
+  const listeners = [];
+  let session = null;      // { access_token, refresh_token, expires_at, user }
+  let profile = null;
+  let lastEvent = '';      // signup | recovery | magiclink | email_change | oauth
+  let hashError = '';
+
+  function read() {
+    try { const raw = localStorage.getItem(AUTH_STORE); return raw ? JSON.parse(raw) : null; } catch (_) { return null; }
+  }
+  function write(s) {
+    session = s; profile = null;
+    try { if (s) localStorage.setItem(AUTH_STORE, JSON.stringify(s)); else localStorage.removeItem(AUTH_STORE); } catch (_) { /* 저장 불가 브라우저 */ }
+    listeners.forEach((fn) => { try { fn(s); } catch (_) { /* ignore */ } });
+  }
+  function fromTokenResponse(d) {
+    const now = Math.floor(Date.now() / 1000);
+    return {
+      access_token: d.access_token,
+      refresh_token: d.refresh_token,
+      expires_at: Number(d.expires_at) || (now + (Number(d.expires_in) || 3600)),
+      user: d.user || null
+    };
+  }
+  async function api(path, { method = 'GET', body, token, query } = {}) {
+    const url = `${COMMUNITY_BACKEND.supabaseUrl}/auth/v1/${path}${query ? '?' + query : ''}`;
+    const headers = { apikey: COMMUNITY_BACKEND.supabaseAnonKey, 'Content-Type': 'application/json' };
+    if (token) headers.Authorization = `Bearer ${token}`;
+    const res = await fetch(url, { method, headers, body: body ? JSON.stringify(body) : undefined });
+    let data = null;
+    try { data = await res.json(); } catch (_) { data = null; }
+    if (!res.ok) {
+      const e = new Error((data && (data.msg || data.message || data.error_description || data.error)) || ('HTTP ' + res.status));
+      e.code = data && (data.error_code || data.code);
+      e.status = res.status;
+      throw e;
+    }
+    return data;
+  }
+  async function refresh() {
+    if (!session || !session.refresh_token) return null;
+    try {
+      const d = await api('token', { method: 'POST', query: 'grant_type=refresh_token', body: { refresh_token: session.refresh_token } });
+      write(fromTokenResponse(d));
+      return session;
+    } catch (e) {
+      if (e.status && e.status < 500) write(null);   // 만료·취소된 세션
+      return null;
+    }
+  }
+  async function token() {
+    if (!session) return null;
+    if ((session.expires_at * 1000) - Date.now() < 60 * 1000) await refresh();
+    return session ? session.access_token : null;
+  }
+  /* 메일 링크·간편 로그인에서 돌아왔을 때 주소의 #access_token=… 처리 */
+  async function consumeHash() {
+    const h = location.hash ? location.hash.slice(1) : '';
+    if (!h || !/(access_token|error_description|error_code)=/.test(h)) return;
+    const p = new URLSearchParams(h);
+    history.replaceState(null, '', location.pathname + location.search);
+    if (p.get('error') || p.get('error_code')) {
+      hashError = authMessage({ message: p.get('error_description') || p.get('error'), code: p.get('error_code') });
+      return;
+    }
+    const s = fromTokenResponse({
+      access_token: p.get('access_token'), refresh_token: p.get('refresh_token'),
+      expires_at: p.get('expires_at'), expires_in: p.get('expires_in')
+    });
+    lastEvent = p.get('type') || 'oauth';
+    try { s.user = await api('user', { token: s.access_token }); } catch (_) { /* 사용자 정보는 나중에 */ }
+    write(s);
+  }
+
+  async function init() {
+    if (!IS_REMOTE) return;
+    session = read();
+    await consumeHash();
+    if (session && (session.expires_at * 1000) - Date.now() < 60 * 1000) await refresh();
+  }
+  const ready = init().catch(() => { /* 연결 오류여도 사이트는 계속 */ });
+
+  return {
+    ready,
+    get enabled() { return IS_REMOTE; },
+    get user() { return session ? session.user : null; },
+    get event() { return lastEvent; },
+    get hashError() { return hashError; },
+    token,
+    onChange(fn) { listeners.push(fn); },
+    displayName() {
+      const u = session && session.user;
+      if (!u) return '';
+      const m = u.user_metadata || {};
+      return (profile && profile.name) || m.name || m.full_name || m.nickname || (u.email || '').split('@')[0] || '회원';
+    },
+    async signUp(email, password, meta) {
+      const d = await api('signup', {
+        method: 'POST', query: 'redirect_to=' + encodeURIComponent(location.origin + '/account?welcome=1'),
+        body: { email, password, data: meta }
+      });
+      if (d && d.access_token) { write(fromTokenResponse(d)); return { session: true }; }
+      const user = d && (d.user || d);
+      /* 이미 가입된 이메일이면 identities 가 비어서 온다(메일 인증을 켠 경우) */
+      return { session: false, existing: Boolean(user && Array.isArray(user.identities) && user.identities.length === 0) };
+    },
+    async signIn(email, password) {
+      const d = await api('token', { method: 'POST', query: 'grant_type=password', body: { email, password } });
+      write(fromTokenResponse(d));
+      return session;
+    },
+    async resend(email) {
+      await api('resend', { method: 'POST', body: { type: 'signup', email } });
+    },
+    async recover(email) {
+      await api('recover', {
+        method: 'POST', query: 'redirect_to=' + encodeURIComponent(location.origin + '/account?reset=1'), body: { email }
+      });
+    },
+    async updatePassword(password) {
+      const t = await token();
+      const u = await api('user', { method: 'PUT', token: t, body: { password } });
+      if (session) { session.user = u; write(session); }
+    },
+    async signOut() {
+      const t = session ? session.access_token : null;
+      write(null);
+      if (t) { try { await api('logout', { method: 'POST', token: t }); } catch (_) { /* 이미 만료 */ } }
+    },
+    oauthUrl(provider, next) {
+      const back = location.origin + safeNext(next, '/account');
+      return `${COMMUNITY_BACKEND.supabaseUrl}/auth/v1/authorize?provider=${encodeURIComponent(provider)}&redirect_to=${encodeURIComponent(back)}`;
+    },
+    async getProfile(force) {
+      if (!session || !session.user) return null;
+      if (profile && !force) return profile;
+      const t = await token();
+      try {
+        const rows = await sbSelect(COMMUNITY_BACKEND.profilesTable, `id=eq.${session.user.id}&select=*`, t);
+        profile = rows && rows[0] ? rows[0] : null;
+      } catch (_) { profile = null; }
+      return profile;
+    },
+    async updateProfile(patch) {
+      const t = await token();
+      const rows = await sbUpdate(COMMUNITY_BACKEND.profilesTable, `id=eq.${session.user.id}`, patch, t);
+      profile = rows && rows[0] ? rows[0] : profile;
+      return profile;
+    },
+    async isAdmin() {
+      const p = await this.getProfile();
+      return Boolean(p && p.role === 'admin');
+    },
+    async deleteAccount() {
+      const t = await token();
+      const res = await fetch(`${COMMUNITY_BACKEND.supabaseUrl}/rest/v1/rpc/delete_my_account`, {
+        method: 'POST', headers: sbHeaders({}, t), body: '{}'
+      });
+      if (!res.ok) throw new Error('delete failed');
+      write(null);
+    }
+  };
+})();
+
+/* 헤더의 로그인 / 마이페이지 버튼 */
+(function navAccountModule() {
+  const links = $$('[data-account-link]');
+  if (!links.length || !Auth.enabled) return;   // 회원 기능을 켜기 전에는 기본 주소(/login) 그대로
+  function paint() {
+    const on = Boolean(Auth.user);
+    links.forEach((a) => {
+      const label = on ? '마이페이지' : '로그인';
+      a.setAttribute('href', on ? '/account' : loginUrl());
+      a.setAttribute('aria-label', on ? `마이페이지 (${Auth.displayName()})` : '로그인 · 회원가입');
+      a.classList.toggle('is-in', on);
+      const t = $('.na-text', a);
+      if (t) t.textContent = label;
+    });
+  }
+  paint();
+  Auth.ready.then(paint);
+  Auth.onChange(paint);
+})();
 
 /* =========================================================
    헤더 · 내비게이션 · 스크롤 공통
@@ -345,6 +582,11 @@ const INQUIRY_MAP = {
   const form = $('#contactForm');
   if (!form) return;
   const typeSel = $('#cfType');
+  const nameEl = $('#cfName');
+  const contactEl = $('#cfContact');
+  const memberEl = $('#cfMember');
+  const noteEl = $('#cfNote');
+  const btn = form.querySelector('button[type="submit"]');
 
   const setType = (key) => {
     const value = INQUIRY_MAP[key];
@@ -357,6 +599,32 @@ const INQUIRY_MAP = {
     el.addEventListener('click', () => setType(el.dataset.inquiry));
   });
 
+  /* 연결 상태에 맞춘 안내 문구 */
+  const DIRECT = IS_REMOTE || Boolean(FORM_ACCESS_KEY);
+  if (noteEl) {
+    noteEl.textContent = DIRECT
+      ? '※ 보내주신 내용은 문의 답변에만 쓰고, 처리 후 개인정보처리방침에 따라 보관·파기합니다.'
+      : '※ 지금은 버튼을 누르면 사용 중인 메일 앱이 열리고 내용이 자동으로 채워집니다.';
+  }
+
+  /* 회원 안내 + 로그인한 경우 이름·연락처 채우기 */
+  async function paintMember() {
+    if (!memberEl) return;
+    if (!Auth.enabled) { memberEl.hidden = true; return; }
+    if (Auth.user) {
+      const p = await Auth.getProfile();
+      const name = (p && p.name) || Auth.displayName();
+      memberEl.innerHTML = `<strong>${escapeHtml(name)}</strong>님으로 로그인되어 있습니다. 보내신 문의와 진행 상황은 <a href="/account#my-inquiries">마이페이지</a>에서 볼 수 있습니다.`;
+      if (nameEl && !nameEl.value) nameEl.value = name;
+      if (contactEl && !contactEl.value) contactEl.value = (p && p.phone) || Auth.user.email || '';
+    } else {
+      memberEl.innerHTML = `회원으로 문의하면 마이페이지에서 진행 상황을 볼 수 있습니다. <a href="${loginUrl('/contact#contactForm')}">로그인 · 회원가입</a> (비회원도 그대로 보내실 수 있습니다)`;
+    }
+    memberEl.hidden = false;
+  }
+  Auth.ready.then(paintMember);
+  Auth.onChange(paintMember);
+
   /* 상태 메시지 영역 */
   let statusEl = $('#cfStatus');
   if (!statusEl) {
@@ -364,29 +632,54 @@ const INQUIRY_MAP = {
     statusEl.id = 'cfStatus';
     statusEl.className = 'cf-status';
     statusEl.hidden = true;
+    statusEl.setAttribute('role', 'status');
     form.appendChild(statusEl);
   }
-  const showStatus = (text, kind) => {
-    statusEl.textContent = text;
+  const showStatus = (html, kind) => {
+    statusEl.innerHTML = html;
     statusEl.className = 'cf-status is-' + kind;
     statusEl.hidden = false;
   };
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
+    const agree = $('#cfAgree');
+    if (agree && !agree.checked) { showStatus('개인정보 수집·이용에 동의해 주셔야 문의를 보낼 수 있습니다.', 'err'); agree.focus(); return; }
     const type = typeSel ? typeSel.value : '문의';
-    const name = ($('#cfName') || {}).value || '';
-    const contact = ($('#cfContact') || {}).value || '';
+    const name = (nameEl || {}).value ? nameEl.value.trim() : '';
+    const contact = (contactEl || {}).value ? contactEl.value.trim() : '';
     const msg = ($('#cfMessage') || {}).value || '';
+    const memberLine = Auth.user ? `회원 (${Auth.user.email || ''})` : '비회원';
     const subject = `[${type}] ${name}님 문의`;
-    const bodyText = `문의 유형: ${type}\n성함/소속: ${name}\n연락처: ${contact}\n\n문의 내용:\n${msg}\n\n— 최시준 홈페이지에서 발송`;
-    const btn = form.querySelector('button[type="submit"]');
+    const bodyText = `문의 유형: ${type}\n성함/소속: ${name}\n연락처: ${contact}\n회원 여부: ${memberLine}\n\n문의 내용:\n${msg}\n\n— 최시준 홈페이지에서 발송`;
+    const mailto = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyText)}`;
 
-    /* 폼 수신 키가 설정된 경우: 직접 전송 */
+    /* 직접 접수 설정이 없으면: 메일 앱 열기 */
+    if (!DIRECT) {
+      window.location.href = mailto;
+      showStatus('메일 앱이 열립니다. 창이 열리지 않으면 ' + escapeHtml(CONTACT_EMAIL) + ' 로 보내주세요.', 'wait');
+      return;
+    }
+
+    const original = btn ? btn.textContent : '';
+    if (btn) { btn.disabled = true; btn.textContent = '보내는 중…'; }
+    showStatus('문의를 보내고 있습니다…', 'wait');
+    let saved = false;
+    let mailed = false;
+
+    /* ① 문의 기록 저장 (Supabase) — 회원이면 마이페이지에서 볼 수 있다 */
+    if (IS_REMOTE) {
+      try {
+        await Auth.ready;
+        const t = await Auth.token();
+        await sbInsert(COMMUNITY_BACKEND.inquiriesTable, {
+          inquiry_type: type, name, contact, message: msg, page: location.pathname
+        }, { minimal: true, token: t });
+        saved = true;
+      } catch (_) { saved = false; }
+    }
+    /* ② 메일 알림 (Web3Forms) */
     if (FORM_ACCESS_KEY) {
-      const original = btn ? btn.textContent : '';
-      if (btn) { btn.disabled = true; btn.textContent = '보내는 중…'; }
-      showStatus('문의를 전송하고 있습니다…', 'wait');
       try {
         const res = await fetch('https://api.web3forms.com/submit', {
           method: 'POST',
@@ -395,30 +688,24 @@ const INQUIRY_MAP = {
             access_key: FORM_ACCESS_KEY,
             subject: subject,
             from_name: '최시준 홈페이지',
-            문의유형: type, 성함소속: name, 연락처: contact, 문의내용: msg
+            문의유형: type, 성함소속: name, 연락처: contact, 회원여부: memberLine, 문의내용: msg
           })
         });
         const data = await res.json();
-        if (data && data.success) {
-          form.reset();
-          showStatus('문의가 정상적으로 접수되었습니다. 영업일 기준 1~2일 내 회신드리겠습니다. 감사합니다.', 'ok');
-        } else {
-          throw new Error('send failed');
-        }
-      } catch (_) {
-        showStatus('전송에 실패했습니다. 메일 앱으로 대신 열어드립니다.', 'err');
-        window.location.href =
-          `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyText)}`;
-      } finally {
-        if (btn) { btn.disabled = false; btn.textContent = original; }
-      }
-      return;
+        mailed = Boolean(data && data.success);
+      } catch (_) { mailed = false; }
     }
 
-    /* 기본: 메일 앱 열기 */
-    window.location.href =
-      `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyText)}`;
-    showStatus('메일 앱이 열립니다. 창이 열리지 않으면 ' + CONTACT_EMAIL + ' 로 보내주세요.', 'wait');
+    if (btn) { btn.disabled = false; btn.textContent = original; }
+    if (saved || mailed) {
+      form.reset();
+      if (Auth.user) paintMember();
+      const extra = (saved && Auth.user) ? ' 진행 상황은 <a href="/account#my-inquiries">마이페이지</a>에서 볼 수 있습니다.' : '';
+      showStatus('문의가 접수되었습니다. 영업일 기준 1~2일 안에 회신드리겠습니다. 감사합니다.' + extra, 'ok');
+    } else {
+      showStatus('전송하지 못했습니다. 메일 앱으로 대신 열어드립니다.', 'err');
+      window.location.href = mailto;
+    }
   });
 })();
 
@@ -486,6 +773,11 @@ async function fetchRemotePosts() {
   let posts = [];
   let currentCat = '전체';
   let openId = null;
+  let me = null;          // 로그인한 회원 (Supabase 연결 시)
+  let admin = false;
+
+  const isStaff = (row) => Boolean(row.is_staff) || (!IS_REMOTE && (row.author === '최시준' || row.author === '운영자'));
+  const canDelete = (post) => IS_REMOTE ? Boolean(me && (post.user_id === me.id || admin)) : Boolean(post.pass);
 
   function setMode(text) { if (modeEl) modeEl.textContent = text; }
 
@@ -498,11 +790,11 @@ async function fetchRemotePosts() {
       const li = document.createElement('li');
       li.className = 'post' + (post.id === openId ? ' is-open' : '');
 
-      const isOwnerPost = post.author === '최시준' || post.author === '운영자';
+      const isOwnerPost = isStaff(post);
       const commentsCount = (post.comments || []).length;
 
       const commentsHtml = (post.comments || []).map((c) => {
-        const isOwner = c.author === '최시준' || c.author === '운영자';
+        const isOwner = isStaff(c);
         return `
           <div class="comment${isOwner ? ' is-owner' : ''}">
             <div class="comment-head">
@@ -524,13 +816,9 @@ async function fetchRemotePosts() {
           <div class="comments">
             <p class="comments-title">COMMENTS — ${commentsCount}</p>
             ${commentsHtml || '<p class="comment-text" style="color:var(--concrete-soft);">아직 답글이 없습니다.</p>'}
-            <form class="comment-form" data-post="${escapeHtml(String(post.id))}">
-              <input type="text" class="cm-author" maxlength="20" placeholder="닉네임" required />
-              <textarea class="cm-content" maxlength="500" rows="1" placeholder="답글을 남겨주세요" required></textarea>
-              <button type="submit" class="btn btn-sm btn-line">등록</button>
-            </form>
+            ${commentFormHtml(post)}
           </div>
-          ${post.pass ? '<button class="post-del" type="button">글 삭제</button>' : ''}
+          ${canDelete(post) ? '<button class="post-del" type="button">글 삭제</button>' : ''}
         </div>`;
 
       const head = $('.post-head', li);
@@ -542,7 +830,8 @@ async function fetchRemotePosts() {
       const cform = $('.comment-form', li);
       if (cform) cform.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const author = $('.cm-author', cform).value.trim();
+        const authorEl = $('.cm-author', cform);
+        const author = authorEl ? authorEl.value.trim() : Auth.displayName();
         const content = $('.cm-content', cform).value.trim();
         if (!author || !content) return;
         await addComment(post.id, author, content);
@@ -555,11 +844,23 @@ async function fetchRemotePosts() {
     });
   }
 
+  function commentFormHtml(post) {
+    if (IS_REMOTE && !me) {
+      return `<p class="comment-login">답글은 회원만 남길 수 있습니다. <a href="${loginUrl('/community')}">로그인 · 회원가입</a></p>`;
+    }
+    return `
+            <form class="comment-form${IS_REMOTE ? ' is-member' : ''}" data-post="${escapeHtml(String(post.id))}">
+              ${IS_REMOTE ? '' : '<input type="text" class="cm-author" maxlength="20" placeholder="닉네임" required />'}
+              <textarea class="cm-content" maxlength="500" rows="1" placeholder="${IS_REMOTE ? escapeHtml(Auth.displayName()) + '님, 답글을 남겨주세요' : '답글을 남겨주세요'}" required></textarea>
+              <button type="submit" class="btn btn-sm btn-line">등록</button>
+            </form>`;
+  }
+
   async function addComment(postId, author, content) {
     const comment = { post_id: postId, author, content, created_at: new Date().toISOString() };
     if (IS_REMOTE) {
-      try { await sbInsert(COMMUNITY_BACKEND.commentsTable, { post_id: postId, author, content }); }
-      catch (_) { alert('답글 등록에 실패했습니다. 잠시 후 다시 시도해주세요.'); return; }
+      try { await sbInsert(COMMUNITY_BACKEND.commentsTable, { post_id: postId, author, content }, { token: await Auth.token() }); }
+      catch (_) { alert('답글 등록에 실패했습니다. 로그인 상태를 확인하고 다시 시도해 주세요.'); return; }
       try { posts = await fetchRemotePosts(); } catch (_) { /* keep */ }
     } else {
       const post = posts.find((p) => String(p.id) === String(postId));
@@ -569,7 +870,17 @@ async function fetchRemotePosts() {
     render();
   }
 
-  function deletePost(post) {
+  async function deletePost(post) {
+    if (IS_REMOTE) {
+      if (!confirm('이 글을 삭제할까요? 답글도 함께 지워집니다.')) return;
+      try {
+        await sbDelete(COMMUNITY_BACKEND.table, `id=eq.${encodeURIComponent(post.id)}`, await Auth.token());
+        posts = await fetchRemotePosts();
+      } catch (_) { alert('삭제하지 못했습니다. 잠시 후 다시 시도해 주세요.'); return; }
+      if (openId === post.id) openId = null;
+      render();
+      return;
+    }
     const input = prompt('삭제 비밀번호를 입력하세요.');
     if (input === null) return;
     if (simpleHash(input) !== post.pass) { alert('비밀번호가 일치하지 않습니다.'); return; }
@@ -582,17 +893,18 @@ async function fetchRemotePosts() {
   /* 글쓰기 폼 토글 */
   if (writeBtn && formEl) {
     writeBtn.addEventListener('click', () => {
+      if (IS_REMOTE && !me) { location.href = loginUrl('/community'); return; }
       const show = formEl.hidden;
       formEl.hidden = !show;
       writeBtn.setAttribute('aria-expanded', String(show));
-      if (show) $('#bfAuthor').focus();
+      if (show) (IS_REMOTE ? $('#bfTitle') : $('#bfAuthor')).focus();
     });
   }
   if (cancelBtn && formEl) cancelBtn.addEventListener('click', () => { formEl.hidden = true; });
 
   if (formEl) formEl.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const author = $('#bfAuthor').value.trim();
+    const author = IS_REMOTE ? Auth.displayName() : $('#bfAuthor').value.trim();
     const category = $('#bfCategory').value;
     const passRaw = $('#bfPass').value;
     const title = $('#bfTitle').value.trim();
@@ -601,9 +913,9 @@ async function fetchRemotePosts() {
 
     if (IS_REMOTE) {
       try {
-        await sbInsert(COMMUNITY_BACKEND.table, { author, category, title, content });
+        await sbInsert(COMMUNITY_BACKEND.table, { author, category, title, content }, { token: await Auth.token() });
         posts = await fetchRemotePosts();
-      } catch (_) { alert('등록에 실패했습니다. 잠시 후 다시 시도해주세요.'); return; }
+      } catch (_) { alert('등록에 실패했습니다. 로그인 상태를 확인하고 다시 시도해 주세요.'); return; }
     } else {
       posts.unshift({
         id: 'p-' + Date.now(),
@@ -631,14 +943,25 @@ async function fetchRemotePosts() {
   /* 초기 로드 */
   (async function init() {
     if (IS_REMOTE) {
-      setMode('LIVE — 모든 방문자와 공유되는 게시판입니다.');
+      /* 회원 게시판: 닉네임·삭제 비밀번호 대신 회원 정보 사용 */
+      ['#bfAuthor', '#bfPass'].forEach((sel) => {
+        const input = $(sel);
+        if (input) { input.required = false; const lab = input.closest('label'); if (lab) lab.hidden = true; }
+      });
+      await Auth.ready;
+      me = Auth.user;
+      admin = me ? await Auth.isAdmin() : false;
+      setMode(me
+        ? `LIVE — ${Auth.displayName()}님으로 로그인되어 있습니다. 글과 답글은 회원 이름으로 올라갑니다.`
+        : 'LIVE — 누구나 읽을 수 있고, 글쓰기와 답글은 회원만 가능합니다.');
+      if (writeBtn && !me) writeBtn.textContent = '로그인하고 글쓰기';
       try { posts = await fetchRemotePosts(); }
       catch (_) {
         setMode('연결 오류 — 임시로 데모 모드로 표시합니다.');
         posts = loadLocalPosts();
       }
     } else {
-      setMode('DEMO — 현재 작성 글은 이 브라우저에만 저장됩니다. (실제 공유 게시판 전환: README 참고)');
+      setMode('미리보기 — 지금은 작성한 글이 이 브라우저에만 저장되고 다른 방문자에게는 보이지 않습니다.');
       posts = loadLocalPosts();
     }
     render();
@@ -767,6 +1090,7 @@ function fileToResizedDataUrl(file) {
   let userRefs = [];
   let currentCat = '전체';
   let pendingImage = '';
+  let admin = false;      // Supabase 연결 시: 관리자 계정으로 로그인한 경우만 등록·삭제
 
   function allRefs() {
     const merged = [...userRefs, ...SEED_REFS];
@@ -792,7 +1116,7 @@ function fileToResizedDataUrl(file) {
       const link = r.link
         ? `<a class="ref-link" href="${escapeHtml(r.link)}"${isExternal ? ' target="_blank" rel="noopener"' : ''}>자세히 보기 ↗</a>`
         : '';
-      const del = r.userAdded
+      const del = (r.userAdded || (r.remote && admin))
         ? '<button class="ref-del" type="button">삭제 (관리자)</button>'
         : '';
       card.innerHTML = `
@@ -804,7 +1128,16 @@ function fileToResizedDataUrl(file) {
           ${link}${del}
         </div>`;
       const delBtn = $('.ref-del', card);
-      if (delBtn) delBtn.addEventListener('click', () => {
+      if (delBtn) delBtn.addEventListener('click', async () => {
+        if (r.remote) {
+          if (!confirm('이 레퍼런스를 삭제할까요?')) return;
+          try {
+            await sbDelete(COMMUNITY_BACKEND.referencesTable, `id=eq.${encodeURIComponent(r.id)}`, await Auth.token());
+            userRefs = await fetchRemoteRefs();
+          } catch (_) { alert('삭제하지 못했습니다.'); return; }
+          render();
+          return;
+        }
         const code = prompt('삭제하려면 관리자 코드를 입력하세요.');
         if (code === null) return;
         if (code !== ADMIN_CODE) { alert('관리자 코드가 일치하지 않습니다.'); return; }
@@ -840,8 +1173,10 @@ function fileToResizedDataUrl(file) {
 
   if (formEl) formEl.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const code = $('#rfCode').value;
-    if (code !== ADMIN_CODE) { alert('관리자 코드가 일치하지 않습니다.'); return; }
+    if (!IS_REMOTE) {
+      const code = $('#rfCode').value;
+      if (!ADMIN_CODE || code !== ADMIN_CODE) { alert('관리자 코드가 일치하지 않습니다.'); return; }
+    }
 
     const item = {
       id: 'ur-' + Date.now(),
@@ -861,7 +1196,7 @@ function fileToResizedDataUrl(file) {
         await sbInsert(COMMUNITY_BACKEND.referencesTable, {
           category: item.category, year: item.year, title: item.title,
           desc: item.desc, image: item.image, link: item.link
-        });
+        }, { token: await Auth.token() });
         userRefs = await fetchRemoteRefs();
       } catch (_) { alert('등록에 실패했습니다. 연결 상태를 확인해주세요.'); return; }
     } else {
@@ -882,7 +1217,7 @@ function fileToResizedDataUrl(file) {
 
   async function fetchRemoteRefs() {
     const rows = await sbSelect(COMMUNITY_BACKEND.referencesTable, 'select=*&order=created_at.desc&limit=100');
-    return rows.map((r) => ({ ...r, userAdded: false }));
+    return rows.map((r) => ({ ...r, userAdded: false, remote: true }));
   }
 
   filters.forEach((chip) => chip.addEventListener('click', () => {
@@ -895,14 +1230,24 @@ function fileToResizedDataUrl(file) {
 
   (async function init() {
     if (IS_REMOTE) {
-      if (modeEl) modeEl.textContent = 'LIVE — 등록한 레퍼런스가 모든 방문자에게 공개됩니다.';
+      /* 관리자 계정일 때만 등록 버튼을 보여준다 (서버 정책으로도 막혀 있음) */
+      const codeInput = $('#rfCode');
+      if (codeInput) { codeInput.required = false; const lab = codeInput.closest('label'); if (lab) lab.hidden = true; }
+      const lockNote = $('#rfLockNote');
+      if (lockNote) lockNote.textContent = '🔒 관리자 계정으로 로그인한 상태입니다. 등록한 레퍼런스는 바로 공개됩니다.';
+      await Auth.ready;
+      admin = Auth.user ? await Auth.isAdmin() : false;
+      if (writeBtn) writeBtn.hidden = !admin;
+      if (modeEl) modeEl.textContent = admin
+        ? 'LIVE — 관리자로 로그인되어 있습니다. 등록한 레퍼런스가 모든 방문자에게 공개됩니다.'
+        : '';
       try { userRefs = await fetchRemoteRefs(); }
       catch (_) {
         if (modeEl) modeEl.textContent = '연결 오류 — 기본 아카이브만 표시합니다.';
         userRefs = loadUserRefs();
       }
     } else {
-      if (modeEl) modeEl.textContent = 'DEMO — 새로 등록한 레퍼런스는 이 브라우저에만 저장됩니다. (공유 전환: README 참고)';
+      if (modeEl) modeEl.textContent = '';
       userRefs = loadUserRefs();
     }
     render();
@@ -1206,4 +1551,337 @@ function fileToResizedDataUrl(file) {
   try { initial = new URL(location.href).searchParams.get('topic') || ''; } catch (e) { initial = ''; }
   if (initial && !chips.some((b) => b.dataset.cat === initial)) initial = '';
   apply(initial);
+})();
+
+/* =========================================================
+   [login] 로그인 · 회원가입 · 비밀번호 찾기
+   ========================================================= */
+const PASSWORD_RULE = /^(?=.*[A-Za-z])(?=.*\d).{8,72}$/;
+const EMAIL_RULE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+function setBusy(form, busy, label) {
+  const b = form && form.querySelector('button[type="submit"]');
+  if (!b) return;
+  if (busy) { b.dataset.label = b.textContent; b.textContent = label || '처리 중…'; b.disabled = true; }
+  else { b.textContent = b.dataset.label || b.textContent; b.disabled = false; }
+}
+
+(function loginModule() {
+  const card = $('.auth-card');
+  if (!card || !$('#loginForm')) return;
+  const msg = $('#authMsg');
+  const params = new URLSearchParams(location.search);
+  const next = safeNext(params.get('next'), '/account');
+
+  function say(html, kind = 'info') {
+    msg.innerHTML = html;
+    msg.className = 'auth-msg is-' + kind;
+    msg.hidden = false;
+  }
+  function clearMsg() { msg.hidden = true; }
+
+  /* 탭 전환 */
+  function show(pane) {
+    $$('.auth-tab').forEach((t) => {
+      const on = t.dataset.pane === pane;
+      t.classList.toggle('is-active', on);
+      t.setAttribute('aria-selected', String(on));
+    });
+    $$('.auth-pane').forEach((p) => { p.hidden = p.id !== 'pane-' + pane; });
+    clearMsg();
+  }
+  $$('[data-pane]').forEach((el) => el.addEventListener('click', () => show(el.dataset.pane)));
+  const startPane = (location.hash || '').replace('#', '');
+  if (['signup', 'reset', 'login'].includes(startPane)) show(startPane);
+
+  /* 회원 기능이 아직 연결되지 않은 경우 */
+  if (!Auth.enabled) {
+    say('회원 기능을 준비하고 있습니다. 문의는 <a href="/contact">문의하기</a>에서 바로 남기실 수 있습니다.', 'info');
+    $$('.auth-form button[type="submit"]').forEach((b) => { b.disabled = true; });
+    return;
+  }
+
+  Auth.ready.then(() => {
+    if (Auth.hashError) say(escapeHtml(Auth.hashError), 'err');
+    else if (Auth.user) say(`이미 <strong>${escapeHtml(Auth.displayName())}</strong>님으로 로그인되어 있습니다. <a href="/account">마이페이지로 가기</a>`, 'ok');
+  });
+
+  /* 간편 로그인 버튼 (site-config.js 의 socialLogin) */
+  const SOCIAL_LABEL = { kakao: '카카오로 시작하기', google: 'Google로 시작하기', naver: '네이버로 시작하기' };
+  const supported = SOCIAL_LOGIN.filter((p) => SOCIAL_LABEL[p] && p !== 'naver');
+  if (supported.length) {
+    $('#socialBox').hidden = false;
+    $('#socialBtns').innerHTML = supported.map((p) =>
+      `<a class="btn-social is-${p}" href="${escapeHtml(Auth.oauthUrl(p, next))}">${SOCIAL_LABEL[p]}</a>`).join('');
+  }
+
+  /* 로그인 */
+  const loginForm = $('#loginForm');
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = $('#lgEmail').value.trim();
+    const pass = $('#lgPass').value;
+    if (!EMAIL_RULE.test(email) || !pass) { say('이메일과 비밀번호를 입력해 주세요.', 'err'); return; }
+    setBusy(loginForm, true, '로그인 중…');
+    try {
+      await Auth.signIn(email, pass);
+      location.href = next;
+    } catch (err) {
+      const text = authMessage(err);
+      if (/메일 인증/.test(text)) {
+        say(escapeHtml(text) + ' <button type="button" class="link-btn" id="resendBtn">인증 메일 다시 받기</button>', 'err');
+        $('#resendBtn').addEventListener('click', async () => {
+          try { await Auth.resend(email); say('인증 메일을 다시 보냈습니다. 메일함(스팸함 포함)을 확인해 주세요.', 'ok'); }
+          catch (e2) { say(escapeHtml(authMessage(e2)), 'err'); }
+        });
+      } else {
+        say(escapeHtml(text), 'err');
+      }
+    } finally { setBusy(loginForm, false); }
+  });
+
+  /* 전체 동의 */
+  const all = $('#agAll');
+  const items = $$('.ag-item');
+  if (all) {
+    all.addEventListener('change', () => items.forEach((i) => { i.checked = all.checked; }));
+    items.forEach((i) => i.addEventListener('change', () => { all.checked = items.every((x) => x.checked); }));
+  }
+
+  /* 회원가입 */
+  const signupForm = $('#signupForm');
+  signupForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = $('#suName').value.trim();
+    const email = $('#suEmail').value.trim();
+    const pass = $('#suPass').value;
+    const pass2 = $('#suPass2').value;
+    const type = $('#suType').value;
+    const phone = $('#suPhone').value.trim();
+    if (name.length < 2) { say('이름을 2자 이상 입력해 주세요.', 'err'); $('#suName').focus(); return; }
+    if (!EMAIL_RULE.test(email)) { say('이메일 주소를 다시 확인해 주세요.', 'err'); $('#suEmail').focus(); return; }
+    if (!PASSWORD_RULE.test(pass)) { say('비밀번호는 영문과 숫자를 섞어 8자 이상으로 정해 주세요.', 'err'); $('#suPass').focus(); return; }
+    if (pass !== pass2) { say('비밀번호 확인이 일치하지 않습니다.', 'err'); $('#suPass2').focus(); return; }
+    if (!type) { say('회원 유형을 선택해 주세요.', 'err'); $('#suType').focus(); return; }
+    if (phone && !/^[0-9+\-\s()]{8,20}$/.test(phone)) { say('휴대폰 번호를 숫자와 하이픈(-)으로 입력해 주세요.', 'err'); $('#suPhone').focus(); return; }
+    if (!$('#agAge').checked || !$('#agTerms').checked || !$('#agPrivacy').checked) { say('필수 항목에 모두 동의해 주세요.', 'err'); return; }
+
+    setBusy(signupForm, true, '가입 중…');
+    try {
+      const r = await Auth.signUp(email, pass, {
+        name, member_type: type, phone, marketing: $('#agMarketing').checked,
+        agreed_terms: true, agreed_privacy: true, agreed_at: new Date().toISOString()
+      });
+      if (r.session) { location.href = '/account?welcome=1'; return; }
+      signupForm.reset();
+      say(r.existing
+        ? '이미 가입된 이메일일 수 있습니다. 로그인하거나 비밀번호 찾기를 이용해 주세요.'
+        : `<strong>${escapeHtml(email)}</strong>로 인증 메일을 보냈습니다. 메일의 <strong>가입 확인</strong> 링크를 누르면 가입이 끝납니다. 메일이 보이지 않으면 스팸함도 확인해 주세요.`,
+        r.existing ? 'err' : 'ok');
+    } catch (err) {
+      say(escapeHtml(authMessage(err)), 'err');
+    } finally { setBusy(signupForm, false); }
+  });
+
+  /* 비밀번호 찾기 */
+  const resetForm = $('#resetForm');
+  resetForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = $('#rsEmail').value.trim();
+    if (!EMAIL_RULE.test(email)) { say('이메일 주소를 다시 확인해 주세요.', 'err'); return; }
+    setBusy(resetForm, true, '보내는 중…');
+    try {
+      await Auth.recover(email);
+      say('가입된 이메일이라면 비밀번호 재설정 링크가 도착합니다. 메일의 링크를 누르면 새 비밀번호를 정할 수 있습니다.', 'ok');
+      resetForm.reset();
+    } catch (err) {
+      say(escapeHtml(authMessage(err)), 'err');
+    } finally { setBusy(resetForm, false); }
+  });
+})();
+
+/* =========================================================
+   [account] 마이페이지 — 내 정보 · 비밀번호 · 내 문의 · 내 글 · 관리자 문의함 · 탈퇴
+   ========================================================= */
+const INQUIRY_STATUS = ['접수', '진행중', '완료'];
+
+(function accountModule() {
+  const main = $('#accMain');
+  if (!main) return;
+  const guest = $('#accGuest');
+  const msg = $('#accMsg');
+  const params = new URLSearchParams(location.search);
+
+  function say(html, kind = 'info') {
+    msg.innerHTML = html;
+    msg.className = 'auth-msg is-' + kind;
+    msg.hidden = false;
+    msg.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'center' });
+  }
+  const statusBadge = (st) => `<span class="st-badge st-${INQUIRY_STATUS.indexOf(st)}">${escapeHtml(st || '접수')}</span>`;
+
+  if (!Auth.enabled) {
+    guest.hidden = false;
+    guest.querySelector('p').textContent = '회원 기능을 준비하고 있습니다. 문의는 문의하기에서 바로 남기실 수 있습니다.';
+    return;
+  }
+
+  async function loadInquiries() {
+    const box = $('#myInquiries');
+    try {
+      const rows = await sbSelect(COMMUNITY_BACKEND.inquiriesTable,
+        `user_id=eq.${Auth.user.id}&select=id,created_at,inquiry_type,message,status,reply&order=created_at.desc&limit=50`, await Auth.token());
+      box.innerHTML = rows.length ? rows.map((r) => `
+        <li class="acc-item">
+          <div class="acc-item-head">${statusBadge(r.status)}<span class="mono">${escapeHtml(r.inquiry_type || '문의')}</span><span class="acc-date mono">${formatDate(r.created_at)}</span></div>
+          <p class="acc-item-text">${escapeHtml(r.message || '')}</p>
+          ${r.reply ? `<div class="acc-reply"><span class="mono">답변</span><p>${escapeHtml(r.reply)}</p></div>` : ''}
+        </li>`).join('')
+        : '<li class="acc-empty">아직 보낸 문의가 없습니다. 로그인한 상태에서 문의하면 여기에서 진행 상황을 볼 수 있습니다.</li>';
+    } catch (_) { box.innerHTML = '<li class="acc-empty">문의 내역을 불러오지 못했습니다.</li>'; }
+  }
+
+  async function loadPosts() {
+    const box = $('#myPosts');
+    try {
+      const rows = await sbSelect(COMMUNITY_BACKEND.table,
+        `user_id=eq.${Auth.user.id}&select=id,created_at,category,title&order=created_at.desc&limit=50`, await Auth.token());
+      box.innerHTML = rows.length ? rows.map((r) => `
+        <li class="acc-item acc-item-row">
+          <span class="post-cat mono">${escapeHtml(r.category || '기타')}</span>
+          <a href="/community">${escapeHtml(r.title || '')}</a>
+          <span class="acc-date mono">${formatDate(r.created_at)}</span>
+        </li>`).join('')
+        : '<li class="acc-empty">아직 쓴 글이 없습니다.</li>';
+    } catch (_) { box.innerHTML = '<li class="acc-empty">글 목록을 불러오지 못했습니다.</li>'; }
+  }
+
+  /* 관리자 문의함 */
+  let adminFilter = '';
+  async function loadAdmin() {
+    const box = $('#adminInquiries');
+    const stat = $('#adminStat');
+    try {
+      const t = await Auth.token();
+      const q = `select=*&order=created_at.desc&limit=100${adminFilter ? '&status=eq.' + encodeURIComponent(adminFilter) : ''}`;
+      const rows = await sbSelect(COMMUNITY_BACKEND.inquiriesTable, q, t);
+      let members = null; let waiting = null;
+      try { members = await sbCount(COMMUNITY_BACKEND.profilesTable, '', t); } catch (_) { /* skip */ }
+      try { waiting = await sbCount(COMMUNITY_BACKEND.inquiriesTable, 'status=eq.' + encodeURIComponent('접수'), t); } catch (_) { /* skip */ }
+      stat.textContent = [members != null ? `회원 ${members}명` : '', waiting != null ? `새 문의 ${waiting}건` : ''].filter(Boolean).join(' · ');
+      box.innerHTML = rows.length ? rows.map((r) => `
+        <li class="acc-item" data-id="${escapeHtml(r.id)}">
+          <div class="acc-item-head">${statusBadge(r.status)}<span class="mono">${escapeHtml(r.inquiry_type || '문의')}</span><span class="acc-date mono">${formatDate(r.created_at)}</span></div>
+          <p class="acc-who"><strong>${escapeHtml(r.name || '')}</strong> · ${escapeHtml(r.contact || '')}${r.user_id ? ' · <span class="mono">회원</span>' : ''}</p>
+          <p class="acc-item-text">${escapeHtml(r.message || '')}</p>
+          <div class="acc-admin-ctl">
+            <select class="ad-status" aria-label="상태">${INQUIRY_STATUS.map((s) => `<option${s === (r.status || '접수') ? ' selected' : ''}>${s}</option>`).join('')}</select>
+            <textarea class="ad-reply" rows="2" maxlength="2000" placeholder="회원에게 보일 답변 메모 (선택)">${escapeHtml(r.reply || '')}</textarea>
+            <button class="btn btn-sm btn-primary ad-save" type="button">저장</button>
+          </div>
+        </li>`).join('') : '<li class="acc-empty">해당하는 문의가 없습니다.</li>';
+      $$('.ad-save', box).forEach((b) => b.addEventListener('click', async () => {
+        const li = b.closest('li');
+        b.disabled = true;
+        try {
+          await sbUpdate(COMMUNITY_BACKEND.inquiriesTable, `id=eq.${encodeURIComponent(li.dataset.id)}`, {
+            status: $('.ad-status', li).value, reply: $('.ad-reply', li).value.trim() || null
+          }, await Auth.token());
+          b.textContent = '저장됨';
+          setTimeout(() => { b.textContent = '저장'; b.disabled = false; }, 1200);
+        } catch (_) { alert('저장하지 못했습니다.'); b.disabled = false; }
+      }));
+    } catch (_) { box.innerHTML = '<li class="acc-empty">문의를 불러오지 못했습니다.</li>'; }
+  }
+  $$('#adminFilters .f-chip').forEach((c) => c.addEventListener('click', () => {
+    $$('#adminFilters .f-chip').forEach((x) => x.classList.remove('is-active'));
+    c.classList.add('is-active');
+    adminFilter = c.dataset.status || '';
+    loadAdmin();
+  }));
+
+  async function paint() {
+    await Auth.ready;
+    if (Auth.hashError) say(escapeHtml(Auth.hashError), 'err');
+    if (!Auth.user) {
+      main.hidden = true;
+      guest.hidden = false;
+      return;
+    }
+    guest.hidden = true;
+    main.hidden = false;
+
+    const p = await Auth.getProfile(true);
+    const meta = Auth.user.user_metadata || {};
+    const name = (p && p.name) || Auth.displayName();
+    $('#accTitle').innerHTML = `${escapeHtml(name)}님의 <span class="accent">마이페이지</span>`;
+    $('#pfName').value = name;
+    $('#pfEmail').value = Auth.user.email || '';
+    $('#pfType').value = (p && p.member_type) || meta.member_type || '';
+    $('#pfPhone').value = (p && p.phone) || meta.phone || '';
+    $('#pfMarketing').checked = Boolean(p ? p.marketing : meta.marketing);
+
+    if (Auth.event === 'recovery' || params.get('reset')) {
+      $('#accReset').hidden = false;
+      $('#npPass').focus();
+    } else if (Auth.event === 'signup' || params.get('welcome')) {
+      say(`가입을 환영합니다, <strong>${escapeHtml(name)}</strong>님. 이제 문의 진행 상황을 이곳에서 확인하고 커뮤니티에 글을 남길 수 있습니다.`, 'ok');
+    }
+    if (params.get('welcome') || params.get('reset')) history.replaceState(null, '', location.pathname + location.hash);
+
+    loadInquiries();
+    loadPosts();
+    if (p && p.role === 'admin') { $('#adminBox').hidden = false; loadAdmin(); }
+  }
+
+  /* 내 정보 저장 */
+  $('#profileForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const name = $('#pfName').value.trim();
+    const phone = $('#pfPhone').value.trim();
+    if (name.length < 2) { say('이름을 2자 이상 입력해 주세요.', 'err'); return; }
+    if (phone && !/^[0-9+\-\s()]{8,20}$/.test(phone)) { say('휴대폰 번호를 숫자와 하이픈(-)으로 입력해 주세요.', 'err'); return; }
+    setBusy(form, true, '저장 중…');
+    try {
+      await Auth.updateProfile({ name, member_type: $('#pfType').value || null, phone: phone || null, marketing: $('#pfMarketing').checked });
+      $('#accTitle').innerHTML = `${escapeHtml(name)}님의 <span class="accent">마이페이지</span>`;
+      say('내 정보를 저장했습니다.', 'ok');
+    } catch (_) { say('저장하지 못했습니다. 잠시 후 다시 시도해 주세요.', 'err'); }
+    finally { setBusy(form, false); }
+  });
+
+  /* 비밀번호 변경 · 재설정 */
+  async function changePassword(form, a, b) {
+    const p1 = $(a).value; const p2 = $(b).value;
+    if (!PASSWORD_RULE.test(p1)) { say('비밀번호는 영문과 숫자를 섞어 8자 이상으로 정해 주세요.', 'err'); return false; }
+    if (p1 !== p2) { say('비밀번호 확인이 일치하지 않습니다.', 'err'); return false; }
+    setBusy(form, true, '저장 중…');
+    try { await Auth.updatePassword(p1); form.reset(); say('새 비밀번호를 저장했습니다. 다음 로그인부터 새 비밀번호를 사용해 주세요.', 'ok'); return true; }
+    catch (err) { say(escapeHtml(authMessage(err)), 'err'); return false; }
+    finally { setBusy(form, false); }
+  }
+  $('#passForm').addEventListener('submit', (e) => { e.preventDefault(); changePassword(e.currentTarget, '#cpPass', '#cpPass2'); });
+  $('#resetPassForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (await changePassword(e.currentTarget, '#npPass', '#npPass2')) $('#accReset').hidden = true;
+  });
+
+  $('#logoutBtn').addEventListener('click', async () => {
+    await Auth.signOut();
+    location.href = '/';
+  });
+
+  $('#deleteBtn').addEventListener('click', async () => {
+    const typed = prompt('탈퇴하면 되돌릴 수 없습니다. 계속하려면 "탈퇴"라고 입력해 주세요.');
+    if (typed === null) return;
+    if (typed.trim() !== '탈퇴') { alert('"탈퇴"를 정확히 입력해 주세요.'); return; }
+    try {
+      await Auth.deleteAccount();
+      alert('탈퇴 처리되었습니다. 그동안 함께해 주셔서 감사합니다.');
+      location.href = '/';
+    } catch (_) { say('탈퇴를 처리하지 못했습니다. 문의하기로 요청해 주시면 바로 처리해 드리겠습니다.', 'err'); }
+  });
+
+  paint();
 })();

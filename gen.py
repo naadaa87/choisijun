@@ -189,6 +189,16 @@ PAGES = [
          title="공간사업 용어 사전 — 공실개발·마스터리스·무인공간·SPMS | 최시준",
          desc="공실개발, 공간수익화, 비선호층, 마스터리스, 수익쉐어, 위탁운영, 목적형 공간, 무인공간, 예약제, SPMS, 가동률, 고정비 등 공간사업에서 쓰는 말을 최시준의 기준으로 풀었습니다.",
          keywords="공실개발 뜻, 공간수익화 뜻, 마스터리스 뜻, 수익쉐어, 위탁운영, 무인공간, 비선호층, 가동률, 공간대여, 최시준"),
+    dict(key="login", file="login.html", nav=None, crumb="로그인 · 회원가입", schema="WebPage", noindex=True,
+         title="로그인 · 회원가입 | 최시준", desc="최시준 홈페이지 회원 로그인과 회원가입. 회원이 되면 문의 진행 상황을 확인하고 커뮤니티에 글을 남길 수 있습니다.", keywords=""),
+    dict(key="account", file="account.html", nav=None, crumb="마이페이지", schema="WebPage", noindex=True,
+         title="마이페이지 | 최시준", desc="내 정보, 문의 진행 상황, 커뮤니티에 쓴 글을 확인합니다.", keywords=""),
+    dict(key="privacy", file="privacy.html", nav=None, crumb="개인정보처리방침", schema="WebPage",
+         title="개인정보처리방침 | 최시준 · ㈜블랭크", desc="최시준 홈페이지(choisijun.com)를 운영하는 ㈜블랭크의 개인정보처리방침입니다. 수집 항목, 이용 목적, 보관 기간, 처리 위탁, 이용자 권리를 안내합니다.",
+         keywords="최시준 개인정보처리방침, ㈜블랭크 개인정보처리방침"),
+    dict(key="terms", file="terms.html", nav=None, crumb="이용약관", schema="WebPage",
+         title="이용약관 | 최시준 · ㈜블랭크", desc="최시준 홈페이지(choisijun.com) 회원 서비스 이용약관입니다. 회원가입, 커뮤니티 이용, 게시물 관리, 탈퇴에 관한 내용을 안내합니다.",
+         keywords="최시준 이용약관, ㈜블랭크 이용약관"),
     dict(key="404", file="404.html", nav=None, crumb=None, schema=None, noindex=True,
          title="페이지를 찾을 수 없습니다 — 최시준", desc="요청하신 페이지를 찾을 수 없습니다.", keywords=""),
 ]
@@ -580,6 +590,11 @@ def header_nav(page):
         on = p['key'] == active
         cls = ' class="nav-cta is-active"' if (p['key'] == "contact" and on) else (' class="nav-cta"' if p['key'] == "contact" else (' class="is-active"' if on else ""))
         cur = ' aria-current="page"' if p['key'] == page['key'] else ""
+        if p['key'] == "contact":
+            acc_on = ' is-active' if page['key'] in ("login", "account") else ""
+            links.append('        <a class="nav-account' + acc_on + '" href="login.html" data-account-link aria-label="로그인 · 회원가입">'
+                         '<svg class="na-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>'
+                         '<span class="na-text">로그인</span></a>')
         links.append(f'        <a href="{p["file"]}"{cls}{cur}>{p["nav"]}</a>')
     return f"""  <header class="header" id="header">
     <div class="container header-inner">
@@ -657,7 +672,7 @@ def footer():
       <p class="footer-regions mono"><span>지역별 포트폴리오</span> {regions}</p>
       <div class="footer-bottom">
         <p class="mono">© <span id="year">{NOW.year}</span> CHOI SIJUN · ㈜블랭크. ALL RIGHTS RESERVED.</p>
-        <p class="mono">공실개발 · 공간수익화 · 무인공간 · 공간대여</p>
+        <p class="mono footer-legal"><a href="privacy.html"><strong>개인정보처리방침</strong></a><a href="terms.html">이용약관</a><a href="login.html" data-account-link><span class="na-text">로그인</span></a></p>
       </div>
     </div>
   </footer>
@@ -665,6 +680,7 @@ def footer():
   <a class="float-cta" id="floatCta" href="contact.html">공실개발 상담하기</a>
   <button class="to-top" id="toTop" aria-label="맨 위로">↑</button>
 
+  <script src="site-config.js" defer></script>
   <script src="script.js" defer></script>
 </body>
 </html>
@@ -1243,6 +1259,7 @@ def finalize_links(text):
     text = re.sub(r'((?:src|srcset|href|poster|data-src-lg|data-src-sm)=")assets/', r'\1/assets/', text)
     text = text.replace('href="styles.css"', f'href="/styles.css?v={VERSION}"')
     text = text.replace('src="script.js"', f'src="/script.js?v={VERSION}"')
+    text = text.replace('src="site-config.js"', f'src="/site-config.js?v={VERSION}"')
     return text
 
 
@@ -1253,10 +1270,10 @@ def indexable():
 # 페이지 내용이 마지막으로 바뀐 날 (검색엔진은 매번 바뀌는 날짜보다 실제 수정일을 믿는다)
 #   본문을 고쳤다면 그 페이지의 날짜를 오늘로 바꿔 주세요. 인사이트 글은 글 머리말의 date/updated 를 씁니다.
 CONTENT_DATES = {
-    'home': '2026-10-11', 'about': '2026-10-11', 'brands': '2026-10-11', 'community': '2026-09-07', 'books': '2026-10-11',
+    'home': '2026-10-11', 'about': '2026-10-11', 'brands': '2026-10-11', 'community': '2026-10-11', 'books': '2026-10-11',
     'cases': '2026-10-11', 'services': '2026-10-11', 'portfolio': '2026-10-11', 'references': '2026-10-11',
     'media': '2026-10-11', 'contact': '2026-10-11', 'socialfactory': '2026-10-11', 'insights': '2026-10-11',
-    'faq': '2026-10-11', 'glossary': '2026-10-11',
+    'faq': '2026-10-11', 'glossary': '2026-10-11', 'privacy': '2026-10-11', 'terms': '2026-10-11',
 }
 DATA_DATE = (PF or {}).get('meta', {}).get('source', '')
 DATA_DATE = re.search(r'(\d{4}-\d{2}-\d{2})', DATA_DATE).group(1) if re.search(r'\d{4}-\d{2}-\d{2}', DATA_DATE) else '2026-10-11'
