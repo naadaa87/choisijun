@@ -13,7 +13,7 @@
         <div class="about-grid">
           <figure class="about-photo reveal">
             <div class="ph ph-portrait">
-              <img src="assets/profile.jpg" alt="최시준 대표 프로필 사진" loading="lazy" onerror="this.closest('.ph').classList.add('ph--empty');this.remove();" />
+              <picture><source srcset="assets/profile-640.webp" type="image/webp" /><img src="assets/profile-640.jpg" width="640" height="640" alt="최시준 대표 프로필 사진" fetchpriority="high" decoding="async" onerror="this.closest('.ph').classList.add('ph--empty');this.remove();" /></picture>
               <span class="ph-label mono">CHOI SIJUN — FOUNDER &amp; SPACE DEVELOPER</span>
             </div>
             <figcaption class="mono">최시준 · ㈜블랭크 대표 / 공간수익화 · 공실개발 전문가</figcaption>
@@ -130,6 +130,7 @@
       </div>
     </section>
 
+{{INSIGHT_BLOCK_ALL}}
     <!-- ===================== LECTURE / ACTIVITY ===================== -->
     <section class="section section-dark">
       <div class="container">
@@ -148,7 +149,7 @@
         <p class="stat-foot mono reveal" style="margin:-18px 0 30px;">* 자체 집계 기준</p>
 
         <figure class="photo-wide reveal">
-          <img src="assets/lecture-tedx.jpg" alt="TEDxCAU 무대에서 강연 중인 최시준" loading="lazy" />
+          <picture><source srcset="assets/lecture-tedx-1000.webp" type="image/webp" /><img src="assets/lecture-tedx-1000.jpg" width="1000" height="694" alt="TEDxCAU 무대에서 강연 중인 최시준" loading="lazy" decoding="async" /></picture>
           <figcaption>TEDxCAU — '非hind' 연사 · 실행과 도전을 주제로 한 강연</figcaption>
         </figure>
 

@@ -1167,3 +1167,43 @@ function fileToResizedDataUrl(file) {
   readURL(new URL(location.href));
   apply(true);
 })();
+
+/* ---------- 인사이트 주제 필터 ---------- */
+(function () {
+  const wrap = document.getElementById('inFilters');
+  const grid = document.getElementById('inGrid');
+  if (!wrap || !grid) return;
+  const chips = Array.from(wrap.querySelectorAll('.f-chip'));
+  const cards = Array.from(grid.querySelectorAll('.in-card'));
+  const empty = document.getElementById('inEmpty');
+
+  function apply(cat) {
+    let shown = 0;
+    cards.forEach((c) => {
+      const on = !cat || c.dataset.cat === cat;
+      c.hidden = !on;
+      if (on) shown += 1;
+    });
+    chips.forEach((b) => {
+      const on = (b.dataset.cat || '') === cat;
+      b.classList.toggle('is-active', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+    if (empty) empty.hidden = shown > 0;
+  }
+
+  chips.forEach((b) => b.addEventListener('click', () => {
+    const cat = b.dataset.cat || '';
+    apply(cat);
+    try {
+      const url = new URL(location.href);
+      if (cat) url.searchParams.set('topic', cat); else url.searchParams.delete('topic');
+      history.replaceState(null, '', url);
+    } catch (e) { /* 무시 */ }
+  }));
+
+  let initial = '';
+  try { initial = new URL(location.href).searchParams.get('topic') || ''; } catch (e) { initial = ''; }
+  if (initial && !chips.some((b) => b.dataset.cat === initial)) initial = '';
+  apply(initial);
+})();

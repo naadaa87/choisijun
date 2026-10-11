@@ -1,0 +1,56 @@
+    <!-- ===================== PAGE HERO ===================== -->
+    <section class="page-hero">
+      <div class="container">
+        <nav class="crumbs mono" aria-label="현재 위치"><a href="index.html">홈</a><span aria-hidden="true">/</span><span aria-current="page">인사이트</span></nav>
+        <p class="eyebrow mono reveal">INSIGHTS</p>
+        <h1 class="reveal">공간사업 10년의 <span class="accent">판단기준</span></h1>
+        <p class="lede reveal">상가 공실을 어떻게 볼 것인가, 파티룸 창업에서 무엇을 먼저 따질 것인가, 무인공간은 어떻게 굴러가는가. 340개+ 공간을 만들며 굳어진 기준을 글로 정리합니다. 짧지만 현장에서 나온 글입니다.</p>
+        <ul class="stats pf-kpis reveal" aria-label="인사이트 요약">
+          <li class="stat"><span class="stat-num">{{INSIGHT_COUNT}}</span><span class="stat-label mono">편의 글</span></li>
+          <li class="stat"><span class="stat-num">5</span><span class="stat-label mono">주제 — 공실개발 · 건물 기획 · 창업 · 무인 운영 · 생각</span></li>
+          <li class="stat"><span class="stat-num">340<small>개+</small></span><span class="stat-label mono">공간에서 나온 기준</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ===================== LIST ===================== -->
+    <section class="section" id="in-list">
+      <div class="container">
+        <div class="board-filters in-filters" id="inFilters" role="group" aria-label="주제">
+          {{INSIGHT_CATS}}
+        </div>
+        {{INSIGHT_LIST}}
+        <p class="board-empty" id="inEmpty" hidden>이 주제의 글은 아직 없습니다.</p>
+        <p class="case-note mono" style="margin-top:26px;">새 글은 <a href="rss.xml">RSS</a>와 <a href="https://www.threads.com/@sijun.choi" target="_blank" rel="noopener">Threads @sijun.choi</a>에서 가장 먼저 알립니다.</p>
+      </div>
+    </section>
+
+    <!-- ===================== ALSO ===================== -->
+    <section class="section section-tint">
+      <div class="container">
+        <header class="section-head reveal">
+          <p class="eyebrow mono">ALSO</p>
+          <h2>글보다 빠른 답이 필요하다면</h2>
+        </header>
+        <div class="grid grid-3">
+          <a class="dir-card dir-card-light reveal" href="faq.html">
+            <span class="mono dir-num">FAQ</span>
+            <h3>자주 묻는 질문</h3>
+            <p>건물주·중개사·창업자·교육 담당자가 가장 많이 묻는 30가지에 답했습니다.</p>
+            <span class="dir-go mono">READ →</span>
+          </a>
+          <a class="dir-card dir-card-light reveal" href="glossary.html">
+            <span class="mono dir-num">WORDS</span>
+            <h3>공간사업 용어 사전</h3>
+            <p>공실개발, 마스터리스, 수익쉐어, 가동률, SPMS — 상담에서 오가는 말을 풀었습니다.</p>
+            <span class="dir-go mono">READ →</span>
+          </a>
+          <a class="dir-card dir-card-light reveal" href="books.html">
+            <span class="mono dir-num">EBOOK</span>
+            <h3>전자책 두 권</h3>
+            <p>『공실은 자산이다』, 『예약되는 공간』 — 글의 기준을 순서대로 묶었습니다.</p>
+            <span class="dir-go mono">READ →</span>
+          </a>
+        </div>
+      </div>
+    </section>

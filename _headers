@@ -12,6 +12,20 @@
   Cache-Control: public, max-age=0, must-revalidate
 /robots.txt
   Cache-Control: public, max-age=0, must-revalidate
+/llms.txt
+  Cache-Control: public, max-age=0, must-revalidate
+
+# 인사이트 글 페이지도 매번 최신
+/insights/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+# 원고·조각 파일은 검색 결과에 나오지 않게
+/fragments/*
+  X-Robots-Tag: noindex
+/content/*
+  X-Robots-Tag: noindex
+/data/*
+  X-Robots-Tag: noindex
 
 # 이미지·영상은 장기 캐시
 /assets/*

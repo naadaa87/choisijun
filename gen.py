@@ -36,7 +36,8 @@ def read_verification(path="search-verification.txt"):
             m = re.search(r'content\s*=\s*["\']([^"\']+)["\']', val)   # 태그를 통째로 붙여넣어도 값만 꺼낸다
             val = (m.group(1) if m else val).strip().strip('"\'')
             if key in VERIFY_META and re.fullmatch(r"[A-Za-z0-9_\-:.=+/]{6,200}", val):
-                out[key] = val
+                if val not in out.setdefault(key, []):   # 같은 검색엔진 줄을 여러 개 써도 모두 넣는다 (http·https 따로 등록 등)
+                    out[key].append(val)
     return out
 
 
@@ -164,8 +165,8 @@ PAGES = [
          desc="10년+ 340개+ 공간의 기록. 공간개발, 브랜드 런칭, 파트너십, 강의·교육, 언론 보도 레퍼런스를 연도별로 모았습니다.",
          keywords=f"{BASE_KEYWORDS}, 레퍼런스, 강의 이력, 언론 보도"),
     dict(key="media", file="media.html", nav="미디어", crumb="미디어", schema="CollectionPage",
-         title="미디어 — 쇼릴·언론 보도·칼럼 | 최시준",
-         desc="15초 쇼릴 2026, KBS·JTBC·CCTV 등 언론 보도, 공식 채널, 그리고 공간사업 10년의 판단기준을 담은 최시준의 칼럼.",
+         title="미디어 — 쇼릴·언론 보도·방송 출연 | 최시준",
+         desc="15초 쇼릴 2026, KBS·JTBC·CCTV 등 언론 보도와 방송 출연, 공식 채널, 그리고 공간사업 판단기준을 담은 최시준의 최근 글.",
          keywords=f"{BASE_KEYWORDS}, 최시준 인터뷰, 최시준 방송, 쇼릴, 공간사업 칼럼"),
     dict(key="contact", file="contact.html", nav="문의하기", crumb="문의하기", schema="ContactPage",
          title="공실개발 상담·강의 문의 | 최시준",
@@ -176,6 +177,18 @@ PAGES = [
          title="소셜팩토리 — 2015년 홍대에서 시작한 모임공간 | 최시준",
          desc="소셜팩토리는 최시준이 2015년 홍대에서 처음 만든 모임공간 브랜드입니다. 신촌·합정·인천을 거쳐 2026년 건대에서 모임룸 5개, 24시간 코워킹, 독립사무실로 이어집니다.",
          keywords="소셜팩토리, 소셜팩토리 건대, 소셜팩토리 홍대, 건대 모임공간, 건대 코워킹, 건대 세미나실, 홍대 모임공간, 최시준"),
+    dict(key="insights", file="insights.html", nav="인사이트", crumb="인사이트", schema="CollectionPage",
+         title="인사이트 — 공실개발·파티룸 창업·무인공간 운영의 판단기준 | 최시준",
+         desc="340개+ 공간을 만들며 굳어진 판단기준을 글로 정리합니다. 상가 공실 해결, 지하·고층 공실 활용, 파티룸·공간대여 창업, 무인공간 운영, 건물 단위 기획.",
+         keywords=f"{BASE_KEYWORDS}, 공실 활용 방법, 상가 공실 해결, 파티룸 창업 비용, 무인 파티룸 운영, 공간사업 칼럼"),
+    dict(key="faq", file="faq.html", nav=None, crumb="자주 묻는 질문", schema="FAQPage",
+         title="자주 묻는 질문 — 공실개발·파티룸 창업·상담·강의 | 최시준",
+         desc="건물주와 중개사가 공실개발에 대해, 예비창업자가 파티룸·공간대여 창업에 대해, 담당자가 강의와 제휴에 대해 자주 묻는 질문 30가지에 최시준이 답합니다.",
+         keywords=f"{BASE_KEYWORDS}, 공실 상담, 파티룸 창업 비용, 마스터리스 뜻, 무인 파티룸 관리, 강의 섭외"),
+    dict(key="glossary", file="glossary.html", nav=None, crumb="용어 사전", schema="DefinedTermSet",
+         title="공간사업 용어 사전 — 공실개발·마스터리스·무인공간·SPMS | 최시준",
+         desc="공실개발, 공간수익화, 비선호층, 마스터리스, 수익쉐어, 위탁운영, 목적형 공간, 무인공간, 예약제, SPMS, 가동률, 고정비 등 공간사업에서 쓰는 말을 최시준의 기준으로 풀었습니다.",
+         keywords="공실개발 뜻, 공간수익화 뜻, 마스터리스 뜻, 수익쉐어, 위탁운영, 무인공간, 비선호층, 가동률, 공간대여, 최시준"),
     dict(key="404", file="404.html", nav=None, crumb=None, schema=None, noindex=True,
          title="페이지를 찾을 수 없습니다 — 최시준", desc="요청하신 페이지를 찾을 수 없습니다.", keywords=""),
 ]
@@ -208,14 +221,150 @@ for _r in REGION_PAGES:
         desc=f"최시준이 {_r}에서 기획·오픈·운영한 공간 {_n}개. {', '.join(f'{a} {n}' for a, n in _areas[:6])} 등 {len(_areas)}개 지역의 {_tnames} 기록" + (f"과 공실개발 프로젝트 {len(_projs)}건" if _projs else "") + "을 모았습니다.",
         keywords=f"{_r} 파티룸, {_r} 모임공간, {_r} 공실개발, " + ', '.join(f'{a} 파티룸' for a, _ in _areas[:6]) + ", 최시준, 쏘플파티룸"))
 
-NAV_ITEMS = [p for p in PAGES if p['nav']]
+# ------------------------------------------------------------------
+# 인사이트(칼럼): content/insights/*.md → /insights/<slug>
+#   머리말(title: / description: / date: …) 뒤 --- 다음부터 본문(마크다운)
+# ------------------------------------------------------------------
+INSIGHT_DIR = "insights"            # 완성된 글 페이지가 저장되는 곳 (/insights/<slug>)
+INSIGHT_SRC = os.path.join("content", "insights")   # 글 원고(.md)를 두는 곳
+CATEGORY_ORDER = ["공실개발", "건물 기획", "창업", "무인 운영", "생각"]
+
+
+def md_inline(t):
+    t = esc(t)
+    t = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", t)
+    t = re.sub(r"(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)", r"<em>\1</em>", t)
+    t = re.sub(r"\[([^\]]+)\]\(([^)\s]+)\)", lambda m: f'<a href="{m.group(2)}">{m.group(1)}</a>', t)
+    return t
+
+
+def md_to_html(md):
+    """작은 마크다운 변환기: 제목(##/###), 문단, 목록(-, 1.), 인용(>), 구분선(---), 굵게, 링크.
+    '## 자주 묻는 질문' 아래 ### 질문 / 답 쌍은 펼침 목록 + FAQ 구조화 데이터로 만든다."""
+    lines = md.replace("\r", "").split("\n")
+    out, faq, i, in_faq = [], [], 0, False
+    para = []
+
+    def flush():
+        if para:
+            out.append("<p>" + md_inline(" ".join(x.strip() for x in para)) + "</p>")
+            para.clear()
+
+    while i < len(lines):
+        ln = lines[i]
+        st = ln.strip()
+        if not st:
+            flush(); i += 1; continue
+        if st.startswith("## "):
+            flush()
+            title = st[3:].strip()
+            in_faq = title.replace(" ", "") in ("자주묻는질문", "FAQ")
+            out.append(f'<h2 id="{esc(re.sub(r"[^0-9A-Za-z가-힣]+", "-", title).strip("-"))}">{md_inline(title)}</h2>')
+            i += 1; continue
+        if st.startswith("### "):
+            flush()
+            title = st[4:].strip()
+            if in_faq:
+                ans, i = [], i + 1
+                while i < len(lines) and not lines[i].strip().startswith("#"):
+                    if lines[i].strip():
+                        ans.append(lines[i].strip())
+                    i += 1
+                a_html = " ".join(ans)
+                faq.append((title, a_html))
+                out.append(f'<details class="faq-item"><summary>{md_inline(title)}</summary><p>{md_inline(a_html)}</p></details>')
+                continue
+            out.append(f"<h3>{md_inline(title)}</h3>")
+            i += 1; continue
+        if st in ("---", "***"):
+            flush(); out.append("<hr />"); i += 1; continue
+        if st.startswith("> "):
+            flush()
+            q = []
+            while i < len(lines) and lines[i].strip().startswith(">"):
+                q.append(lines[i].strip()[1:].strip()); i += 1
+            out.append('<blockquote class="art-quote">' + md_inline(" ".join(q)) + "</blockquote>")
+            continue
+        m = re.match(r"^(-|\d+\.)\s+", st)
+        if m:
+            flush()
+            kind = "ol" if m.group(1) != "-" else "ul"
+            items = []
+            while i < len(lines):
+                mm = re.match(r"^(-|\d+\.)\s+(.*)", lines[i].strip())
+                if not mm:
+                    break
+                items.append(mm.group(2)); i += 1
+            out.append(f"<{kind}>" + "".join(f"<li>{md_inline(x)}</li>" for x in items) + f"</{kind}>")
+            continue
+        para.append(st); i += 1
+    flush()
+    return "\n".join(out), faq
+
+
+def load_insights():
+    arts = []
+    if not os.path.isdir(INSIGHT_SRC):
+        return arts
+    for fn in sorted(os.listdir(INSIGHT_SRC)):
+        if not fn.endswith(".md"):
+            continue
+        raw = io.open(os.path.join(INSIGHT_SRC, fn), encoding="utf-8-sig").read()
+        if "\n---" not in raw:
+            raise SystemExit(f"[빌드 중단] insights/{fn}: 머리말과 본문을 나누는 --- 줄이 없습니다.")
+        head_txt, body_md = raw.split("\n---", 1)
+        meta = {}
+        for ln in head_txt.splitlines():
+            if ":" in ln and not ln.startswith("#"):
+                k, v = ln.split(":", 1)
+                meta[k.strip().lower()] = v.strip()
+        for need in ("title", "description", "date"):
+            if not meta.get(need):
+                raise SystemExit(f"[빌드 중단] insights/{fn}: 머리말에 {need}: 가 없습니다.")
+        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", meta["date"]):
+            raise SystemExit(f"[빌드 중단] insights/{fn}: date 는 2026-01-31 형식이어야 합니다.")
+        slug = meta.get("slug") or fn[:-3]
+        if not re.fullmatch(r"[a-z0-9-]+", slug):
+            raise SystemExit(f"[빌드 중단] insights/{fn}: 파일 이름(주소)은 영문 소문자·숫자·하이픈만 쓸 수 있습니다.")
+        html_body, faq = md_to_html(body_md.strip())
+        text = strip_tags(html_body)
+        arts.append(dict(
+            slug=slug, title=meta["title"], desc=meta["description"], date=meta["date"],
+            updated=meta.get("updated") or meta["date"], category=meta.get("category", "생각"),
+            keywords=meta.get("keywords", ""), summary=meta.get("summary") or meta["description"],
+            related=[x.strip() for x in meta.get("related", "").split(",") if x.strip()],
+            html=html_body, faq=faq, chars=len(text), minutes=max(1, round(len(text) / 500)),
+            file=f"insights/{slug}.html"))
+    arts.sort(key=lambda a: (a["date"], a["slug"]), reverse=True)
+    return arts
+
+
+def strip_tags(s):
+    return re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", " ", s))).strip()
+
+
+INSIGHTS = load_insights()
+INSIGHT_BY_SLUG = {a["slug"]: a for a in INSIGHTS}
+for _a in INSIGHTS:
+    PAGES.insert(-1, dict(
+        key=f"insight-{_a['slug']}", file=_a["file"], nav=None, crumb=_a["title"], schema="WebPage",
+        parent=("insights", "인사이트"), article=_a,
+        title=f"{_a['title']} | 최시준", desc=_a["desc"],
+        keywords=(_a["keywords"] + ", " if _a["keywords"] else "") + "최시준, 공실개발, 공간수익화"))
+
+NAV_ITEMS = sorted([p for p in PAGES if p['nav']], key=lambda p: p['key'] == 'contact')
 PAGE_NAMES = {p['file'][:-5] for p in PAGES}
 PAGE_BY_KEY = {p['key']: p for p in PAGES}
 
 
 def clean_path(fname):
-    """Cloudflare Pages는 /about.html 을 /about 으로 옮겨준다 → 검색엔진에도 깔끔한 주소를 알린다"""
+    """Cloudflare Pages는 /about.html 을 /about 으로, insights/x.html 을 /insights/x 로 옮겨준다"""
     return "/" if fname == "index.html" else "/" + fname[:-5]
+
+
+def rel_prefix(fname):
+    """하위 폴더 페이지에서 루트 자산을 가리키는 접두어 (빌드 마지막에 절대경로로 바뀌므로 거의 쓰이지 않음)"""
+    return "../" if "/" in fname else ""
 
 
 def page_url(fname):
@@ -267,10 +416,6 @@ BOOKS = [
     {"@type": "Book", "name": "예약되는 공간 — 공간대여 창업의 판단기준", "author": {"@id": PERSON_ID},
      "bookFormat": "https://schema.org/EBook", "inLanguage": "ko", "url": f"{DOMAIN}/books"},
 ]
-
-
-def strip_tags(s):
-    return re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", "", s))).strip()
 
 
 def faq_from(fragment_html, pattern):
@@ -325,6 +470,30 @@ def jsonld(page, body):
         qa = faq_from(body, r'<details class="faq-item"><summary>(.*?)</summary>\s*<p>(.*?)</p>')
         if qa:
             graph.append({"@type": "FAQPage", "mainEntity": qa})
+    if key.startswith("insight-"):
+        a = page['article']
+        art = {"@type": "Article", "@id": url + "#article", "headline": a['title'], "description": a['desc'],
+               "datePublished": a['date'] + "T09:00:00+09:00", "dateModified": a['updated'] + "T09:00:00+09:00",
+               "author": {"@id": PERSON_ID}, "publisher": {"@id": BLANK_ID}, "inLanguage": "ko-KR",
+               "mainEntityOfPage": {"@id": url + "#webpage"}, "image": og_image(page),
+               "articleSection": a['category'], "keywords": a['keywords'], "wordCount": a['chars'],
+               "isPartOf": {"@id": WEBSITE_ID}, "url": url}
+        graph.append(art)
+        if a['faq']:
+            graph.append({"@type": "FAQPage", "mainEntity": [
+                {"@type": "Question", "name": strip_tags(q), "acceptedAnswer": {"@type": "Answer", "text": strip_tags(md_inline(ans))}}
+                for q, ans in a['faq']]})
+    if key == "insights":
+        webpage["mainEntity"] = {"@type": "ItemList", "numberOfItems": len(INSIGHTS),
+                                 "itemListElement": [{"@type": "ListItem", "position": n, "name": a['title'], "url": page_url(a['file'])}
+                                                     for n, a in enumerate(INSIGHTS, 1)]}
+    if key == "faq":
+        qa = faq_from(body, r'<details class="faq-item"><summary>(.*?)</summary>\s*<p>(.*?)</p>')
+        webpage["mainEntity"] = qa
+    if key == "glossary":
+        terms = re.findall(r'<dt id="([^"]+)">(.*?)</dt>\s*<dd>(.*?)</dd>', body, re.S)
+        webpage["hasDefinedTerm"] = [{"@type": "DefinedTerm", "@id": url + "#" + tid, "name": strip_tags(nm),
+                                      "description": strip_tags(d), "inDefinedTermSet": url + "#webpage"} for tid, nm, d in terms]
     if key == "portfolio" or key.startswith("region-"):
         pool = ITEMS if key == "portfolio" else region_spaces(page['region'])
         names = [i['name'] for i in sorted(pool, key=richness)][:30]
@@ -338,12 +507,32 @@ def jsonld(page, body):
 # ------------------------------------------------------------------
 # 머리말 · 헤더 · 푸터
 # ------------------------------------------------------------------
+def og_image(page):
+    """assets/og/<key>.jpg 가 있으면 페이지 전용 공유 이미지, 없으면 기본 이미지"""
+    cand = os.path.join("assets", "og", page['key'] + ".jpg")
+    if os.path.exists(cand):
+        return f"{DOMAIN}/assets/og/{page['key']}.jpg"
+    if page['key'] == "media":
+        return f"{DOMAIN}/assets/video/showreel-poster.jpg"
+    return f"{DOMAIN}/assets/og-image.jpg"
+
+
+def article_meta(page):
+    a = page.get('article')
+    if not a:
+        return ""
+    return (f'\n  <meta property="article:published_time" content="{a["date"]}T09:00:00+09:00" />'
+            f'\n  <meta property="article:modified_time" content="{a["updated"]}T09:00:00+09:00" />'
+            f'\n  <meta property="article:author" content="{DOMAIN}/about" />'
+            f'\n  <meta property="article:section" content="{esc(a["category"])}" />')
+
+
 def head(page, body):
     url = page_url(page['file'])
     title, desc = esc(page['title']), esc(page['desc'])
-    og_img = f"{DOMAIN}/assets/video/showreel-poster.jpg" if page['key'] == "media" else f"{DOMAIN}/assets/og-image.jpg"
+    og_img = og_image(page)
     robots = "noindex, follow" if page.get('noindex') else "index, follow, max-image-preview:large, max-snippet:-1"
-    verify = "".join(f'\n  <meta name="{VERIFY_META[k]}" content="{esc(v)}" />' for k, v in VERIFY.items())
+    verify = "".join(f'\n  <meta name="{VERIFY_META[k]}" content="{esc(v)}" />' for k, vals in VERIFY.items() for v in vals)
     canonical = "" if page.get('noindex') else f'\n  <link rel="canonical" href="{url}" />'
     return f"""<!DOCTYPE html>
 <html lang="ko">
@@ -352,16 +541,18 @@ def head(page, body):
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{title}</title>
   <meta name="description" content="{desc}" />
-  <meta name="keywords" content="{esc(page['keywords'])}" />
+  <meta name="keywords" content="{esc(', '.join(dict.fromkeys(k.strip() for k in page['keywords'].split(',') if k.strip())))}" />
   <meta name="author" content="최시준 (Choi Si-jun)" />
   <meta name="robots" content="{robots}" />{verify}{canonical}
-  <meta property="og:type" content="{'profile' if page['key'] == 'about' else 'website'}" />
+  <meta property="og:type" content="{'profile' if page['key'] == 'about' else ('article' if page['key'].startswith('insight-') else 'website')}" />
   <meta property="og:site_name" content="최시준" />
   <meta property="og:title" content="{title}" />
   <meta property="og:description" content="{desc}" />
   <meta property="og:url" content="{url}" />
   <meta property="og:image" content="{og_img}" />
-  <meta property="og:image:alt" content="최시준 — 공실개발·공간수익화 전문가" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="{esc(page['title'])}" />{article_meta(page)}
   <meta property="og:locale" content="ko_KR" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="{title}" />
@@ -370,8 +561,10 @@ def head(page, body):
   <meta name="theme-color" content="#F8F7F4" />
   <link rel="alternate" type="application/rss+xml" title="최시준 — 새 소식" href="{DOMAIN}/rss.xml" />
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" media="print" onload="this.media='all'" />
+  <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" /></noscript>
   <link rel="stylesheet" href="styles.css" />{jsonld(page, body)}
 </head>
 <body data-page="{page['key'] if not page['key'].startswith('region-') else 'portfolio'}">
@@ -390,7 +583,7 @@ def header_nav(page):
         links.append(f'        <a href="{p["file"]}"{cls}{cur}>{p["nav"]}</a>')
     return f"""  <header class="header" id="header">
     <div class="container header-inner">
-      <a class="logo" href="index.html" aria-label="최시준 홈">
+      <a class="logo" href="index.html" aria-label="CHOI SIJUN 최시준 — 홈">
         <span class="logo-mark" aria-hidden="true"></span>
         <span class="logo-text">CHOI SIJUN</span>
       </a>
@@ -437,6 +630,13 @@ def footer():
             <a href="community.html">커뮤니티</a>
           </div>
           <div>
+            <p class="mono">READ</p>
+            <a href="insights.html">인사이트</a>
+            <a href="faq.html">자주 묻는 질문</a>
+            <a href="glossary.html">공간사업 용어 사전</a>
+            <a href="rss.xml">RSS 구독</a>
+          </div>
+          <div>
             <p class="mono">PERSONAL</p>
             <a href="https://www.threads.com/@sijun.choi" target="_blank" rel="noopener">Threads @sijun.choi</a>
             <a href="https://www.instagram.com/sijun.choi" target="_blank" rel="noopener">Instagram @sijun.choi</a>
@@ -465,7 +665,7 @@ def footer():
   <a class="float-cta" id="floatCta" href="contact.html">공실개발 상담하기</a>
   <button class="to-top" id="toTop" aria-label="맨 위로">↑</button>
 
-  <script src="script.js"></script>
+  <script src="script.js" defer></script>
 </body>
 </html>
 """
@@ -587,8 +787,8 @@ def tilemap():
             tiles.append(f'<a class="pf-tile s{step}{" is-plan" if not n else ""}" style="{style}" href="portfolio.html#pf-projects" aria-label="{esc(label)}">{inner}</a>')
         else:
             tiles.append(f'<span class="pf-tile s0" style="{style}" aria-label="{esc(name)} — 기록 없음">{inner}</span>')
-    return '<div class="pf-tilemap" role="list" aria-label="시·도별 공간 수">' + ''.join(
-        t.replace('<a ', '<a role="listitem" ', 1).replace('<span class="pf-tile s0"', '<span role="listitem" class="pf-tile s0"', 1)
+    return '<div class="pf-tilemap" role="group" aria-label="시·도별 공간 수">' + ''.join(
+        t.replace('<span class="pf-tile s0"', '<span aria-hidden="true" class="pf-tile s0"', 1)
         for t in tiles) + '</div>'
 
 
@@ -733,6 +933,197 @@ def ref_cards():
 TOKENS['REF_CARDS'] = ref_cards()
 
 
+# ------------------------------------------------------------------
+# 인사이트 렌더링
+# ------------------------------------------------------------------
+def kdate(d):
+    y, m, dd = d.split('-')
+    return f"{y}.{m}.{dd}"
+
+
+def crumbs_html(trail):
+    """trail = [(label, href|None)] — 마지막 항목은 현재 페이지"""
+    parts = []
+    for n, (label, href) in enumerate(trail):
+        if href:
+            parts.append(f'<a href="{href}">{esc(label)}</a>')
+        else:
+            parts.append(f'<span aria-current="page">{esc(label)}</span>')
+        if n < len(trail) - 1:
+            parts.append('<span aria-hidden="true">/</span>')
+    return '<nav class="crumbs mono" aria-label="현재 위치">' + ''.join(parts) + '</nav>'
+
+
+def insight_card(a, big=False):
+    return (f'<a class="in-card{" is-big" if big else ""}" href="{a["file"]}" data-cat="{esc(a["category"])}">'
+            f'<span class="in-cat mono">{esc(a["category"])}</span>'
+            f'<h3>{esc(a["title"])}</h3><p>{esc(a["summary"])}</p>'
+            f'<span class="in-meta mono">{kdate(a["date"])} · {a["minutes"]}분</span></a>')
+
+
+def insight_list():
+    return '<div class="in-grid" id="inGrid">' + '\n'.join(insight_card(a) for a in INSIGHTS) + '</div>'
+
+
+def insight_latest(n=3):
+    return '<div class="in-grid in-grid-3">' + '\n'.join(insight_card(a) for a in INSIGHTS[:n]) + '</div>'
+
+
+def insight_cats():
+    c = Counter(a['category'] for a in INSIGHTS)
+    cats = sorted(c, key=lambda x: CATEGORY_ORDER.index(x) if x in CATEGORY_ORDER else 99)
+    return (f'<button class="f-chip is-active" type="button" data-cat="">전체 <em>{len(INSIGHTS)}</em></button>'
+            + ''.join(f'<button class="f-chip" type="button" data-cat="{esc(k)}">{esc(k)} <em>{c[k]}</em></button>' for k in cats))
+
+
+def related_insights(a, n=3):
+    picks = [INSIGHT_BY_SLUG[r] for r in a['related'] if r in INSIGHT_BY_SLUG and r != a['slug']]
+    for b in INSIGHTS:
+        if len(picks) >= n:
+            break
+        if b['slug'] != a['slug'] and b not in picks and b['category'] == a['category']:
+            picks.append(b)
+    for b in INSIGHTS:
+        if len(picks) >= n:
+            break
+        if b['slug'] != a['slug'] and b not in picks:
+            picks.append(b)
+    return picks[:n]
+
+
+ARTICLE_CTA = {
+    '공실개발': ('내 공간, 수익화 가능할까?', '층과 면적, 지금 상태만 알려주시면 어떤 공간이 맞을지 함께 살펴보겠습니다.',
+             'contact.html?inquiry=vacancy', '공실개발 상담하기', 'cases.html', '유형별 사례 보기'),
+    '건물 기획': ('비어 있는 층이 있다면', '건물 한 채를 층마다 다른 수요로 채우는 기획을 함께 합니다.',
+              'contact.html?inquiry=vacancy', '건물 단위 개발 문의', 'portfolio.html', '공간 포트폴리오 보기'),
+    '창업': ('계약 전에 한 번 더', '이 공간, 해도 될까요? 입지·면적·고정비·수요를 기준으로 진단합니다.',
+           'contact.html?inquiry=diagnosis', '공간수익화 진단 문의', 'books.html', '전자책으로 먼저 읽기'),
+    '무인 운영': ('운영은 설계로 풉니다', '예약·출입·정산·청소를 프로세스로 옮기는 일을 함께 합니다.',
+              'contact.html?inquiry=diagnosis', '운영 진단 문의', 'services.html', '서비스 안내 보기'),
+}
+ARTICLE_CTA_DEFAULT = ('함께 이야기해 보시죠', '공실, 창업, 강의 — 어떤 주제든 문의를 남겨주세요.',
+                       'contact.html', '문의하기', 'about.html', '최시준 소개 보기')
+
+AUTHOR_BOX = """          <aside class="author-box" aria-label="글쓴이">
+            <picture>
+              <source srcset="assets/profile-240.webp" type="image/webp" />
+              <img src="assets/profile-240.jpg" width="120" height="120" alt="최시준" loading="lazy" />
+            </picture>
+            <div>
+              <p class="mono">WRITTEN BY</p>
+              <h3><a href="about.html">최시준</a></h3>
+              <p>10년+ 340개+ 공간을 직접 기획·오픈·운영한 공실개발·공간수익화 전문가. ㈜블랭크 대표, 쏘플파티룸 대표. 건물주의 공실 문제를 구조로 풀고, 창업자에게는 실패확률을 줄이는 판단기준을 전합니다.</p>
+              <p class="author-links"><a href="about.html">소개</a><a href="portfolio.html">공간 포트폴리오</a><a href="https://www.threads.com/@sijun.choi" target="_blank" rel="noopener">Threads</a></p>
+            </div>
+          </aside>"""
+
+
+def article_body(page):
+    a = page['article']
+    rel = related_insights(a)
+    rel_html = '<div class="in-grid in-grid-3">' + '\n'.join(insight_card(b) for b in rel) + '</div>' if rel else ''
+    cta = ARTICLE_CTA.get(a['category'], ARTICLE_CTA_DEFAULT)
+    updated = f'<span>수정 {kdate(a["updated"])}</span>' if a["updated"] != a["date"] else ''
+    crumbs = crumbs_html([("홈", "index.html"), ("인사이트", "insights.html"), (a["title"], None)])
+    return f"""    <!-- ===================== ARTICLE ===================== -->
+    <article class="article">
+      <header class="page-hero art-hero">
+        <div class="container container-narrow">
+          {crumbs}
+          <p class="eyebrow mono reveal">INSIGHT — {esc(a["category"])}</p>
+          <h1 class="reveal">{esc(a["title"])}</h1>
+          <p class="lede reveal">{esc(a["desc"])}</p>
+          <p class="art-meta mono reveal"><span>글 <a href="about.html">최시준</a></span><span>{kdate(a["date"])}</span>{updated}<span>읽는 시간 {a["minutes"]}분</span></p>
+        </div>
+      </header>
+      <div class="section art-section">
+        <div class="container container-narrow">
+          <div class="art-body">
+{a["html"]}
+          </div>
+{AUTHOR_BOX}
+        </div>
+      </div>
+      <section class="section section-tint">
+        <div class="container">
+          <header class="section-head reveal">
+            <p class="eyebrow mono">READ NEXT</p>
+            <h2>이어서 읽기</h2>
+          </header>
+          {rel_html}
+          <div class="hero-cta" style="margin-top:22px;"><a class="btn btn-line" href="insights.html">인사이트 전체 보기</a><a class="btn btn-line" href="faq.html">자주 묻는 질문</a></div>
+        </div>
+      </section>
+      <section class="section section-dark">
+        <div class="container" style="text-align:center;">
+          <h2 class="reveal" style="font-size:clamp(1.5rem,3vw,2.1rem);font-weight:800;letter-spacing:-0.03em;margin-bottom:14px;">{esc(cta[0])}</h2>
+          <p class="lede reveal" style="max-width:620px;margin:0 auto 28px;">{esc(cta[1])}</p>
+          <div class="hero-cta reveal" style="justify-content:center;">
+            <a class="btn btn-primary" href="{cta[2]}">{esc(cta[3])}</a>
+            <a class="btn btn-ghost" href="{cta[4]}">{esc(cta[5])}</a>
+          </div>
+        </div>
+      </section>
+    </article>
+"""
+
+
+TOKENS['INSIGHT_LIST'] = insight_list()
+TOKENS['INSIGHT_LATEST'] = insight_latest()
+TOKENS['INSIGHT_COUNT'] = str(len(INSIGHTS))
+TOKENS['INSIGHT_CATS'] = insight_cats()
+
+def insight_block(eyebrow, title, lede, cats, tint=False):
+    picks = [a for a in INSIGHTS if a['category'] in cats][:3]
+    if len(picks) < 3:
+        picks += [a for a in INSIGHTS if a not in picks][:3 - len(picks)]
+    cards = '\n'.join(insight_card(a) for a in picks)
+    return f"""    <!-- ===================== RELATED INSIGHTS ===================== -->
+    <section class="section{' section-tint' if tint else ''}">
+      <div class="container">
+        <header class="section-head reveal">
+          <p class="eyebrow mono">{eyebrow}</p>
+          <h2>{title}</h2>
+          <p class="lede">{lede}</p>
+        </header>
+        <div class="in-grid in-grid-3">{cards}</div>
+        <div class="in-latest-foot"><a class="btn btn-line" href="insights.html">인사이트 전체 보기</a><a class="btn btn-line" href="faq.html">자주 묻는 질문</a><a class="btn btn-line" href="glossary.html">용어 사전</a></div>
+      </div>
+    </section>
+"""
+
+
+TOKENS['INSIGHT_BLOCK_OWNER'] = insight_block('READ — FOR OWNERS', '건물주와 중개사가 먼저 읽는 글',
+    '공실을 어떻게 진단하고, 어떤 구조로 함께할 수 있는지 미리 정리했습니다. 상담 전에 읽어 두시면 이야기가 훨씬 빨라집니다.', ('공실개발', '건물 기획'))
+TOKENS['INSIGHT_BLOCK_FOUNDER'] = insight_block('READ — FOR FOUNDERS', '창업 전에 읽어 둘 글',
+    '매물을 고르는 기준과 무인 운영의 구조를 짧은 글로 먼저 만나보세요.', ('창업', '무인 운영', '생각'))
+TOKENS['INSIGHT_BLOCK_ALL'] = insight_block('READ', '최시준의 글',
+    '10년 동안 공간을 만들며 굳어진 판단기준을 글로 정리하고 있습니다.', ('생각', '공실개발', '창업'), tint=True)
+
+
+def build_llms():
+    """AI 검색·LLM 크롤러용 사이트 요약 (llms.txt 관례)"""
+    lines = ["# 최시준 (Choi Si-jun) — choisijun.com", "",
+             "> 공실개발·공간수익화 전문가. 10년+ 340개+ 공간을 직접 기획·오픈·운영. ㈜블랭크 대표, 쏘플파티룸(전국 120여 개 무인 파티룸) 대표. "
+             "건물주·중개사의 공실 문제를 구조로 풀고, 창업자에게 실패확률을 줄이는 판단기준을 전한다. 기업·대학 강의, 전자책.", "",
+             "## 핵심 페이지"]
+    for k in ['home', 'about', 'services', 'cases', 'portfolio', 'insights', 'faq', 'glossary', 'brands', 'socialfactory', 'books', 'contact']:
+        pg = PAGE_BY_KEY.get(k)
+        if pg:
+            lines.append(f"- [{pg['crumb'] or '홈'}]({page_url(pg['file'])}): {pg['desc']}")
+    lines += ["", "## 지역별 포트폴리오"]
+    for r in REGION_PAGES:
+        pg = PAGE_BY_KEY['region-' + REGION_SLUG[r]]
+        lines.append(f"- [{r}]({page_url(pg['file'])}): {pg['desc']}")
+    lines += ["", "## 인사이트(글)"]
+    for a in INSIGHTS:
+        lines.append(f"- [{a['title']}]({page_url(a['file'])}): {a['desc']}")
+    lines += ["", "## 연락", f"- 문의: {DOMAIN}/contact", "- Threads: https://www.threads.com/@sijun.choi", "- 쏘플파티룸: https://ssople.com", ""]
+    with io.open('llms.txt', 'w', encoding='utf-8') as f:
+        f.write('\n'.join(lines))
+    print('built llms.txt')
+
+
 def fill(text, fname):
     def rep(m):
         k = m.group(1)
@@ -837,7 +1228,7 @@ def region_body(page):
 # ------------------------------------------------------------------
 # 링크 정리 · sitemap · rss
 # ------------------------------------------------------------------
-LINK_RE = re.compile(r'(href)="(?:\./)?([a-z0-9-]+)\.html((?:\?[^"#]*)?(?:#[^"]*)?)"')
+LINK_RE = re.compile(r'(href)="(?:\.\./|\./)?((?:insights/)?[a-z0-9-]+)\.html((?:\?[^"#]*)?(?:#[^"]*)?)"')
 
 
 def finalize_links(text):
@@ -847,8 +1238,9 @@ def finalize_links(text):
             return m.group(0)
         return f'{attr}="{"/" if name == "index" else "/" + name}{rest}"'
     text = LINK_RE.sub(rw, text)
+    text = re.sub(r'((?:src|srcset|href|poster|data-src-lg|data-src-sm)=")\.\./assets/', r'\1assets/', text)
     # 자산 경로를 루트 기준으로 (없는 주소의 404 화면에서도 깨지지 않도록)
-    text = re.sub(r'((?:src|href|poster|data-src-lg|data-src-sm)=")assets/', r'\1/assets/', text)
+    text = re.sub(r'((?:src|srcset|href|poster|data-src-lg|data-src-sm)=")assets/', r'\1/assets/', text)
     text = text.replace('href="styles.css"', f'href="/styles.css?v={VERSION}"')
     text = text.replace('src="script.js"', f'src="/script.js?v={VERSION}"')
     return text
@@ -858,14 +1250,42 @@ def indexable():
     return [p for p in PAGES if not p.get('noindex')]
 
 
+# 페이지 내용이 마지막으로 바뀐 날 (검색엔진은 매번 바뀌는 날짜보다 실제 수정일을 믿는다)
+#   본문을 고쳤다면 그 페이지의 날짜를 오늘로 바꿔 주세요. 인사이트 글은 글 머리말의 date/updated 를 씁니다.
+CONTENT_DATES = {
+    'home': '2026-10-11', 'about': '2026-10-11', 'brands': '2026-10-11', 'community': '2026-09-07', 'books': '2026-10-11',
+    'cases': '2026-10-11', 'services': '2026-10-11', 'portfolio': '2026-10-11', 'references': '2026-10-11',
+    'media': '2026-10-11', 'contact': '2026-10-11', 'socialfactory': '2026-10-11', 'insights': '2026-10-11',
+    'faq': '2026-10-11', 'glossary': '2026-10-11',
+}
+DATA_DATE = (PF or {}).get('meta', {}).get('source', '')
+DATA_DATE = re.search(r'(\d{4}-\d{2}-\d{2})', DATA_DATE).group(1) if re.search(r'\d{4}-\d{2}-\d{2}', DATA_DATE) else '2026-10-11'
+
+
+def page_date(p):
+    if p.get('article'):
+        return p['article']['updated']
+    if p['key'].startswith('region-'):
+        return max(DATA_DATE, '2026-10-11')
+    return CONTENT_DATES.get(p['key'], '2026-09-07')
+
+
 def build_sitemap():
     prio = {'home': '1.0', 'about': '0.9', 'portfolio': '0.9', 'cases': '0.9', 'services': '0.9', 'contact': '0.8',
-            'brands': '0.8', 'socialfactory': '0.8'}
+            'brands': '0.8', 'socialfactory': '0.8', 'insights': '0.9', 'faq': '0.8', 'glossary': '0.7'}
     urls = []
     for p in indexable():
-        pr = prio.get(p['key'], '0.7' if p['key'].startswith('region-') else '0.6')
-        urls.append(f"  <url><loc>{page_url(p['file'])}</loc><lastmod>{TODAY}</lastmod><priority>{pr}</priority></url>")
-    xml = ('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        pr = prio.get(p['key'], '0.8' if p['key'].startswith('insight-') else ('0.7' if p['key'].startswith('region-') else '0.6'))
+        extra = ''
+        if p['key'] in ('home', 'media'):
+            extra = (f"\n    <video:video><video:thumbnail_loc>{DOMAIN}/assets/video/showreel-poster.jpg</video:thumbnail_loc>"
+                     f"<video:title>최시준 쇼릴 2026</video:title><video:description>{esc(VIDEO['description'])}</video:description>"
+                     f"<video:content_loc>{DOMAIN}/assets/video/showreel-2026-1080.mp4</video:content_loc>"
+                     f"<video:duration>15</video:duration><video:publication_date>2026-10-10T09:00:00+09:00</video:publication_date>"
+                     f"<video:family_friendly>yes</video:family_friendly></video:video>")
+        urls.append(f"  <url><loc>{page_url(p['file'])}</loc><lastmod>{page_date(p)}</lastmod><priority>{pr}</priority>{extra}</url>")
+    xml = ('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" '
+           'xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">\n'
            + '\n'.join(urls) + '\n</urlset>\n')
     with io.open('sitemap.xml', 'w', encoding='utf-8') as f:
         f.write(xml)
@@ -873,27 +1293,21 @@ def build_sitemap():
 
 
 # RSS: 네이버·다음 수집 요청용 새 소식 목록 (날짜는 내용이 바뀐 날)
-RSS_DATES = {'portfolio': '2026-10-11', 'socialfactory': '2026-10-11', 'home': '2026-10-11', 'media': '2026-10-10',
-             'brands': '2026-10-11', 'about': '2026-10-10', 'references': '2026-10-11'}
-
-
 def build_rss():
     def rfc822(d):
         dt = datetime.strptime(d, "%Y-%m-%d").replace(hour=9, tzinfo=KST)
         return dt.strftime("%a, %d %b %Y %H:%M:%S +0900")
-    items = []
-    for p in indexable():
-        d = RSS_DATES.get(p['key'], '2026-10-11' if p['key'].startswith('region-') else '2026-09-07')
-        items.append((d, p))
-    items.sort(key=lambda x: x[0], reverse=True)
+    items = [(page_date(p), 0 if p.get('article') else 1, p) for p in indexable()]
+    items.sort(key=lambda x: (x[0], -x[1]), reverse=True)
     rows = []
-    for d, p in items:
+    for d, _, p in items[:40]:
         u = page_url(p['file'])
+        cat = f"\n      <category>{esc(p['article']['category'])}</category>" if p.get('article') else ""
         rows.append(f"""    <item>
       <title>{esc(p['title'])}</title>
       <link>{u}</link>
       <guid isPermaLink="true">{u}</guid>
-      <description>{esc(p['desc'])}</description>
+      <description>{esc(p['desc'])}</description>{cat}
       <pubDate>{rfc822(d)}</pubDate>
     </item>""")
     xml = f"""<?xml version="1.0" encoding="UTF-8"?>
@@ -914,13 +1328,32 @@ def build_rss():
     print(f'built rss.xml ({len(rows)} items)')
 
 
+def add_crumbs(page, body):
+    """하위 페이지 머리에 보이는 경로(홈 / 페이지)를 넣는다 — 구조화 데이터의 BreadcrumbList와 같은 내용"""
+    if page['key'] in ('home', '404') or 'class="crumbs' in body or not page.get('crumb'):
+        return body
+    trail = [("홈", "index.html")]
+    if page.get('parent'):
+        pk, pl = page['parent']
+        trail.append((pl, PAGE_BY_KEY[pk]['file']))
+    trail.append((page['crumb'], None))
+    m = re.search(r'(<section class="page-hero[^"]*">\s*<div class="container[^"]*">\n)', body)
+    if not m:
+        return body
+    return body[:m.end()] + '        ' + crumbs_html(trail) + '\n' + body[m.end():]
+
+
 def build():
+    os.makedirs(INSIGHT_DIR, exist_ok=True)
     for page in PAGES:
         if page.get('region'):
             body = region_body(page)
+        elif page.get('article'):
+            body = article_body(page)
         else:
             with io.open(os.path.join("fragments", page['file']), encoding="utf-8") as f:
                 body = fill(f.read(), page['file'])
+            body = add_crumbs(page, body)
         out = head(page, body) + header_nav(page) + body + footer()
         out = finalize_links(out)
         with io.open(page['file'], "w", encoding="utf-8") as f:
@@ -928,6 +1361,7 @@ def build():
         print(f"built {page['file']} ({len(out)} chars)")
     build_sitemap()
     build_rss()
+    build_llms()
     if VERIFY:
         print('검색엔진 소유확인 태그:', ', '.join(VERIFY))
 
