@@ -16,11 +16,12 @@
 2. https://github.com/naadaa87/choisijun 접속 → **Add file → Upload files**
 3. 압축을 푼 폴더를 열고, **안에 있는 파일과 폴더 전부**를 선택해 업로드 화면에 끌어다 놓습니다
    - `assets`, `data`, `fragments` 폴더와 `_headers` 파일도 함께 넣어야 합니다 (폴더째 끌어다 놓으면 안의 구조가 그대로 올라갑니다)
-   - 전체 50개 파일, 가장 큰 파일 3.7MB → GitHub 웹 업로드 한도(한 번에 100개, 파일당 25MB) 안에 들어옵니다
+   - 전체 61개 파일, 가장 큰 파일 3.7MB → GitHub 웹 업로드 한도(한 번에 100개, 파일당 25MB) 안에 들어옵니다
    - 이름이 같은 파일은 새 버전으로 자동 교체됩니다
 4. 아래 **Commit changes** 클릭
 5. Cloudflare 대시보드 → Workers & Pages → 프로젝트 → **Deployments**에서 `Success` 확인 (1~2분)
-6. 시크릿 창에서 https://choisijun.com/portfolio.html 이 열리면 완료
+6. 시크릿 창에서 https://choisijun.com/portfolio 와 https://choisijun.com/sitemap.xml 이 열리면 완료
+7. 이어서 **`검색등록-가이드.md`** 순서대로 네이버·구글·다음에 등록합니다
 
 > 확인해 주세요: 프로젝트 → Settings → Builds & deployments의 **Build command가 `python3 gen.py`** 인지 봐주세요.
 > 비어 있어도 사이트는 열리지만, 나중에 `fragments/`나 `data/portfolio.json`을 고쳤을 때 반영되지 않습니다.
@@ -136,14 +137,16 @@ Cloudflare Pages는 **zip 업로드로 만든 프로젝트를 나중에 Git 연�
 
 ```
 choisijun/
-├── index.html ~ 404.html   ← 완성된 페이지 12개 (자동 생성물)
+├── index.html … 404.html   ← 완성된 페이지 19개 (자동 생성물, 지역별 페이지 포함)
 ├── fragments/              ← 페이지 본문 원본 (여기를 수정)
 ├── data/portfolio.json     ← 포트폴리오 공개 데이터
 ├── assets/                 ← 사진, 파비콘
 │   └── video/              ← 쇼릴 영상과 첫 장면 이미지
 ├── styles.css, script.js   ← 디자인 / 기능
 ├── gen.py                  ← 페이지 생성기
+├── search-verification.txt ← 검색엔진 소유확인 코드
 ├── _headers                ← 캐시·보안 설정
-├── robots.txt, sitemap.xml ← 검색엔진용
-└── README.md               ← 전체 운영 안내 (포트폴리오 데이터·쇼릴 교체 방법 포함)
+├── robots.txt              ← 검색엔진 안내 (다음 인증 줄은 맨 끝)
+├── sitemap.xml, rss.xml    ← 검색엔진용 (자동 생성)
+└── README.md               ← 전체 운영 안내
 ```

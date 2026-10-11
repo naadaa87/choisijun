@@ -1769,3 +1769,121 @@ html, body { overflow-x: hidden; }
 @media (max-width: 1024px) {
   .hero-visual { order: 0; }
 }
+
+/* =========================================================
+   v6 — 전국 지도 · 지역별 포트폴리오 · 공실개발 프로젝트 · 소셜팩토리
+   ========================================================= */
+.pf-nation { display: grid; grid-template-columns: minmax(300px, 400px) 1fr; gap: 24px; align-items: start; }
+.pf-map-card { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 20px 20px 16px; }
+.pf-tilemap { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.pf-tile {
+  position: relative; min-height: 74px; border-radius: 6px; padding: 8px 9px 7px;
+  display: flex; flex-direction: column; justify-content: space-between; gap: 2px;
+  border: 1px solid transparent; color: var(--ink); text-decoration: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.pf-tile-name { font-size: 0.74rem; font-weight: 700; letter-spacing: -0.01em; }
+.pf-tile-num { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1; font-variant-numeric: tabular-nums; }
+.pf-tile-sub { font-size: 0.56rem; letter-spacing: 0.02em; opacity: 0.85; }
+.pf-tile.s0 { background: transparent; border: 1px dashed var(--line); color: var(--concrete-soft); }
+.pf-tile.s0 .pf-tile-num { font-size: 1rem; font-weight: 600; }
+.pf-tile.s1 { background: #FFE9E1; }
+.pf-tile.s2 { background: #FFC9B4; }
+.pf-tile.s3 { background: #FF9C76; }
+.pf-tile.s4 { background: #FF6532; }
+.pf-tile.s5 { background: #B8360B; color: #fff; }
+.pf-tile.is-plan { background: #fff; border: 1.5px solid var(--signal); }
+a.pf-tile:hover, a.pf-tile:focus-visible { transform: translateY(-2px); box-shadow: 4px 4px 0 rgba(17, 17, 17, 0.12); }
+.pf-map-legend { display: flex; align-items: center; gap: 4px; margin-top: 14px; font-size: 0.62rem; color: var(--concrete); }
+.pf-map-legend i { width: 18px; height: 10px; border-radius: 2px; display: inline-block; }
+.pf-map-legend i.s1 { background: #FFE9E1; } .pf-map-legend i.s2 { background: #FFC9B4; }
+.pf-map-legend i.s3 { background: #FF9C76; } .pf-map-legend i.s4 { background: #FF6532; } .pf-map-legend i.s5 { background: #B8360B; }
+.pf-map-legend span:first-child { margin-right: 4px; }
+.pf-map-legend span:last-child { margin-left: 4px; }
+.pf-map-note { font-size: 0.62rem; color: var(--concrete-soft); margin-top: 8px; }
+.pf-nation-side h3 { font-size: 1.05rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 12px; }
+.pf-region-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.pf-region-card {
+  display: flex; flex-direction: column; gap: 4px; background: #fff; border: 1px solid var(--line); border-radius: 8px;
+  padding: 16px 16px 14px; text-decoration: none; color: var(--ink); transition: border-color 0.2s ease, transform 0.2s ease;
+}
+.pf-region-card:hover { border-color: var(--ink); transform: translateY(-2px); }
+.pf-region-card > .mono { font-size: 0.6rem; letter-spacing: 0.14em; color: var(--concrete); }
+.pf-region-card strong { font-size: 1.15rem; font-weight: 800; letter-spacing: -0.02em; }
+.pf-region-card strong em { font-style: normal; color: var(--signal-deep); margin-left: 4px; font-variant-numeric: tabular-nums; }
+.pf-region-areas { font-size: 0.78rem; color: var(--concrete); line-height: 1.5; }
+.pf-region-go { font-size: 0.66rem; color: var(--ink); margin-top: 4px; border-bottom: 1.5px solid var(--signal); align-self: flex-start; padding-bottom: 1px; }
+.pf-areas { margin-top: 34px; }
+.pf-areas h3 { font-size: 1.05rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 12px; }
+.pf-area-index { display: flex; flex-wrap: wrap; gap: 6px; }
+.pf-area-chip {
+  display: inline-flex; align-items: center; gap: 5px; background: #fff; border: 1px solid var(--line); border-radius: 999px;
+  padding: 5px 11px; font-size: 0.8rem; color: var(--ink); text-decoration: none; transition: border-color 0.15s ease;
+}
+.pf-area-chip:hover { border-color: var(--ink); }
+.pf-area-chip em { font-style: normal; font-weight: 700; font-size: 0.74rem; color: var(--signal-deep); font-variant-numeric: tabular-nums; }
+.pf-nation-home { margin-top: 26px; }
+.pf-nation-home .pf-mini-grid { grid-template-columns: 1fr 1fr; margin-top: 0; }
+
+/* 공실개발 프로젝트 */
+.pf-proj-summary { font-size: 0.74rem; color: var(--concrete); margin-bottom: 14px; }
+.pf-proj-list { list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.pf-proj { background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px 11px; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.pf-proj-area { font-size: 0.62rem; color: var(--signal-deep); letter-spacing: 0.06em; }
+.pf-proj strong { font-size: 0.94rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1.4; }
+.pf-proj-meta { font-size: 0.76rem; color: var(--concrete); }
+.pf-proj-by { font-size: 0.58rem; color: var(--concrete-soft); letter-spacing: 0.04em; }
+.pf-spot-next { margin: 14px 0 14px; font-size: 0.84rem; color: var(--concrete); line-height: 1.6; }
+.pf-spot-next .mono { color: var(--signal-deep); font-size: 0.64rem; letter-spacing: 0.14em; margin-right: 6px; }
+.pf-stack h3 a { color: inherit; border-bottom: 1.5px solid var(--signal); }
+
+/* 지역별 페이지 */
+.crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 0.7rem; color: var(--concrete); margin-bottom: 16px; }
+.crumbs a { color: var(--ink); border-bottom: 1px solid var(--line); }
+.crumbs a:hover { border-color: var(--signal); }
+.pf-area-block { margin-top: 36px; scroll-margin-top: calc(var(--header-h) + 14px); }
+.pf-area-title { display: flex; align-items: baseline; gap: 10px; font-size: 1.25rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+.pf-area-title .mono { font-size: 0.68rem; color: var(--signal-deep); letter-spacing: 0.06em; font-weight: 600; }
+.pf-grid-static .pf-card { transition: border-color 0.2s ease; }
+
+/* 소셜팩토리 */
+.sf-side { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 22px 22px 20px; }
+.sf-side h3 { font-size: 1.05rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 10px; }
+.sf-uses { list-style: none; display: grid; gap: 6px; margin-bottom: 14px; }
+.sf-uses li { font-size: 0.88rem; padding-left: 14px; position: relative; }
+.sf-uses li::before { content: ''; position: absolute; left: 0; top: 0.62em; width: 6px; height: 6px; border-radius: 1px; background: var(--signal); }
+.sf-more { font-size: 0.84rem; color: var(--concrete); line-height: 1.65; margin-bottom: 16px; }
+#sf-kondae .pf-spot { grid-template-columns: 1.1fr 0.9fr; }
+
+/* 푸터 지역 링크 */
+.footer-regions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-top: 30px; padding-top: 18px; border-top: 1px solid var(--navy-800); font-size: 0.72rem; color: var(--concrete-soft); }
+.footer-regions span { color: var(--signal); margin-right: 4px; }
+.footer-regions a { color: rgba(255, 255, 255, 0.72); }
+.footer-regions a:hover { color: #fff; }
+
+@media (max-width: 1100px) {
+  .pf-proj-list { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 900px) {
+  .pf-nation { grid-template-columns: 1fr; }
+  .pf-map-card { max-width: 520px; }
+  #sf-kondae .pf-spot { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .pf-proj-list { grid-template-columns: 1fr 1fr; gap: 6px; }
+  .pf-proj { padding: 10px 10px 9px; }
+  .pf-proj strong { font-size: 0.86rem; }
+  .pf-proj-meta { font-size: 0.7rem; }
+  .pf-region-grid { grid-template-columns: 1fr 1fr; }
+  .pf-region-card { padding: 13px 12px 12px; }
+  .pf-region-card strong { font-size: 1rem; }
+  .pf-tile { min-height: 62px; padding: 7px 7px 6px; }
+  .pf-tile-num { font-size: 1.15rem; }
+  .pf-tile-name { font-size: 0.68rem; }
+  .pf-map-card { padding: 14px 12px 12px; }
+  .pf-area-title { font-size: 1.1rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pf-tile, .pf-region-card { transition: none; }
+  a.pf-tile:hover, .pf-region-card:hover { transform: none; }
+}

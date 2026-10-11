@@ -3,5 +3,9 @@ Allow: /
 Disallow: /fragments/
 Disallow: /data/
 Disallow: /*.md$
+Disallow: /search-verification.txt
 
 Sitemap: https://choisijun.com/sitemap.xml
+Sitemap: https://choisijun.com/rss.xml
+
+# 다음 웹마스터도구 인증 줄(#DaumWebMasterTool:...)은 이 아래 맨 끝에 붙여넣으세요.

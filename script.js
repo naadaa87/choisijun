@@ -337,7 +337,8 @@ const INQUIRY_MAP = {
   lecture: '강의/세미나 문의',
   media: '인터뷰/미디어 문의',
   partner: '제휴/공동사업 문의',
-  book: '전자책 구매/단체구매 문의'
+  book: '전자책 구매/단체구매 문의',
+  space: '공간 이용·대관 문의'
 };
 
 (function contactModule() {
@@ -657,7 +658,7 @@ async function fetchRemotePosts() {
     if (!top.length) { if (empty) empty.hidden = false; return; }
     list.innerHTML = top.map((p) => `
       <li class="post">
-        <a class="post-head" href="community.html" style="text-decoration:none;">
+        <a class="post-head" href="/community" style="text-decoration:none;">
           <span class="post-cat mono">${escapeHtml(p.category || '기타')}</span>
           <span class="post-title">${escapeHtml(p.title || '')}</span>
           <span class="post-meta mono">${escapeHtml(p.author || '익명')} · ${formatDate(p.created_at)}</span>
@@ -696,23 +697,23 @@ const SEED_REFS = [
   { id: 'r-12', year: '2023', category: '브랜드',     title: '레스텔 — 도심 웰니스 스테이 런칭', desc: 'REST+HOTEL. 동양적 무드의 휴식 특화 스테이 공간(신촌).', link: '' },
   { id: 'r-14', year: '2024', category: '강의·교육',  title: '기업 · 대학 · 퇴사학교 강연', desc: '공간수익화, 무인운영, 실행형 창업을 주제로 한 강의 활동.', link: '' },
   { id: 'r-15', year: '2025', category: '공간개발',   title: '전국 120여 개 공간 운영', desc: '연간 20만여 명이 방문하는 전국 단위 공간 네트워크 운영 — 모두 직접 설계·시공.', link: 'https://ssople.com' },
-  { id: 'r-16', year: '2025', category: '공간개발',   title: '비선호층 공실개발 프로젝트 다수 수행', desc: '고층·지하·장기 공실을 목적형 수익공간으로 전환 — 유형별 상세는 사례 페이지 참고.', link: 'cases.html' },
+  { id: 'r-16', year: '2025', category: '공간개발',   title: '비선호층 공실개발 프로젝트 다수 수행', desc: '고층·지하·장기 공실을 목적형 수익공간으로 전환 — 유형별 상세는 사례 페이지 참고.', link: '/cases' },
   { id: 'r-17', year: '2026', category: '강의·교육',  title: '공간대여 창업 아카데미 · 오너스클럽 운영', desc: '검증된 체크리스트 기반 창업 교육과 수료생 네트워크 운영.', link: '' },
   { id: 'r-18', year: '2026', category: '파트너십',   title: '중개법인 · 금융 파트너 협업 확대', desc: '공실 매물 개발 협업, NPL·개발 프로젝트 등 파트너십 확장 진행 중.', link: '' },
   { id: 'r-19', year: '2016~', category: '강의·교육',  title: '삼성전자 · 현대자동차 · 현대카드 등 기업·기관 강연', desc: '우리은행, 코웨이, 3M, 서울시청, 신용보증재단, 한국과학창의재단 등 기업·공공기관 대상 강연 다수. TEDxCAU 연사.', link: '' },
   { id: 'r-20', year: '2016~', category: '강의·교육',  title: '고려대 · 한양대 · 이화여대 등 30여 개 대학 강연', desc: '중앙대, 부산대, 동국대, 홍익대, 전남대, 인천대, 순천향대 등 전국 대학 창업 강의·특강.', link: '' },
   { id: 'r-21', year: '2016~', category: '강의·교육',  title: "퇴사학교(T-School) 학과장 · '부업가정신' 2년 완판", desc: '직장인 대상 실행형 창업 강의로 2년간 완판을 기록한 대표 강의.', link: '' },
-  { id: 'r-22', year: '2015~', category: '언론·미디어', title: 'KBS 8시뉴스 · JTBC · 중국 CCTV · MBC 다큐 출연', desc: '청년 창업, 퇴사 트렌드, 공간 비즈니스를 주제로 한 방송 인터뷰·보도. EBS, 매경이코노미 등 지면 다수.', link: 'media.html' },
+  { id: 'r-22', year: '2015~', category: '언론·미디어', title: 'KBS 8시뉴스 · JTBC · 중국 CCTV · MBC 다큐 출연', desc: '청년 창업, 퇴사 트렌드, 공간 비즈니스를 주제로 한 방송 인터뷰·보도. EBS, 매경이코노미 등 지면 다수.', link: '/media' },
   { id: 'r-23', year: '2016~', category: '파트너십',   title: '한국스타트업협회 위원장 · 청년허브 심사위원', desc: '청년허브 공간지원 심사위원, 로컬크리에이터 평가위원, 사단법인 청년위함 연구소장 등 대외 활동.', link: '' },
   { id: 'r-24', year: '2026', category: '브랜드',     title: '공백 — 공실개발 플랫폼 vacancy.co.kr 오픈', desc: '공실 진단부터 수익공간 개발까지, 공실 솔루션 전용 사이트 구축·공개.', link: 'https://vacancy.co.kr/' },
   { id: 'r-25', year: '2026', category: '공간개발',   title: 'TGRZ SPACE — 통건물 마스터리스 사업 런칭', desc: '건물 전체를 임차·개발·운영하는 통건물 전담 브랜드와 사이트 공개.', link: 'https://tgrzspace.pages.dev/' },
   { id: 'r-26', year: '2026', category: '파트너십',   title: '오르비스중개법인 — 부동산 중개 파트너 운영', desc: '공실·수익형 매물의 발굴과 중개를 전담하는 직영 중개법인 사이트 공개.', link: 'https://orbisestate.pages.dev/' },
-  { id: 'r-27', year: '2026', category: '브랜드',     title: '개인 브랜드 허브 choisijun.com 구축', desc: '사례·포트폴리오·레퍼런스·미디어·커뮤니티·전자책을 한곳에 모은 공식 홈페이지.', link: 'index.html' },
-  { id: 'r-28', year: '2026', category: '강의·교육',  title: "전자책 시리즈 2종 기획 — '공실은 자산이다' 외", desc: "'예약되는 공간'까지 — 340개+ 공간의 판단기준을 담은 전자책 시리즈 준비.", link: 'books.html' },
+  { id: 'r-27', year: '2026', category: '브랜드',     title: '개인 브랜드 허브 choisijun.com 구축', desc: '사례·포트폴리오·레퍼런스·미디어·커뮤니티·전자책을 한곳에 모은 공식 홈페이지.', link: '/' },
+  { id: 'r-28', year: '2026', category: '강의·교육',  title: "전자책 시리즈 2종 기획 — '공실은 자산이다' 외", desc: "'예약되는 공간'까지 — 340개+ 공간의 판단기준을 담은 전자책 시리즈 준비.", link: '/books' },
   { id: 'r-29', year: '2026', category: '파트너십',   title: 'AI 에이전트 13종 구축 — 콘텐츠 제작부터 상권 분석까지', desc: '콘텐츠 자산화, 문의 선별·답변 초안, CS 응대, 리뷰 모니터링, 공실 매물·상권 스크리닝, 레퍼런스 아카이빙, 운영 이상감지, 강연 설계, 주간 브리핑, 가맹점 지원, 관계·기회 관리까지 실무에 적용.', link: '' },
   { id: 'r-30', year: '2026', category: '파트너십',   title: '마이웍스 — 혼자 경영하는 사람의 업무 운영 시스템', desc: '업무·프로젝트·할 일을 한곳에서 관리하고, 사람과 AI로 연결하는 업무 운영 시스템을 만들어 공개.', link: 'https://myworkspro.pages.dev/' },
-  { id: 'r-31', year: '2026', category: '언론·미디어', title: '쇼릴 2026 공개', desc: '340개+ 공간부터 쏘플파티룸, AI 에이전트, 마이웍스, 강의와 전자책까지 15초로 담은 모션 쇼릴.', link: 'media.html#showreel' },
-  { id: 'r-32', year: '2026', category: '공간개발',   title: '공간 레퍼런스 아카이브 정리 · 포트폴리오 공개', desc: '2015~2026년 공간 기록을 검증해 공개 가능한 공간을 지역·유형·브랜드별 포트폴리오로 정리.', link: 'portfolio.html' }
+  { id: 'r-31', year: '2026', category: '언론·미디어', title: '쇼릴 2026 공개', desc: '340개+ 공간부터 쏘플파티룸, AI 에이전트, 마이웍스, 강의와 전자책까지 15초로 담은 모션 쇼릴.', link: '/media#showreel' },
+  { id: 'r-32', year: '2026', category: '공간개발',   title: '공간 레퍼런스 아카이브 최종본 · 전국 포트폴리오 공개', desc: '2015~2026년 직접 기획·오픈·운영한 공간과 공실개발 프로젝트를 전국 지역별 포트폴리오로 정리. 서울·경기·인천·충청·경상·전라 지역 페이지 공개.', link: '/portfolio' }
 ];
 
 function loadUserRefs() {
@@ -1155,7 +1156,7 @@ function fileToResizedDataUrl(file) {
   }));
 
   // 같은 페이지 안의 필터 링크는 새로고침 없이 처리
-  $$('a[href^="portfolio.html?"]').forEach((a) => a.addEventListener('click', (e) => {
+  $$('a[href^="/portfolio?"], a[href^="portfolio.html?"]').forEach((a) => a.addEventListener('click', (e) => {
     e.preventDefault();
     const url = new URL(a.getAttribute('href'), location.href);
     readURL(url);

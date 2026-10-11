@@ -1,0 +1,12 @@
+# 검색엔진 소유확인 코드
+# 네이버·구글·빙에서 받은 HTML 태그를 '=' 뒤에 통째로 붙여넣고 저장(Commit)하면,
+# 다음 배포 때 모든 페이지 <head>에 자동으로 들어갑니다. 태그 전체도, content 값만 넣어도 됩니다.
+#
+# 예) naver = <meta name="naver-site-verification" content="1a2b3c4d5e6f..." />
+#     google = <meta name="google-site-verification" content="AbCdEf123..." />
+#
+# 다음(카카오)은 방식이 달라 robots.txt 맨 끝에 한 줄을 붙여넣습니다. (검색등록-가이드.md 참고)
+
+naver =
+google =
+bing =
