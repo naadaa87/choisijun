@@ -10,21 +10,31 @@
 
 ---
 
-## 이번 최종본 올리기 (이미 연결해 둔 경우, 약 5분)
+## 이번 최종본 올리기 (이미 연결해 둔 경우, 약 10분)
+
+이번 버전은 파일이 149개라 GitHub 웹 업로드 한도(한 번에 100개)를 넘습니다. **두 번에 나눠** 올립니다.
 
 1. `choisijun-homepage-FINAL.zip` 압축을 풉니다
 2. https://github.com/naadaa87/choisijun 접속 → **Add file → Upload files**
-3. 압축을 푼 폴더를 열고, **안에 있는 파일과 폴더 전부**를 선택해 업로드 화면에 끌어다 놓습니다
-   - `assets`, `data`, `fragments` 폴더와 `_headers` 파일도 함께 넣어야 합니다 (폴더째 끌어다 놓으면 안의 구조가 그대로 올라갑니다)
-   - 전체 61개 파일, 가장 큰 파일 3.7MB → GitHub 웹 업로드 한도(한 번에 100개, 파일당 25MB) 안에 들어옵니다
+3. **1차 업로드 — `assets` 폴더 하나만** 끌어다 놓고 **Commit changes** (59개 파일)
+4. 다시 **Add file → Upload files**
+5. **2차 업로드 — `assets`를 뺀 나머지 전부**를 선택해 끌어다 놓고 **Commit changes** (90개 파일)
+   - 새로 생긴 `insights`, `content`, `setup` 폴더와 `site-config.js`, `admin.html`, `admin.js`, `login.html`, `account.html`, `privacy.html`, `terms.html` 이 꼭 들어가야 합니다
+   - ⚠️ 이미 `site-config.js`에 키를 넣어 두셨다면 **이 파일은 빼고** 올리세요 (넣어둔 키가 지워집니다)
+   - `fragments`, `data` 폴더와 `_headers` 파일도 함께 넣습니다
    - 이름이 같은 파일은 새 버전으로 자동 교체됩니다
-4. 아래 **Commit changes** 클릭
-5. Cloudflare 대시보드 → Workers & Pages → 프로젝트 → **Deployments**에서 `Success` 확인 (1~2분)
-6. 시크릿 창에서 https://choisijun.com/portfolio 와 https://choisijun.com/sitemap.xml 이 열리면 완료
-7. 이어서 **`검색등록-가이드.md`** 순서대로 네이버·구글·다음에 등록합니다
+6. Cloudflare 대시보드 → Workers & Pages → 프로젝트 → **Deployments**에서 `Success` 확인 (1~2분)
+7. 시크릿 창에서 아래 주소가 열리면 완료
+   - https://choisijun.com/insights
+   - https://choisijun.com/insights/vacancy-development-guide
+   - https://choisijun.com/faq
+   - https://choisijun.com/sitemap.xml (주소 33개)
+8. 네이버 서치어드바이저와 구글 서치콘솔에 sitemap을 **다시 제출**합니다 (`검색등록-가이드.md`의 '새 글을 올린 뒤' 참고)
 
-> 확인해 주세요: 프로젝트 → Settings → Builds & deployments의 **Build command가 `python3 gen.py`** 인지 봐주세요.
-> 비어 있어도 사이트는 열리지만, 나중에 `fragments/`나 `data/portfolio.json`을 고쳤을 때 반영되지 않습니다.
+> 꼭 확인해 주세요: 프로젝트 → Settings → Builds & deployments의 **Build command가 `python3 gen.py`** 인지 봐주세요.
+> 지금처럼 비어 있어도 이번에 올린 완성 페이지는 그대로 열립니다. 하지만 앞으로 `content/insights/`에 새 글을 쓰거나 `fragments/`를 고쳤을 때는 빌드 명령이 있어야 페이지가 새로 만들어집니다.
+
+> 2차 업로드에서 2분 넘게 반응이 없으면 `insights`, `content` 폴더를 따로 한 번 더 올려 주세요.
 
 > `.gitignore`처럼 점(.)으로 시작하는 파일은 맥에서 기본적으로 숨겨져 보이지 않습니다. 이 파일은 빠져도 사이트에는 영향이 없습니다.
 
@@ -137,16 +147,21 @@ Cloudflare Pages는 **zip 업로드로 만든 프로젝트를 나중에 Git 연�
 
 ```
 choisijun/
-├── index.html … 404.html   ← 완성된 페이지 19개 (자동 생성물, 지역별 페이지 포함)
+├── index.html … 404.html   ← 완성된 페이지 22개 (자동 생성물, 지역별 페이지 포함)
+├── insights/               ← 완성된 인사이트 글 12편 (자동 생성물)
+├── content/insights/       ← 인사이트 글 원고 (새 글은 여기에 .md 로)
 ├── fragments/              ← 페이지 본문 원본 (여기를 수정)
 ├── data/portfolio.json     ← 포트폴리오 공개 데이터
 ├── assets/                 ← 사진, 파비콘
 │   └── video/              ← 쇼릴 영상과 첫 장면 이미지
+├── site-config.js          ← 기능 설정값 (덮어쓰기 주의)
+├── setup/                  ← Supabase 설정 SQL
 ├── styles.css, script.js   ← 디자인 / 기능
 ├── gen.py                  ← 페이지 생성기
 ├── search-verification.txt ← 검색엔진 소유확인 코드
 ├── _headers                ← 캐시·보안 설정
 ├── robots.txt              ← 검색엔진 안내 (다음 인증 줄은 맨 끝)
 ├── sitemap.xml, rss.xml    ← 검색엔진용 (자동 생성)
+├── llms.txt                ← AI 검색용 사이트 요약 (자동 생성)
 └── README.md               ← 전체 운영 안내
 ```

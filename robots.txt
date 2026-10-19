@@ -4,6 +4,7 @@ Disallow: /fragments/
 Disallow: /data/
 Disallow: /content/
 Disallow: /setup/
+Disallow: /admin
 Disallow: /*.md$
 Disallow: /search-verification.txt
 

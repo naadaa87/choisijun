@@ -193,6 +193,8 @@ PAGES = [
          title="로그인 · 회원가입 | 최시준", desc="최시준 홈페이지 회원 로그인과 회원가입. 회원이 되면 문의 진행 상황을 확인하고 커뮤니티에 글을 남길 수 있습니다.", keywords=""),
     dict(key="account", file="account.html", nav=None, crumb="마이페이지", schema="WebPage", noindex=True,
          title="마이페이지 | 최시준", desc="내 정보, 문의 진행 상황, 커뮤니티에 쓴 글을 확인합니다.", keywords=""),
+    dict(key="admin", file="admin.html", nav=None, crumb="관리자", schema="WebPage", noindex=True,
+         title="관리자 페이지 | 최시준", desc="최시준 홈페이지 관리자 전용 페이지입니다.", keywords=""),
     dict(key="privacy", file="privacy.html", nav=None, crumb="개인정보처리방침", schema="WebPage",
          title="개인정보처리방침 | 최시준 · ㈜블랭크", desc="최시준 홈페이지(choisijun.com)를 운영하는 ㈜블랭크의 개인정보처리방침입니다. 수집 항목, 이용 목적, 보관 기간, 처리 위탁, 이용자 권리를 안내합니다.",
          keywords="최시준 개인정보처리방침, ㈜블랭크 개인정보처리방침"),
@@ -1260,6 +1262,7 @@ def finalize_links(text):
     text = text.replace('href="styles.css"', f'href="/styles.css?v={VERSION}"')
     text = text.replace('src="script.js"', f'src="/script.js?v={VERSION}"')
     text = text.replace('src="site-config.js"', f'src="/site-config.js?v={VERSION}"')
+    text = text.replace('src="admin.js"', f'src="/admin.js?v={VERSION}"')
     return text
 
 
@@ -1372,6 +1375,8 @@ def build():
                 body = fill(f.read(), page['file'])
             body = add_crumbs(page, body)
         out = head(page, body) + header_nav(page) + body + footer()
+        if page['key'] == 'admin':
+            out = out.replace('<script src="script.js" defer></script>', '<script src="script.js" defer></script>\n  <script src="admin.js" defer></script>')
         out = finalize_links(out)
         with io.open(page['file'], "w", encoding="utf-8") as f:
             f.write(out)

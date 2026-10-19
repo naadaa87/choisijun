@@ -320,9 +320,39 @@ const Auth = (function authCore() {
     });
   }
   paint();
-  Auth.ready.then(paint);
+  Auth.ready.then(() => { paint(); refreshUnread(); });
   Auth.onChange(paint);
 })();
+
+/* 읽지 않은 알림 수 — 헤더 아이콘에 점으로 표시 (3분 동안은 저장해 둔 값을 씀) */
+async function refreshUnread(force) {
+  const links = $$('[data-account-link]');
+  if (!links.length || !Auth.enabled) return;
+  const show = (n) => links.forEach((a) => {
+    let dot = $('.na-badge', a);
+    if (!n) { if (dot) dot.remove(); return; }
+    if (!dot) { dot = document.createElement('span'); dot.className = 'na-badge'; a.appendChild(dot); }
+    dot.textContent = n > 9 ? '9+' : String(n);
+    dot.setAttribute('aria-label', `읽지 않은 알림 ${n}개`);
+  });
+  if (!Auth.user) { show(0); return; }
+  const KEY = 'csj_unread_v1';
+  try {
+    const c = JSON.parse(sessionStorage.getItem(KEY) || 'null');
+    if (!force && c && c.uid === Auth.user.id && Date.now() - c.at < 180000) { show(c.n); return; }
+  } catch (_) { /* ignore */ }
+  try {
+    const t = await Auth.token();
+    const [rows, reads] = await Promise.all([
+      sbSelect('notices', 'select=id&order=created_at.desc&limit=30', t),
+      sbSelect('notice_reads', `user_id=eq.${Auth.user.id}&select=notice_id&limit=500`, t)
+    ]);
+    const read = new Set(reads.map((r) => r.notice_id));
+    const n = rows.filter((r) => !read.has(r.id)).length;
+    try { sessionStorage.setItem(KEY, JSON.stringify({ uid: Auth.user.id, n, at: Date.now() })); } catch (_) { /* ignore */ }
+    show(n);
+  } catch (_) { /* 알림 표 미설치 등 — 조용히 넘어감 */ }
+}
 
 /* =========================================================
    헤더 · 내비게이션 · 스크롤 공통
@@ -1756,49 +1786,36 @@ const INQUIRY_STATUS = ['접수', '진행중', '완료'];
     } catch (_) { box.innerHTML = '<li class="acc-empty">글 목록을 불러오지 못했습니다.</li>'; }
   }
 
-  /* 관리자 문의함 */
-  let adminFilter = '';
-  async function loadAdmin() {
-    const box = $('#adminInquiries');
-    const stat = $('#adminStat');
+  /* 알림함 — 관리자가 보낸 알림. 열어 보면 읽음으로 표시 */
+  async function loadNotices() {
+    const box = $('#myNotices');
+    if (!box) return;
     try {
       const t = await Auth.token();
-      const q = `select=*&order=created_at.desc&limit=100${adminFilter ? '&status=eq.' + encodeURIComponent(adminFilter) : ''}`;
-      const rows = await sbSelect(COMMUNITY_BACKEND.inquiriesTable, q, t);
-      let members = null; let waiting = null;
-      try { members = await sbCount(COMMUNITY_BACKEND.profilesTable, '', t); } catch (_) { /* skip */ }
-      try { waiting = await sbCount(COMMUNITY_BACKEND.inquiriesTable, 'status=eq.' + encodeURIComponent('접수'), t); } catch (_) { /* skip */ }
-      stat.textContent = [members != null ? `회원 ${members}명` : '', waiting != null ? `새 문의 ${waiting}건` : ''].filter(Boolean).join(' · ');
-      box.innerHTML = rows.length ? rows.map((r) => `
-        <li class="acc-item" data-id="${escapeHtml(r.id)}">
-          <div class="acc-item-head">${statusBadge(r.status)}<span class="mono">${escapeHtml(r.inquiry_type || '문의')}</span><span class="acc-date mono">${formatDate(r.created_at)}</span></div>
-          <p class="acc-who"><strong>${escapeHtml(r.name || '')}</strong> · ${escapeHtml(r.contact || '')}${r.user_id ? ' · <span class="mono">회원</span>' : ''}</p>
-          <p class="acc-item-text">${escapeHtml(r.message || '')}</p>
-          <div class="acc-admin-ctl">
-            <select class="ad-status" aria-label="상태">${INQUIRY_STATUS.map((s) => `<option${s === (r.status || '접수') ? ' selected' : ''}>${s}</option>`).join('')}</select>
-            <textarea class="ad-reply" rows="2" maxlength="2000" placeholder="회원에게 보일 답변 메모 (선택)">${escapeHtml(r.reply || '')}</textarea>
-            <button class="btn btn-sm btn-primary ad-save" type="button">저장</button>
-          </div>
-        </li>`).join('') : '<li class="acc-empty">해당하는 문의가 없습니다.</li>';
-      $$('.ad-save', box).forEach((b) => b.addEventListener('click', async () => {
-        const li = b.closest('li');
-        b.disabled = true;
-        try {
-          await sbUpdate(COMMUNITY_BACKEND.inquiriesTable, `id=eq.${encodeURIComponent(li.dataset.id)}`, {
-            status: $('.ad-status', li).value, reply: $('.ad-reply', li).value.trim() || null
-          }, await Auth.token());
-          b.textContent = '저장됨';
-          setTimeout(() => { b.textContent = '저장'; b.disabled = false; }, 1200);
-        } catch (_) { alert('저장하지 못했습니다.'); b.disabled = false; }
-      }));
-    } catch (_) { box.innerHTML = '<li class="acc-empty">문의를 불러오지 못했습니다.</li>'; }
+      const [rows, reads] = await Promise.all([
+        sbSelect('notices', 'select=id,created_at,title,body,link,kind&order=created_at.desc&limit=50', t),
+        sbSelect('notice_reads', `user_id=eq.${Auth.user.id}&select=notice_id&limit=500`, t).catch(() => [])
+      ]);
+      const read = new Set(reads.map((r) => r.notice_id));
+      const unread = rows.filter((n) => !read.has(n.id));
+      $('#ntCount').textContent = unread.length ? `새 알림 ${unread.length}` : '';
+      box.innerHTML = rows.length ? rows.map((n) => `
+        <li class="acc-item${read.has(n.id) ? '' : ' is-unread'}">
+          <div class="acc-item-head">${read.has(n.id) ? '' : '<span class="st-badge">NEW</span>'}${n.kind === 'ad' ? '<span class="mono">소식</span>' : '<span class="mono">안내</span>'}<span class="acc-date mono">${formatDate(n.created_at)}</span></div>
+          <p class="acc-item-title">${escapeHtml(n.title || '')}</p>
+          <p class="acc-item-text">${escapeHtml(n.body || '')}</p>
+          ${n.link && /^https?:\/\//.test(n.link) ? `<p class="acc-item-link"><a href="${escapeHtml(n.link)}">바로 가기 →</a></p>` : ''}
+        </li>`).join('') : '<li class="acc-empty">받은 알림이 없습니다.</li>';
+      if (unread.length) {
+        await fetch(`${sbUrl('notice_reads')}?on_conflict=notice_id,user_id`, {
+          method: 'POST',
+          headers: sbHeaders({ Prefer: 'resolution=ignore-duplicates,return=minimal' }, t),
+          body: JSON.stringify(unread.map((n) => ({ notice_id: n.id, user_id: Auth.user.id })))
+        }).catch(() => null);
+        refreshUnread(true);
+      }
+    } catch (_) { box.innerHTML = '<li class="acc-empty">알림을 불러오지 못했습니다.</li>'; }
   }
-  $$('#adminFilters .f-chip').forEach((c) => c.addEventListener('click', () => {
-    $$('#adminFilters .f-chip').forEach((x) => x.classList.remove('is-active'));
-    c.classList.add('is-active');
-    adminFilter = c.dataset.status || '';
-    loadAdmin();
-  }));
 
   async function paint() {
     await Auth.ready;
@@ -1829,9 +1846,10 @@ const INQUIRY_STATUS = ['접수', '진행중', '완료'];
     }
     if (params.get('welcome') || params.get('reset')) history.replaceState(null, '', location.pathname + location.hash);
 
+    loadNotices();
     loadInquiries();
     loadPosts();
-    if (p && p.role === 'admin') { $('#adminBox').hidden = false; loadAdmin(); }
+    if (p && p.role === 'admin') $('#adminBox').hidden = false;
   }
 
   /* 내 정보 저장 */

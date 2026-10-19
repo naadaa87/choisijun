@@ -12,7 +12,7 @@ HTML·CSS·JS로 만든 정적 사이트입니다. GitHub 저장소(`naadaa87/ch
 
 ---
 
-## 1. 페이지 구성 (38쪽)
+## 1. 페이지 구성 (39쪽)
 
 메뉴 순서와 각 페이지 상단 번호(01~10)를 똑같이 맞춰 두었습니다. 메뉴 끝에 '인사이트'가 추가되었습니다. 주소는 `.html` 없이 씁니다(예: `choisijun.com/about`).
 
@@ -37,6 +37,7 @@ HTML·CSS·JS로 만든 정적 사이트입니다. GitHub 저장소(`naadaa87/ch
 | 도움말 | `/glossary` | **새 페이지** 공간사업 용어 사전 23개 (공실개발, 마스터리스, 수익쉐어, 가동률, SPMS 등) |
 | 회원 | `/login` | **새 페이지** 로그인 · 회원가입 · 비밀번호 찾기 (검색 제외) |
 | 회원 | `/account` | **새 페이지** 마이페이지 — 내 정보, 내 문의 진행 상황, 내가 쓴 글, 탈퇴. 관리자 계정이면 받은 문의함 (검색 제외) |
+| 관리 | `/admin` | **새 페이지** 관리자 전용 — 대시보드, 문의 답변·메모, 회원 관리·CSV, 알림·메일 발송, 발송 내역, 커뮤니티, 설정 점검 (메뉴에 없음, 검색 제외) |
 | 안내 | `/privacy`, `/terms` | **새 페이지** 개인정보처리방침, 이용약관 (푸터에 연결) |
 | — | `404.html` | 없는 주소로 들어왔을 때 보이는 화면 |
 
@@ -57,7 +58,9 @@ choisijun/
 │   ├── og/                    ← 페이지별 공유 이미지(1200×630)
 │   └── video/                 ← 쇼릴 영상(1080p·720p)과 첫 장면 이미지
 ├── site-config.js             ← ★ 기능 설정값 (Supabase·Web3Forms 키) — 새 버전 올릴 때 덮어쓰지 않기
-├── setup/supabase-setup.sql   ← 회원·게시판·문의함을 만드는 SQL (Supabase에서 한 번 실행)
+├── setup/supabase-setup.sql   ← 회원·게시판·문의함·알림을 만드는 SQL (Supabase에서 한 번 실행)
+├── setup/send-mail.ts         ← 회원에게 메일을 보내는 Supabase Edge Function 코드
+├── admin.js                   ← 관리자 페이지 기능
 ├── styles.css, script.js      ← 디자인 / 기능
 ├── gen.py                     ← 페이지 생성기 (검색 설정·sitemap·rss 포함)
 ├── search-verification.txt    ← 네이버·구글·빙 소유확인 코드 붙여넣는 곳
@@ -75,7 +78,7 @@ choisijun/
 > 문의 접수·회원가입·게시판을 켜는 설정은 **`site-config.js`** 에서 합니다. 순서는 `기능활성화-가이드.md`를 따라 주세요.
 
 1. GitHub 저장소에서 고칠 파일을 열고 연필 아이콘(Edit) → 수정 → **Commit changes**
-2. Cloudflare가 `python3 gen.py`를 실행해 페이지 38개와 sitemap·rss·llms.txt를 다시 만들고 배포합니다 (1~2분)
+2. Cloudflare가 `python3 gen.py`를 실행해 페이지 39개와 sitemap·rss·llms.txt를 다시 만들고 배포합니다 (1~2분)
 3. 시크릿 창에서 확인
 
 알아둘 점
@@ -263,6 +266,13 @@ related: vacancy-development-guide, basement-upper-floor-vacancy
 ---
 
 ## 10. 변경 기록
+
+**2026.10.11 — 관리자 페이지**
+
+- `/admin` 신설: 대시보드(지금 확인할 일), 문의 관리(상태·답변·이메일 답장·내부 메모), 회원 관리(필터·선택·CSV·권한), 알림·메일 보내기(정보성/광고성, 받는 사람 조건, 미리보기), 발송 내역(읽음 수), 커뮤니티 관리, 설정 점검
+- 회원 알림함: 마이페이지 알림 목록 + 헤더 아이콘에 읽지 않은 알림 수
+- 광고성 발송 보호: 소식 수신 동의 회원만, 제목 (광고), 수신거부 안내, 야간(21시~8시) 발송 차단
+- 메일 발송 함수 `setup/send-mail.ts` (Resend, 관리자만 호출 가능)
 
 **2026.10.11 — 회원가입 · 문의 접수**
 

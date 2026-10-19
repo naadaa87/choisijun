@@ -193,7 +193,9 @@ create policy "inquiries: admin update" on public.inquiries for update to authen
 
 -- 문의를 보낸 사람이 상태·답변을 고치지 못하도록 (관리자 화면은 status, reply 만 수정)
 revoke update on public.inquiries from anon, authenticated;
-grant  update (status, reply) on public.inquiries to authenticated;
+alter table public.inquiries add column if not exists replied_at timestamptz;
+alter table public.inquiries add column if not exists emailed_at timestamptz;
+grant  update (status, reply, replied_at, emailed_at) on public.inquiries to authenticated;
 -- 문의 내용은 보낸 뒤 고칠 수 없게 함 (insert 시 status·reply 를 임의로 넣지 못하도록)
 create or replace function public.inquiry_defaults()
 returns trigger language plpgsql as $$
@@ -207,6 +209,94 @@ $$;
 drop trigger if exists inquiries_defaults on public.inquiries;
 create trigger inquiries_defaults before insert on public.inquiries
   for each row execute function public.inquiry_defaults();
+
+-- ---------------------------------------------------------------
+-- 5. 관리자 페이지 — 문의 메모 · 회원 알림 · 권한 변경
+-- ---------------------------------------------------------------
+-- 5-1. 문의 내부 메모 (관리자만 보고 씀, 회원에게는 보이지 않음)
+create table if not exists public.inquiry_notes (
+  id         uuid primary key default gen_random_uuid(),
+  created_at timestamptz not null default now(),
+  inquiry_id uuid not null references public.inquiries(id) on delete cascade,
+  body       text not null check (char_length(body) <= 2000),
+  author     text
+);
+alter table public.inquiry_notes enable row level security;
+drop policy if exists "notes: admin all" on public.inquiry_notes;
+create policy "notes: admin all" on public.inquiry_notes for all to authenticated
+  using (public.is_admin()) with check (public.is_admin());
+
+-- 5-2. 회원 알림 (마이페이지 알림함 + 이메일 발송 기록)
+create table if not exists public.notices (
+  id              uuid primary key default gen_random_uuid(),
+  created_at      timestamptz not null default now(),
+  title           text not null check (char_length(title) <= 120),
+  body            text not null check (char_length(body) <= 5000),
+  link            text check (char_length(link) <= 300),
+  kind            text not null default 'info' check (kind in ('info', 'ad')),
+  audience        text not null default 'all' check (audience in ('all', 'marketing', 'type', 'selected')),
+  member_type     text,
+  recipient_ids   uuid[],
+  channels        text[] not null default array['site'],
+  recipient_count int not null default 0,
+  email_sent      int not null default 0,
+  email_failed    int not null default 0,
+  sent_by         uuid default auth.uid() references auth.users(id) on delete set null
+);
+alter table public.notices enable row level security;
+
+-- 회원이 받아볼 알림인지 (광고성은 소식 수신에 동의한 회원만)
+create or replace function public.notice_for_me(n public.notices)
+returns boolean language sql stable security definer set search_path = '' as $$
+  select exists (
+    select 1 from public.profiles p
+    where p.id = auth.uid()
+      and 'site' = any(n.channels)
+      and (n.kind = 'info' or p.marketing)
+      and (
+        n.audience = 'all'
+        or (n.audience = 'marketing' and p.marketing)
+        or (n.audience = 'type' and p.member_type = n.member_type)
+        or (n.audience = 'selected' and p.id = any(n.recipient_ids))
+      )
+  );
+$$;
+
+drop policy if exists "notices: read mine"    on public.notices;
+drop policy if exists "notices: admin write"  on public.notices;
+drop policy if exists "notices: admin update" on public.notices;
+drop policy if exists "notices: admin delete" on public.notices;
+create policy "notices: read mine"    on public.notices for select to authenticated using (public.is_admin() or public.notice_for_me(notices));
+create policy "notices: admin write"  on public.notices for insert to authenticated with check (public.is_admin());
+create policy "notices: admin update" on public.notices for update to authenticated using (public.is_admin()) with check (public.is_admin());
+create policy "notices: admin delete" on public.notices for delete to authenticated using (public.is_admin());
+
+-- 5-3. 알림 읽음 표시
+create table if not exists public.notice_reads (
+  notice_id uuid not null references public.notices(id) on delete cascade,
+  user_id   uuid not null references auth.users(id) on delete cascade default auth.uid(),
+  read_at   timestamptz not null default now(),
+  primary key (notice_id, user_id)
+);
+alter table public.notice_reads enable row level security;
+drop policy if exists "reads: own"        on public.notice_reads;
+drop policy if exists "reads: insert own" on public.notice_reads;
+create policy "reads: own"        on public.notice_reads for select to authenticated using (user_id = auth.uid() or public.is_admin());
+create policy "reads: insert own" on public.notice_reads for insert to authenticated with check (user_id = auth.uid());
+
+-- 5-4. 관리자가 회원 권한을 바꾸는 함수 (본인 관리자 권한은 해제 불가)
+create or replace function public.admin_set_role(target uuid, new_role text)
+returns void language plpgsql security definer set search_path = '' as $$
+begin
+  if not public.is_admin() then raise exception '관리자만 바꿀 수 있습니다'; end if;
+  if new_role not in ('member', 'admin') then raise exception '잘못된 권한입니다'; end if;
+  if target = auth.uid() and new_role <> 'admin' then raise exception '본인의 관리자 권한은 해제할 수 없습니다'; end if;
+  update public.profiles set role = new_role where id = target;
+end;
+$$;
+revoke execute on function public.admin_set_role(uuid, text) from public, anon;
+grant  execute on function public.admin_set_role(uuid, text) to authenticated;
+grant  execute on function public.is_admin() to anon, authenticated;
 
 -- ---------------------------------------------------------------
 -- 끝. 'Success. No rows returned' 가 나오면 완료입니다.
