@@ -189,6 +189,10 @@ PAGES = [
          title="공간사업 용어 사전 — 공실개발·마스터리스·무인공간·SPMS | 최시준",
          desc="공실개발, 공간수익화, 비선호층, 마스터리스, 수익쉐어, 위탁운영, 목적형 공간, 무인공간, 예약제, SPMS, 가동률, 고정비 등 공간사업에서 쓰는 말을 최시준의 기준으로 풀었습니다.",
          keywords="공실개발 뜻, 공간수익화 뜻, 마스터리스 뜻, 수익쉐어, 위탁운영, 무인공간, 비선호층, 가동률, 공간대여, 최시준"),
+    dict(key="network", file="network.html", nav=None, crumb="패밀리 사이트", schema="CollectionPage",
+         title="패밀리 사이트 — 쏘플파티룸·플레이션·소셜팩토리·메가스팟·밍글·공백·코어무드 | 최시준",
+         desc="최시준이 만들고 운영하는 공간과 서비스를 한곳에 모았습니다. 파티룸·게임파티룸·모임공간·대형 행사장·무인 디저트카페부터 공실개발·공간 브랜딩·상업용 부동산 중개까지, 필요한 곳을 바로 찾아가세요.",
+         keywords="최시준 브랜드, 쏘플파티룸, 플레이션, 소셜팩토리, 메가스팟, 밍글, 공백, 코어무드, 오르비스중개법인, 여덟글자, 건대 대관, 건대 모임공간, 파티룸 예약, 공실개발, 상업공간 인테리어"),
     dict(key="login", file="login.html", nav=None, crumb="로그인 · 회원가입", schema="WebPage", noindex=True,
          title="로그인 · 회원가입 | 최시준", desc="최시준 홈페이지 회원 로그인과 회원가입. 회원이 되면 문의 진행 상황을 확인하고 커뮤니티에 글을 남길 수 있습니다.", keywords=""),
     dict(key="account", file="account.html", nav=None, crumb="마이페이지", schema="WebPage", noindex=True,
@@ -402,11 +406,17 @@ PERSON = {
     "worksFor": {"@id": BLANK_ID},
     "knowsAbout": ["공실개발", "공간수익화", "무인공간 운영", "파티룸 창업", "공간대여 창업", "공간브랜딩", "상권 분석", "마스터리스"],
     "sameAs": ["https://www.threads.com/@sijun.choi", "https://www.instagram.com/sijun.choi"],
+    "brand": [{"@type": "Brand", "name": n, "url": u} for n, u in [
+        ("쏘플파티룸", "https://ssople.com"), ("플레이션", "https://playtion.kr"), ("소셜팩토리", "https://socialfactory.co.kr"),
+        ("메가스팟", "https://megaspot.kr"), ("밍글", "https://hellomingle.kr"), ("공백", "https://vacancy.co.kr"),
+        ("코어무드", "https://coremood.kr"), ("오르비스중개법인", "https://orbis-estate.com"), ("여덟글자", "https://yeodeol.kr")]],
 }
 BLANK = {
     "@type": "Organization", "@id": BLANK_ID, "name": "㈜블랭크", "alternateName": "BLANK",
     "founder": {"@id": PERSON_ID},
-    "brand": [{"@type": "Brand", "name": n} for n in ["쏘플파티룸", "공백", "플레이션", "소셜팩토리", "밍글", "레스텔"]],
+    "brand": [{"@type": "Brand", "name": n, **({"url": u} if u else {})} for n, u in [
+        ("쏘플파티룸", "https://ssople.com"), ("공백", "https://vacancy.co.kr"), ("플레이션", "https://playtion.kr"),
+        ("소셜팩토리", "https://socialfactory.co.kr"), ("메가스팟", "https://megaspot.kr"), ("밍글", "https://hellomingle.kr"), ("레스텔", "")]],
     "sameAs": ["https://ssople.com", "https://vacancy.co.kr/", "https://www.instagram.com/ssople_partyroom/"],
 }
 WEBSITE = {
@@ -475,9 +485,14 @@ def jsonld(page, body):
         qa = faq_from(body, r'<details class="faq-item"><summary>(.*?)</summary>\s*<p>(.*?)</p>')
         if qa:
             graph.append({"@type": "FAQPage", "mainEntity": qa})
+    if key == "network":
+        webpage["mainEntity"] = {"@type": "ItemList", "name": "최시준 패밀리 사이트", "numberOfItems": len(NETWORK),
+                                 "itemListElement": [{"@type": "ListItem", "position": i, "item": {
+                                     "@type": "Organization", "name": n['name'], "alternateName": n['en'], "url": n['url'],
+                                     "description": n['line']}} for i, n in enumerate(NETWORK, 1)]}
     if key == "socialfactory":
         graph.append({"@type": "Organization", "name": "소셜팩토리", "alternateName": "Social Factory",
-                      "foundingDate": "2015-10", "founder": {"@id": PERSON_ID}, "url": url,
+                      "foundingDate": "2015-10", "founder": {"@id": PERSON_ID}, "url": "https://socialfactory.co.kr", "sameAs": [url],
                       "description": "모임·스터디·세미나·코워킹 공간 브랜드. 2015년 홍대에서 시작해 2026년 건대로 이어진다."})
         qa = faq_from(body, r'<details class="faq-item"><summary>(.*?)</summary>\s*<p>(.*?)</p>')
         if qa:
@@ -660,17 +675,9 @@ def footer():
             <a href="https://open.kakao.com/me/choisijun" target="_blank" rel="noopener">카카오톡 오픈프로필</a>
             <a href="https://m.search.naver.com/search.naver?query=%EC%B5%9C%EC%8B%9C%EC%A4%80&amp;sm=mtp_hty.top&amp;where=m" target="_blank" rel="noopener">NAVER에서 '최시준' 검색</a>
           </div>
-          <div>
-            <p class="mono">OFFICIAL · BUSINESS</p>
-            <a href="https://ssople.com" target="_blank" rel="noopener">쏘플파티룸</a>
-            <a href="https://vacancy.co.kr/" target="_blank" rel="noopener">공백 — 공실개발</a>
-            <a href="https://tgrzspace.pages.dev/" target="_blank" rel="noopener">TGRZ SPACE</a>
-            <a href="https://orbisestate.pages.dev/" target="_blank" rel="noopener">오르비스중개법인</a>
-            <a href="https://myworkspro.pages.dev/" target="_blank" rel="noopener">마이웍스</a>
-            <a href="https://www.instagram.com/ssople_partyroom/" target="_blank" rel="noopener">쏘플파티룸 Instagram</a>
-          </div>
         </nav>
       </div>
+      {network_family_bar()}
       <p class="footer-regions mono"><span>지역별 포트폴리오</span> {regions}</p>
       <div class="footer-bottom">
         <p class="mono">© <span id="year">{NOW.year}</span> CHOI SIJUN · ㈜블랭크. ALL RIGHTS RESERVED.</p>
@@ -1060,6 +1067,7 @@ def article_body(page):
 {a["html"]}
           </div>
 {AUTHOR_BOX}
+{network_pick(NETWORK_BY_CATEGORY.get(a['category'], []), '이 글의 기준으로 운영하는 곳', eyebrow='IN PRACTICE')}
         </div>
       </div>
       <section class="section section-tint">
@@ -1119,13 +1127,219 @@ TOKENS['INSIGHT_BLOCK_ALL'] = insight_block('READ', '최시준의 글',
     '10년 동안 공간을 만들며 굳어진 판단기준을 글로 정리하고 있습니다.', ('생각', '공실개발', '창업'), tint=True)
 
 
+# ------------------------------------------------------------------
+# 패밀리 사이트 네트워크 — 최시준이 만들고 운영하는 공간·서비스
+#   각 사이트의 공식 소개(2026.10 확인)를 기준으로 적었습니다.
+#   새 사이트가 생기면 이 목록에 한 줄을 추가하면 /network, 메인, 푸터, 관련 페이지에 함께 반영됩니다.
+# ------------------------------------------------------------------
+NETWORK_GROUPS = [
+    ("space", "공간 이용", "예약하고 바로 쓰는 공간", "생일·모임·스터디·행사·게임까지, 목적에 맞는 공간을 고르세요."),
+    ("biz", "공간 사업", "공간을 찾고, 만들고, 거래하는 서비스", "공실 진단부터 매물 중개, 브랜딩·인테리어, 통건물 개발까지."),
+    ("life", "라이프 · 업무", "일상과 일을 돕는 서비스", "하루를 기록하는 서비스와 혼자 경영하는 사람을 위한 업무 시스템."),
+]
+NETWORK = [
+    dict(key="ssople", group="space", name="쏘플파티룸", en="SSOPLE PARTY ROOM", url="https://ssople.com", mark="SS", color="#FF4712",
+         kind="무인 파티룸", line="생일·모임·워크숍을 위한 프라이빗 파티룸. 전국 120여 개 공간을 예약제로 운영합니다.",
+         facts=["전국 120여 개 공간", "365일 예약제", "무인 운영"],
+         uses=["party", "group"], internal=("portfolio.html?brand=쏘플파티룸#pf-archive", "공간 기록 보기"),
+         anchor="전국 파티룸 예약 쏘플파티룸"),
+    dict(key="playtion", group="space", name="플레이션", en="PLAYTION", url="https://playtion.kr", mark="PL", color="#6C4CF1",
+         kind="게임파티룸 · 가챠뽑기샵", line="친구끼리 통째로 빌려 노는 게임파티룸과 캡슐토이 가챠뽑기샵. PASS 멤버십으로 두 곳이 이어집니다.",
+         facts=["PC·PS5·스위치·노래방", "2~30인 단독 이용", "캡슐토이 600대 규모 가챠샵"],
+         uses=["game", "party"], internal=("portfolio.html?brand=플레이션#pf-archive", "공간 기록 보기"),
+         anchor="게임파티룸·가챠뽑기 플레이션"),
+    dict(key="socialfactory", group="space", name="소셜팩토리", en="SOCIAL FACTORY", url="https://socialfactory.co.kr", mark="SF", color="#151515",
+         kind="모임공간 · 코워킹", line="건대입구 세미나실·강의실·모임룸 대관과 24시간 코워킹, 1~3인 독립사무실. 2015년 홍대에서 시작한 모임공간 브랜드입니다.",
+         facts=["모임룸 5개 (15~40명)", "24시간 코워킹 50석", "독립사무실 4실"],
+         uses=["study", "seminar", "office"], internal=("socialfactory.html", "소셜팩토리 이야기"),
+         anchor="건대 세미나실·모임공간 소셜팩토리"),
+    dict(key="megaspot", group="space", name="메가스팟", en="MEGASPOT", url="https://megaspot.kr", mark="MS", color="#0E8A6A",
+         kind="대형 행사장 대관", line="건대입구 190평 대형 행사 공간. 세미나·워크숍·네트워킹 파티·공연·팝업·촬영을 한 층 단독으로 진행합니다.",
+         facts=["190평 한 층 단독", "최대 200명", "200인치 빔프로젝터·음향"],
+         uses=["event", "seminar"], internal=None,
+         anchor="건대 대형 행사장 대관 메가스팟"),
+    dict(key="mingle", group="space", name="밍글", en="MINGLE", url="https://hellomingle.kr", mark="MG", color="#E2A10B",
+         kind="24시간 무인 디저트카페 · 동네 커뮤니티", line="동네에서 같이할 사람을 찾는 24시간 무인 디저트카페. 모임·스터디·언어교환 커뮤니티가 함께 있습니다.",
+         facts=["24시간 · 연중무휴", "30평 카페 공간", "모임·스터디·언어교환"],
+         uses=["cafe", "study"], internal=None,
+         anchor="건대 24시간 무인 디저트카페 밍글"),
+    dict(key="gongbaek", group="biz", name="공백 공간백서", en="GONGBAEK", url="https://vacancy.co.kr", mark="GB", color="#FF4712",
+         kind="공실개발 솔루션", line="상가·건물의 공실을 진단해 수익모델을 기획하고, 공간 개발부터 오픈·운영까지 연결하는 ㈜블랭크의 공실개발 솔루션입니다.",
+         facts=["사전진단 · 현장진단 리포트", "모델별 수익성 비교", "마스터리스 · 공동개발"],
+         uses=["vacancy", "owner"], internal=("cases.html", "공실개발 사례"),
+         anchor="상가 공실개발 솔루션 공백"),
+    dict(key="coremood", group="biz", name="코어무드", en="CORE MOOD", url="https://coremood.kr", mark="CM", color="#8A5A3C",
+         kind="공간 브랜딩 · 인테리어", line="컨셉과 무드에서 출발해 브랜드, 공간 설계, 인테리어 시공, 콘텐츠·마케팅까지 한 팀이 잇는 상업공간 스튜디오입니다.",
+         facts=["컨셉 · 브랜드 개발", "설계 · 시공 직접 관리", "촬영 · 오픈 마케팅 연계"],
+         uses=["interior", "startup"], internal=None,
+         anchor="상업공간 브랜딩·인테리어 코어무드"),
+    dict(key="orbis", group="biz", name="오르비스중개법인", en="ORBIS REAL ESTATE", url="https://orbis-estate.com", mark="OR", color="#1F4FA8",
+         kind="상업용 부동산 중개", line="빌딩·상가·오피스의 매매와 임대차 중개, 상권분석 기반 점포개발과 매각 전략을 자문하는 중개법인입니다.",
+         facts=["빌딩 · 상가 · 오피스 중개", "상권분석 · 점포개발", "건물 1차 진단"],
+         uses=["property", "owner", "startup"], internal=None,
+         anchor="빌딩 매매·상가 임대 오르비스중개법인"),
+    dict(key="tgrz", group="biz", name="TGRZ SPACE", en="TGRZ SPACE", url="https://tgrzspace.pages.dev/", mark="TG", color="#3B3B3B",
+         kind="통건물 마스터리스", line="건물 전체를 임차해 개발·운영하는 통건물 전담 브랜드. 임대인은 공실 걱정 없이 임대수익을 받습니다.",
+         facts=["통건물 마스터리스", "층별 개발 · 운영"],
+         uses=["owner", "vacancy"], internal=None,
+         anchor="통건물 마스터리스 TGRZ SPACE"),
+    dict(key="yeodeol", group="life", name="여덟글자", en="YEODEOL", url="https://yeodeol.kr", mark="여덟", color="#B5487A",
+         kind="오늘의 색 · 감정 기록 · 사주", line="매일 바뀌는 오늘의 색과 감정 기록으로 사주를 함께 읽는 서비스. 점수도 흉일도 없이, 오늘 해볼 일 하나로 끝맺습니다.",
+         facts=["오늘의 색 카드", "감정 날씨 기록", "궁합 · 신년운세 리포트"],
+         uses=["life"], internal=None,
+         anchor="오늘의 색과 감정으로 읽는 사주 여덟글자"),
+    dict(key="myworks", group="life", name="마이웍스", en="MY WORKS", url="https://myworkspro.pages.dev/", mark="MW", color="#2C7A3E",
+         kind="업무 운영 시스템", line="혼자 경영하는 사람의 업무 운영 시스템. 업무·프로젝트·할 일을 한곳에서 관리하고 사람과 AI로 연결합니다.",
+         facts=["업무 · 프로젝트 관리", "사람 · AI 연결"],
+         uses=["work"], internal=None,
+         anchor="1인 경영자 업무 운영 시스템 마이웍스"),
+]
+NETWORK_BY_KEY = {n['key']: n for n in NETWORK}
+
+# '이럴 때 찾으세요' — 고객의 필요 → 사이트
+NETWORK_USES = [
+    ("party", "생일 · 파티 · 소모임", ["ssople", "playtion"]),
+    ("game", "게임하며 놀기", ["playtion", "ssople"]),
+    ("study", "스터디 · 회의 · 강의", ["socialfactory", "mingle"]),
+    ("seminar", "세미나 · 워크숍", ["socialfactory", "megaspot"]),
+    ("event", "100명 넘는 행사 · 팝업 · 촬영", ["megaspot"]),
+    ("office", "코워킹 · 1인 사무실", ["socialfactory"]),
+    ("cafe", "카페 · 동네 모임 · 언어교환", ["mingle"]),
+    ("vacancy", "상가 · 건물 공실 해결", ["gongbaek", "tgrz", "orbis"]),
+    ("property", "빌딩 · 상가 매매 · 임대", ["orbis"]),
+    ("interior", "매장 브랜딩 · 인테리어", ["coremood"]),
+    ("startup", "공간 창업 준비", ["coremood", "orbis", "gongbaek"]),
+    ("life", "오늘의 운세 · 감정 기록", ["yeodeol"]),
+    ("work", "1인 사업 업무 관리", ["myworks"]),
+]
+
+# 글 주제별로 함께 보여줄 사이트
+NETWORK_BY_CATEGORY = {
+    '공실개발': ["gongbaek", "orbis", "coremood"],
+    '건물 기획': ["gongbaek", "tgrz", "megaspot"],
+    '창업': ["coremood", "ssople", "orbis"],
+    '무인 운영': ["ssople", "mingle", "playtion"],
+    '생각': ["ssople", "socialfactory", "gongbaek"],
+}
+
+
+def ext_attrs():
+    return ' target="_blank" rel="noopener"'
+
+
+def net_mark(n, size=""):
+    return f'<span class="net-mark{size}" style="--net:{n["color"]}" aria-hidden="true">{esc(n["mark"])}</span>'
+
+
+def net_card(n, full=True):
+    """패밀리 사이트 카드 — full: /network 용(사실·이용 예시 포함), 아니면 한 줄 카드"""
+    host = re.sub(r'^https?://(www\.)?', '', n['url']).rstrip('/')
+    uses = [label for k, label, keys in NETWORK_USES if n['key'] in keys]
+    if not full:
+        return (f'<a class="net-mini" href="{n["url"]}"{ext_attrs()} title="{esc(n["anchor"])}">'
+                f'{net_mark(n)}<span class="net-mini-body"><strong>{esc(n["name"])}</strong><span>{esc(n["kind"])}</span></span>'
+                f'<span class="net-go" aria-hidden="true">↗</span></a>')
+    facts = ''.join(f'<li>{esc(f)}</li>' for f in n['facts'])
+    use_txt = ' · '.join(uses)
+    internal = (f'<a class="net-link-in" href="{n["internal"][0]}">{esc(n["internal"][1])} →</a>' if n.get('internal') else '')
+    return f"""<article class="net-card" data-uses="{' '.join(k for k, _, keys in NETWORK_USES if n['key'] in keys)}" id="net-{n['key']}">
+          <div class="net-card-head">{net_mark(n, ' is-lg')}<div><p class="net-en mono">{esc(n['en'])}</p><h3>{esc(n['name'])}</h3><p class="net-kind">{esc(n['kind'])}</p></div></div>
+          <p class="net-line">{esc(n['line'])}</p>
+          <ul class="net-facts">{facts}</ul>
+          {f'<p class="net-uses"><span class="mono">이럴 때</span>{esc(use_txt)}</p>' if uses else ''}
+          <div class="net-actions"><a class="btn btn-sm btn-primary" href="{n['url']}"{ext_attrs()} aria-label="{esc(n['anchor'])} 사이트 열기">{esc(host)} ↗</a>{internal}</div>
+        </article>"""
+
+
+def network_groups_html():
+    out = []
+    for gk, label, title, lede in NETWORK_GROUPS:
+        items = [n for n in NETWORK if n['group'] == gk]
+        out.append(f"""    <section class="section{' section-tint' if gk == 'biz' else ''}" id="group-{gk}">
+      <div class="container">
+        <header class="section-head reveal">
+          <p class="eyebrow mono">{esc(label)}</p>
+          <h2>{esc(title)}</h2>
+          <p class="lede">{esc(lede)}</p>
+        </header>
+        <div class="net-grid">
+        {chr(10).join(net_card(n) for n in items)}
+        </div>
+      </div>
+    </section>""")
+    return '\n\n'.join(out)
+
+
+def network_finder():
+    chips = ''.join(f'<button type="button" class="f-chip" data-use="{k}">{esc(label)}</button>' for k, label, _ in NETWORK_USES)
+    return (f'<div class="board-filters net-finder" id="netFinder" role="group" aria-label="필요한 것 고르기">'
+            f'<button type="button" class="f-chip is-active" data-use="">전체</button>{chips}</div>')
+
+
+def network_home():
+    """메인 · 소개 등에 넣는 묶음 — 그룹별 한 줄 카드"""
+    rows = []
+    for gk, label, title, _ in NETWORK_GROUPS:
+        items = [n for n in NETWORK if n['group'] == gk]
+        rows.append(f'<div class="net-row"><p class="net-row-label mono">{esc(label)}</p><div class="net-mini-grid">'
+                    + ''.join(net_card(n, full=False) for n in items) + '</div></div>')
+    return '<div class="net-rows">' + ''.join(rows) + '</div>'
+
+
+def network_pick(keys, title="함께 운영하는 곳", eyebrow="FAMILY SITES", lede=""):
+    picks = [NETWORK_BY_KEY[k] for k in keys if k in NETWORK_BY_KEY]
+    if not picks:
+        return ''
+    return f"""<aside class="net-pick" aria-label="{esc(title)}">
+            <p class="eyebrow mono">{esc(eyebrow)}</p>
+            <h3>{esc(title)}</h3>
+            {f'<p class="net-pick-lede">{esc(lede)}</p>' if lede else ''}
+            <div class="net-mini-grid">{''.join(net_card(n, full=False) for n in picks)}</div>
+          </aside>"""
+
+
+def network_use_guide():
+    """문의하기 등: '공간 예약이라면 여기로' 안내 — 용도 → 사이트 표"""
+    rows = []
+    for k, label, keys in NETWORK_USES:
+        if k in ('life', 'work'):
+            continue
+        links = ' · '.join(f'<a href="{NETWORK_BY_KEY[x]["url"]}"{ext_attrs()}>{esc(NETWORK_BY_KEY[x]["name"])}</a>' for x in keys)
+        rows.append(f'<li><span>{esc(label)}</span><span>{links}</span></li>')
+    return '<ul class="net-guide">' + ''.join(rows) + '</ul>'
+
+
+def network_family_bar():
+    """모든 페이지 푸터의 패밀리 사이트 줄"""
+    parts = []
+    for gk, label, _, _ in NETWORK_GROUPS:
+        links = ''.join(f'<a href="{n["url"]}"{ext_attrs()} title="{esc(n["anchor"])}">{esc(n["name"])}</a>'
+                        for n in NETWORK if n['group'] == gk)
+        parts.append(f'<p><span class="mono">{esc(label)}</span>{links}</p>')
+    return ('<div class="footer-family"><p class="footer-family-title mono"><a href="network.html">FAMILY SITES — 함께 운영하는 공간 · 서비스 →</a></p>'
+            + ''.join(parts) + '</div>')
+
+
+TOKENS['NETWORK_GROUPS'] = network_groups_html()
+TOKENS['NETWORK_FINDER'] = network_finder()
+TOKENS['NETWORK_HOME'] = network_home()
+TOKENS['NETWORK_COUNT'] = str(len(NETWORK))
+TOKENS['NETWORK_USE_GUIDE'] = network_use_guide()
+TOKENS['NETWORK_PICK_PRO'] = network_pick(["gongbaek", "coremood", "orbis", "tgrz"], "공간 사업을 함께하는 패밀리 서비스",
+                                          lede="진단·설계·중개·운영을 각 분야 사이트에서 더 자세히 볼 수 있습니다.")
+TOKENS['NETWORK_PICK_KONDAE'] = network_pick(["socialfactory", "megaspot", "mingle", "playtion"], "건대입구 한 건물에서 이어지는 공간",
+                                             eyebrow="KONDAE CLUSTER", lede="모임은 소셜팩토리, 큰 행사는 메가스팟, 쉬어 갈 땐 밍글, 2차는 플레이션.")
+TOKENS['NETWORK_PICK_SPACE'] = network_pick(["ssople", "playtion", "socialfactory", "megaspot", "mingle"], "공간을 바로 예약하고 싶다면",
+                                            eyebrow="BOOK A SPACE", lede="파티·게임·모임·행사·카페 — 각 브랜드 사이트에서 바로 예약하고 문의할 수 있습니다.")
+
+
 def build_llms():
     """AI 검색·LLM 크롤러용 사이트 요약 (llms.txt 관례)"""
     lines = ["# 최시준 (Choi Si-jun) — choisijun.com", "",
              "> 공실개발·공간수익화 전문가. 10년+ 340개+ 공간을 직접 기획·오픈·운영. ㈜블랭크 대표, 쏘플파티룸(전국 120여 개 무인 파티룸) 대표. "
              "건물주·중개사의 공실 문제를 구조로 풀고, 창업자에게 실패확률을 줄이는 판단기준을 전한다. 기업·대학 강의, 전자책.", "",
              "## 핵심 페이지"]
-    for k in ['home', 'about', 'services', 'cases', 'portfolio', 'insights', 'faq', 'glossary', 'brands', 'socialfactory', 'books', 'contact']:
+    for k in ['home', 'about', 'services', 'cases', 'portfolio', 'insights', 'faq', 'glossary', 'brands', 'network', 'socialfactory', 'books', 'contact']:
         pg = PAGE_BY_KEY.get(k)
         if pg:
             lines.append(f"- [{pg['crumb'] or '홈'}]({page_url(pg['file'])}): {pg['desc']}")
@@ -1136,6 +1350,9 @@ def build_llms():
     lines += ["", "## 인사이트(글)"]
     for a in INSIGHTS:
         lines.append(f"- [{a['title']}]({page_url(a['file'])}): {a['desc']}")
+    lines += ["", "## 패밀리 사이트 (최시준이 만들고 운영하는 공간·서비스)"]
+    for n in NETWORK:
+        lines.append(f"- [{n['name']}]({n['url']}): {n['kind']} — {n['line']}")
     lines += ["", "## 연락", f"- 문의: {DOMAIN}/contact", "- Threads: https://www.threads.com/@sijun.choi", "- 쏘플파티룸: https://ssople.com", ""]
     with io.open('llms.txt', 'w', encoding='utf-8') as f:
         f.write('\n'.join(lines))
@@ -1273,10 +1490,10 @@ def indexable():
 # 페이지 내용이 마지막으로 바뀐 날 (검색엔진은 매번 바뀌는 날짜보다 실제 수정일을 믿는다)
 #   본문을 고쳤다면 그 페이지의 날짜를 오늘로 바꿔 주세요. 인사이트 글은 글 머리말의 date/updated 를 씁니다.
 CONTENT_DATES = {
-    'home': '2026-10-11', 'about': '2026-10-11', 'brands': '2026-10-11', 'community': '2026-10-11', 'books': '2026-10-11',
-    'cases': '2026-10-11', 'services': '2026-10-11', 'portfolio': '2026-10-11', 'references': '2026-10-11',
-    'media': '2026-10-11', 'contact': '2026-10-11', 'socialfactory': '2026-10-11', 'insights': '2026-10-11',
-    'faq': '2026-10-11', 'glossary': '2026-10-11', 'privacy': '2026-10-11', 'terms': '2026-10-11',
+    'home': '2026-10-20', 'about': '2026-10-11', 'brands': '2026-10-20', 'community': '2026-10-11', 'books': '2026-10-11',
+    'cases': '2026-10-11', 'services': '2026-10-20', 'portfolio': '2026-10-20', 'references': '2026-10-11',
+    'media': '2026-10-11', 'contact': '2026-10-20', 'socialfactory': '2026-10-20', 'insights': '2026-10-11',
+    'faq': '2026-10-11', 'glossary': '2026-10-11', 'privacy': '2026-10-11', 'terms': '2026-10-11', 'network': '2026-10-20',
 }
 DATA_DATE = (PF or {}).get('meta', {}).get('source', '')
 DATA_DATE = re.search(r'(\d{4}-\d{2}-\d{2})', DATA_DATE).group(1) if re.search(r'\d{4}-\d{2}-\d{2}', DATA_DATE) else '2026-10-11'

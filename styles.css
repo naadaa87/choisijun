@@ -2305,3 +2305,103 @@ body[data-page="admin"] .float-cta, body[data-page="admin"] .to-top { display: n
   .adm-kpis { grid-template-columns: 1fr 1fr; }
   .adm-kpi-num { font-size: 1.5rem; }
 }
+
+/* =========================================================
+   패밀리 사이트 네트워크
+   ========================================================= */
+.net-mark {
+  --net: var(--signal);
+  display: inline-flex; align-items: center; justify-content: center; flex: none;
+  width: 38px; height: 38px; border-radius: 9px; background: var(--net); color: #fff;
+  font-family: var(--font-mono); font-size: 0.72rem; font-weight: 800; letter-spacing: 0.02em;
+}
+.net-mark.is-lg { width: 52px; height: 52px; border-radius: 12px; font-size: 0.86rem; }
+.net-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px; }
+.net-card {
+  display: flex; flex-direction: column; gap: 12px; background: #fff; border: 1px solid var(--line); border-radius: 10px;
+  padding: 24px 22px; transition: border-color 0.2s ease, opacity 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  scroll-margin-top: calc(var(--header-h) + 20px);
+}
+.net-card:hover { border-color: #FFB89E; }
+.net-card.is-dim { opacity: 0.32; }
+.net-card.is-match { border-color: var(--signal); box-shadow: 0 10px 26px rgba(255, 71, 18, 0.1); transform: translateY(-2px); }
+.net-card-head { display: flex; align-items: center; gap: 14px; }
+.net-en { font-size: 0.68rem; color: var(--concrete); letter-spacing: 0.06em; }
+.net-card h3 { font-size: 1.2rem; font-weight: 800; letter-spacing: -0.025em; line-height: 1.3; }
+.net-kind { font-size: 0.84rem; color: #C2380C; font-weight: 700; }
+.net-line { font-size: 0.94rem; color: var(--concrete); line-height: 1.7; flex: 1; }
+.net-facts { display: flex; flex-wrap: wrap; gap: 6px; }
+.net-facts li { font-size: 0.78rem; background: var(--paper-tint); border-radius: 99px; padding: 4px 10px; color: var(--ink); }
+.net-uses { font-size: 0.84rem; color: var(--ink); border-top: 1px solid var(--line); padding-top: 12px; line-height: 1.6; }
+.net-uses .mono { display: inline-block; margin-right: 8px; color: #C2380C; font-size: 0.7rem; }
+.net-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+.net-link-in { font-size: 0.86rem; font-weight: 700; color: var(--ink); border-bottom: 1px solid var(--line); }
+.net-link-in:hover { border-color: var(--signal); }
+section.is-empty { display: none; }
+.net-finder-section { padding-bottom: 20px; }
+.net-finder { margin-top: 4px; }
+.net-finder-result { margin-top: 14px; font-size: 0.82rem; color: #C2380C; min-height: 1.2em; }
+
+/* 한 줄 카드 묶음 */
+.net-rows { display: flex; flex-direction: column; gap: 22px; }
+.net-row-label { font-size: 0.74rem; color: #C2380C; margin-bottom: 10px; }
+.net-mini-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
+.net-mini {
+  display: flex; align-items: center; gap: 12px; background: #fff; border: 1px solid var(--line); border-radius: 9px;
+  padding: 12px 14px; color: var(--ink); transition: border-color 0.15s ease, transform 0.15s ease;
+}
+.net-mini:hover { border-color: var(--signal); transform: translateY(-2px); }
+.net-mini-body { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.net-mini-body strong { font-size: 0.96rem; font-weight: 800; letter-spacing: -0.02em; }
+.net-mini-body span { font-size: 0.78rem; color: var(--concrete); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.net-go { color: var(--concrete); font-size: 0.9rem; }
+.net-mini:hover .net-go { color: var(--signal); }
+.section-dark .net-mini { background: rgba(255,255,255,0.04); border-color: var(--line-dark); color: #fff; }
+
+/* 페이지 안 추천 블록 */
+.net-pick { background: #FDFCFA; border: 1px solid var(--line); border-radius: 10px; padding: 22px; }
+.net-pick .eyebrow { margin-bottom: 6px; }
+.net-pick h3 { font-size: 1.12rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 6px; }
+.net-pick-lede { font-size: 0.9rem; color: var(--concrete); margin-bottom: 14px; }
+.art-section .net-pick { margin-top: 22px; }
+
+/* 하루 일정 · 사업 흐름 */
+.net-journey, .net-flow { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.net-journey li, .net-flow li { border: 1px solid var(--line-dark); border-radius: 10px; padding: 20px 18px; background: rgba(255,255,255,0.03); }
+.net-flow li { border-color: var(--line); background: #fff; }
+.net-journey .mono, .net-flow .mono { color: var(--signal); font-size: 0.78rem; }
+.net-flow .mono { color: #C2380C; }
+.net-journey h3, .net-flow h3 { font-size: 1.04rem; font-weight: 800; margin: 8px 0 6px; }
+.net-journey p { font-size: 0.9rem; color: var(--concrete-soft); line-height: 1.65; }
+.net-flow p { font-size: 0.9rem; color: var(--concrete); line-height: 1.65; }
+.net-journey a { color: #fff; border-bottom: 1px solid var(--signal); font-weight: 700; }
+.net-flow a { color: var(--ink); border-bottom: 1px solid var(--signal); font-weight: 700; }
+
+/* 문의하기 — 용도별 바로가기 */
+.net-guide { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 28px; border-top: 1px solid var(--line); }
+.net-guide li { display: flex; justify-content: space-between; gap: 14px; padding: 13px 2px; border-bottom: 1px solid var(--line); font-size: 0.94rem; }
+.net-guide li span:first-child { font-weight: 700; }
+.net-guide a { color: #C2380C; font-weight: 700; border-bottom: 1px solid transparent; }
+.net-guide a:hover { border-color: #C2380C; }
+
+/* 포트폴리오 외부 링크 */
+.pf-ext { color: #C2380C; font-weight: 700; white-space: nowrap; }
+
+/* 푸터 패밀리 사이트 줄 */
+.footer-family { border-top: 1px solid var(--line-dark); padding: 26px 0 6px; display: flex; flex-direction: column; gap: 10px; }
+.footer-family-title a { color: var(--signal); font-size: 0.76rem; }
+.footer-family p { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; font-size: 0.86rem; }
+.footer-family p .mono { min-width: 92px; color: var(--concrete-soft); font-size: 0.72rem; }
+.footer-family a { color: #D9D9D4; }
+.footer-family a:hover { color: #fff; }
+
+@media (max-width: 900px) {
+  .net-journey, .net-flow { grid-template-columns: 1fr 1fr; }
+  .net-guide { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .net-journey, .net-flow { grid-template-columns: 1fr; }
+  .net-grid { grid-template-columns: 1fr; }
+  .net-guide li { flex-direction: column; gap: 4px; }
+  .footer-family p .mono { min-width: 0; width: 100%; }
+}

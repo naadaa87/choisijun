@@ -1060,12 +1060,15 @@ const SEED_REFS = [
   { id: 'r-23', year: '2016~', category: '파트너십',   title: '한국스타트업협회 위원장 · 청년허브 심사위원', desc: '청년허브 공간지원 심사위원, 로컬크리에이터 평가위원, 사단법인 청년위함 연구소장 등 대외 활동.', link: '' },
   { id: 'r-24', year: '2026', category: '브랜드',     title: '공백 — 공실개발 플랫폼 vacancy.co.kr 오픈', desc: '공실 진단부터 수익공간 개발까지, 공실 솔루션 전용 사이트 구축·공개.', link: 'https://vacancy.co.kr/' },
   { id: 'r-25', year: '2026', category: '공간개발',   title: 'TGRZ SPACE — 통건물 마스터리스 사업 런칭', desc: '건물 전체를 임차·개발·운영하는 통건물 전담 브랜드와 사이트 공개.', link: 'https://tgrzspace.pages.dev/' },
-  { id: 'r-26', year: '2026', category: '파트너십',   title: '오르비스중개법인 — 부동산 중개 파트너 운영', desc: '공실·수익형 매물의 발굴과 중개를 전담하는 직영 중개법인 사이트 공개.', link: 'https://orbisestate.pages.dev/' },
+  { id: 'r-26', year: '2026', category: '파트너십',   title: '오르비스중개법인 — 부동산 중개 파트너 운영', desc: '빌딩·상가·오피스의 매매와 임대차, 상권분석 기반 점포개발과 매각 전략을 다루는 중개법인 사이트 공개.', link: 'https://orbis-estate.com' },
   { id: 'r-27', year: '2026', category: '브랜드',     title: '개인 브랜드 허브 choisijun.com 구축', desc: '사례·포트폴리오·레퍼런스·미디어·커뮤니티·전자책을 한곳에 모은 공식 홈페이지.', link: '/' },
   { id: 'r-28', year: '2026', category: '강의·교육',  title: "전자책 시리즈 2종 기획 — '공실은 자산이다' 외", desc: "'예약되는 공간'까지 — 340개+ 공간의 판단기준을 담은 전자책 시리즈 준비.", link: '/books' },
   { id: 'r-29', year: '2026', category: '파트너십',   title: 'AI 에이전트 13종 구축 — 콘텐츠 제작부터 상권 분석까지', desc: '콘텐츠 자산화, 문의 선별·답변 초안, CS 응대, 리뷰 모니터링, 공실 매물·상권 스크리닝, 레퍼런스 아카이빙, 운영 이상감지, 강연 설계, 주간 브리핑, 가맹점 지원, 관계·기회 관리까지 실무에 적용.', link: '' },
   { id: 'r-30', year: '2026', category: '파트너십',   title: '마이웍스 — 혼자 경영하는 사람의 업무 운영 시스템', desc: '업무·프로젝트·할 일을 한곳에서 관리하고, 사람과 AI로 연결하는 업무 운영 시스템을 만들어 공개.', link: 'https://myworkspro.pages.dev/' },
   { id: 'r-31', year: '2026', category: '언론·미디어', title: '쇼릴 2026 공개', desc: '340개+ 공간부터 쏘플파티룸, AI 에이전트, 마이웍스, 강의와 전자책까지 15초로 담은 모션 쇼릴.', link: '/media#showreel' },
+  { id: 'r-33', year: '2026', category: '공간개발',   title: '메가스팟 — 건대입구 190평 대형 행사장 오픈', desc: '세미나·워크숍·네트워킹 파티·공연·팝업·촬영을 최대 200명까지 받는 대형 행사 공간과 공식 사이트 공개.', link: 'https://megaspot.kr' },
+  { id: 'r-34', year: '2026', category: '브랜드',     title: '코어무드 — 공간 브랜딩·인테리어 스튜디오 사이트 공개', desc: '컨셉·무드 기획부터 브랜드 개발, 설계·시공, 콘텐츠·마케팅까지 잇는 상업공간 스튜디오.', link: 'https://coremood.kr' },
+  { id: 'r-35', year: '2026', category: '브랜드',     title: '패밀리 사이트 네트워크 구축', desc: '쏘플파티룸·플레이션·소셜팩토리·메가스팟·밍글·공백·코어무드·오르비스중개법인·여덟글자를 서로 연결해, 고객이 필요한 공간과 서비스를 바로 찾도록 정리.', link: '/network' },
   { id: 'r-32', year: '2026', category: '공간개발',   title: '공간 레퍼런스 아카이브 최종본 · 전국 포트폴리오 공개', desc: '2015~2026년 직접 기획·오픈·운영한 공간과 공실개발 프로젝트를 전국 지역별 포트폴리오로 정리. 서울·경기·인천·충청·경상·전라 지역 페이지 공개.', link: '/portfolio' }
 ];
 
@@ -1902,4 +1905,53 @@ const INQUIRY_STATUS = ['접수', '진행중', '완료'];
   });
 
   paint();
+})();
+
+/* ---------- 패밀리 사이트 — 용도별 찾기 (/network) ---------- */
+(function networkFinder() {
+  const wrap = document.getElementById('netFinder');
+  if (!wrap) return;
+  const chips = Array.from(wrap.querySelectorAll('.f-chip'));
+  const cards = Array.from(document.querySelectorAll('.net-card'));
+  const result = document.getElementById('netResult');
+  function apply(use, scroll) {
+    let n = 0;
+    cards.forEach((c) => {
+      const on = !use || (c.dataset.uses || '').split(' ').includes(use);
+      c.classList.toggle('is-dim', !on);
+      c.classList.toggle('is-match', Boolean(use) && on);
+      if (on) n += 1;
+    });
+    chips.forEach((b) => {
+      const on = (b.dataset.use || '') === use;
+      b.classList.toggle('is-active', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+    // 그룹 안에 맞는 카드가 하나도 없으면 그룹째 접기
+    document.querySelectorAll('section[id^="group-"]').forEach((sec) => {
+      const any = Array.from(sec.querySelectorAll('.net-card')).some((c) => !c.classList.contains('is-dim'));
+      sec.classList.toggle('is-empty', Boolean(use) && !any);
+    });
+    if (result) {
+      const label = use ? (chips.find((b) => b.dataset.use === use) || {}).textContent : '';
+      result.textContent = use ? `${label} — 맞는 곳 ${n}개` : '';
+    }
+    if (use && scroll) {
+      const first = cards.find((c) => c.classList.contains('is-match'));
+      if (first) first.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'center' });
+    }
+  }
+  chips.forEach((b) => b.addEventListener('click', () => {
+    const use = b.dataset.use || '';
+    apply(use, true);
+    try {
+      const url = new URL(location.href);
+      if (use) url.searchParams.set('use', use); else url.searchParams.delete('use');
+      history.replaceState(null, '', url);
+    } catch (_) { /* ignore */ }
+  }));
+  let start = '';
+  try { start = new URL(location.href).searchParams.get('use') || ''; } catch (_) { start = ''; }
+  if (start && !chips.some((b) => b.dataset.use === start)) start = '';
+  apply(start, false);
 })();
