@@ -2,7 +2,8 @@
 """인사이트 원고 점검기 — 매일 발행 전에 반드시 돌린다.
 
 사용법:  python3 tools/check_post.py content/insights/<slug>.md
-         python3 tools/check_post.py --all          (모든 원고)
+         python3 tools/check_post.py content/drafts/<slug>.md    (예약 초안)
+         python3 tools/check_post.py --all          (발행된 모든 원고)
 
 FAIL  : 고치기 전에는 발행하지 않는다 (종료 코드 1)
 WARN  : 문장을 다시 읽고 판단한다 (의도한 표현이면 그대로 둬도 된다)
@@ -13,6 +14,7 @@ from datetime import datetime, timezone, timedelta
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, "content", "insights")
+DRAFTS = os.path.join(ROOT, "content", "drafts")
 KST = timezone(timedelta(hours=9))
 
 
@@ -74,7 +76,7 @@ WARN_TERMS = [
     (r"직영|가맹|위탁|프랜차이즈|폐업|휴업|문을\s*닫", "공간별 운영방식·운영상태를 적지 않았는지"),
     (r"[가-힣]{2,4}\s?(?:대표님|이사님|팀장|실장|매니저|점주님|원장님|교수님|선생님|씨\b)", "본인 외 사람 이름이 들어갔는지"),
     (r"최고의|업계\s*최초|국내\s*최초|압도적|혁신적|획기적|무조건|반드시\s*성공|대박|폭발적|놀라운|완벽한", "과장 표현"),
-    (r"결론적으로|요약하자면|정리하자면|살펴보겠습니다|알아보겠습니다|이\s*글에서는|마무리하며|시사하는\s*바|중요한\s*역할|여러분|함께\s*알아|에\s*대해\s*이야기해", "AI 글처럼 읽히는 표현"),
+    (r"결론적으로|요약하자면|정리하자면|살펴보겠습니다|알아보겠습니다|이\s*글에서는|마무리하며|시사하는\s*바|중요한\s*역할|여러분|함께\s*알아|에\s*대해\s*이야기해", "상투적인 표현"),
     (r"다양한|효과적(?:인|으로)|극대화|최적화|시너지", "흔한 상투어 — 구체적인 말로 바꿀 수 있는지"),
     (r"!", "느낌표"),
     (r"추정|것으로\s*보입니다|것\s*같습니다", "흐린 표현"),
@@ -84,13 +86,23 @@ ALLOWED_EXT = ("choisijun.com", "ssople.com", "playtion.kr", "socialfactory.co.k
                "myworkspro.pages.dev", "go.kr", "or.kr", "reb.or.kr", "kostat.go.kr", "threads.com", "instagram.com")
 
 
-def check(path, pages, cats, all_meta):
+def check(path, pages, cats, all_meta, drafts_meta=None):
     fails, warns = [], []
     fn = os.path.basename(path)
     slug = fn[:-3]
     meta, body = parse(path)
     if meta is None:
         return [f"머리말과 본문을 나누는 --- 줄이 없습니다"], []
+    # 예약 초안은 자기보다 먼저 발행될 초안도 '있는 글'로 본다
+    if os.path.abspath(os.path.dirname(path)) == os.path.abspath(DRAFTS) and drafts_meta:
+        mine = meta.get("date", "")
+        known = dict(all_meta)
+        for k, m in drafts_meta.items():
+            if m and k != slug and m.get("date", "") <= mine:
+                known[k] = m
+        all_meta = known
+    elif slug in all_meta and os.path.exists(os.path.join(DRAFTS, fn)):
+        fails.append("같은 이름의 초안이 content/drafts 에 남아 있습니다 — 발행했다면 초안을 지웁니다")
     for need in ("title", "description", "date", "category", "keywords", "summary", "related"):
         if not meta.get(need):
             fails.append(f"머리말에 {need}: 가 없습니다")
@@ -167,6 +179,11 @@ def main(argv):
     cats, pages = categories(), page_names()
     files = sorted(glob.glob(os.path.join(SRC, "*.md")))
     all_meta = {os.path.basename(f)[:-3]: parse(f)[0] for f in files}
+    dfiles = sorted(glob.glob(os.path.join(DRAFTS, "*.md")))
+    drafts_meta = {os.path.basename(f)[:-3]: parse(f)[0] for f in dfiles}
+    for k in drafts_meta:
+        if k in all_meta:
+            print(f"[주의] {k} 는 이미 발행된 글과 이름이 같습니다 (content/drafts/{k}.md)")
     targets = files if "--all" in argv else [a for a in argv if a.endswith(".md")]
     if not targets:
         print(__doc__)
@@ -177,7 +194,7 @@ def main(argv):
             print(f"[없음] {path}")
             bad += 1
             continue
-        fails, warns = check(path, pages, cats, all_meta)
+        fails, warns = check(path, pages, cats, all_meta, drafts_meta)
         print(f"\n== {os.path.relpath(path, ROOT)}")
         for f in fails:
             print("  FAIL ", f)

@@ -53,7 +53,8 @@ choisijun/
 ├── index.html … 404.html      ← 완성된 페이지 22개 (gen.py가 만드는 결과물)
 ├── insights/                  ← 완성된 인사이트 글 페이지 (자동 생성)
 ├── content/insights/          ← 인사이트 글 원고(.md) — 새 글은 여기에
-├── content/plan/              ← 매일 글 발행 규칙(GUIDE.md)과 글감 목록(backlog.md)
+├── content/plan/              ← 매일 글 발행 규칙(GUIDE.md), 문장 기준(VOICE.md), 글감 목록(backlog.md)
+├── content/drafts/            ← 날짜가 정해진 예약 원고 (발행일에 insights 로 옮겨짐)
 ├── tools/                     ← 원고 점검기(check_post.py), 공유 이미지 생성기(make_og.py)
 ├── fragments/                 ← 페이지 본문 원본 — 글을 고칠 때는 여기
 ├── data/portfolio.json        ← 포트폴리오 공개 데이터
@@ -213,10 +214,10 @@ related: vacancy-development-guide, basement-upper-floor-vacancy
 
 ## 5-2. 매일 글 발행 (예약 작업)
 
-매일 아침 7시 전후, 예약 작업(Claude)이 인사이트 글 한 편을 쓰고 이 저장소 main 에 올립니다. Cloudflare가 1~2분 안에 배포합니다.
+매일 아침 7시 전후, 예약 작업이 인사이트 글 한 편을 이 저장소 main 에 올립니다. Cloudflare가 1~2분 안에 배포합니다.
 
 - 요일별 연재: 월 공실·건물 실무 / 화 지나온 일 / 수 시장과 산업 / 목 창업·운영 실무 / 금 강연과 교육 / 토 지금 하는 일 / 일 생각과 비전
-- 무엇을 쓸지는 `content/plan/backlog.md` 순서대로, 어떻게 쓸지는 `content/plan/GUIDE.md` 규칙대로 정합니다
+- 무엇을 쓸지는 `content/plan/backlog.md` 순서대로, 어떻게 쓸지는 `content/plan/GUIDE.md`·`VOICE.md` 기준대로 정합니다. 미리 써 둔 글은 `content/drafts/`에 있고 날짜가 되면 발행됩니다
 - **주제를 빼거나 순서를 바꾸고 싶을 때:** `backlog.md`에서 그 줄을 지우거나 위아래로 옮깁니다. 쓰지 말아야 할 주제는 맨 아래 '보류' 칸으로 옮깁니다
 - **올라간 글을 고치거나 내릴 때:** `content/insights/파일이름.md`를 고치거나 지운 뒤 Claude에게 "사이트 다시 만들어 올려줘"라고 하면 됩니다(직접 지우면 완성된 페이지 `insights/파일이름.html`도 함께 지워야 합니다)
 - 원고마다 `tools/check_post.py`로 금액·사람 이름·주소·운영방식·금지어·과장 표현을 점검한 뒤에만 올립니다
