@@ -5,14 +5,25 @@
 - 검색엔진용 메타태그·구조화 데이터(JSON-LD)·sitemap.xml·rss.xml 을 함께 만든다.
 - search-verification.txt 에 적은 네이버·구글·빙 소유확인 코드를 모든 페이지에 넣는다.
 출력물은 100% 정적 HTML이라 배포 환경에서는 이 스크립트 없이도 동작한다."""
-import io, os, re, json, html
+import io, os, re, json, html, hashlib
 from collections import Counter
 from datetime import datetime, timezone, timedelta
 
 DOMAIN = "https://choisijun.com"
 KST = timezone(timedelta(hours=9))
 NOW = datetime.now(KST)
-VERSION = NOW.strftime("%Y%m%d%H%M")   # CSS/JS 캐시버스팅
+
+
+def _asset_version():
+    """CSS/JS 캐시버스팅 값 — 파일 내용이 바뀔 때만 달라진다(매일 글을 올려도 다른 페이지는 그대로)."""
+    h = hashlib.sha1()
+    for fn in ("styles.css", "script.js", "admin.js"):
+        if os.path.exists(fn):
+            h.update(io.open(fn, "rb").read())
+    return h.hexdigest()[:10]
+
+
+VERSION = _asset_version()   # CSS/JS 캐시버스팅
 TODAY = NOW.strftime("%Y-%m-%d")
 esc = lambda s: html.escape(str(s), quote=True)
 
@@ -243,7 +254,17 @@ for _r in REGION_PAGES:
 # ------------------------------------------------------------------
 INSIGHT_DIR = "insights"            # 완성된 글 페이지가 저장되는 곳 (/insights/<slug>)
 INSIGHT_SRC = os.path.join("content", "insights")   # 글 원고(.md)를 두는 곳
-CATEGORY_ORDER = ["공실개발", "건물 기획", "창업", "무인 운영", "생각"]
+CATEGORY_ORDER = ["공실개발", "건물 기획", "창업", "무인 운영", "시장 · 산업", "사업 이야기", "강연 · 교육", "생각"]
+# 요일별 연재 (매일 아침 한 편) — 인사이트 페이지 안내와 content/plan/GUIDE.md 의 순서가 같다
+SERIES_DAYS = [
+    ("월", "공실 · 건물 실무", "공실개발 · 건물 기획"),
+    ("화", "지나온 일", "사업 이야기"),
+    ("수", "시장과 산업", "시장 · 산업"),
+    ("목", "창업 · 운영 실무", "창업 · 무인 운영"),
+    ("금", "강연과 교육", "강연 · 교육"),
+    ("토", "지금 하는 일", "사업 이야기"),
+    ("일", "생각과 비전", "생각"),
+]
 
 
 def md_inline(t):
@@ -1025,6 +1046,12 @@ ARTICLE_CTA = {
            'contact.html?inquiry=diagnosis', '공간수익화 진단 문의', 'books.html', '전자책으로 먼저 읽기'),
     '무인 운영': ('운영은 설계로 풉니다', '예약·출입·정산·청소를 프로세스로 옮기는 일을 함께 합니다.',
               'contact.html?inquiry=diagnosis', '운영 진단 문의', 'services.html', '서비스 안내 보기'),
+    '시장 · 산업': ('시장 흐름을 내 공간에 대입해 보면', '상권과 수요의 변화를 내 건물, 내 매장 조건에 맞춰 다시 읽어 드립니다.',
+                'contact.html?inquiry=diagnosis', '공간수익화 진단 문의', 'cases.html', '유형별 사례 보기'),
+    '사업 이야기': ('해 본 일만 말씀드립니다', '10년 동안 직접 만들고 운영하며 남은 기준으로 공간과 사업을 함께 봅니다.',
+                'contact.html', '문의하기', 'about.html', '걸어온 길 보기'),
+    '강연 · 교육': ('강의 · 특강을 찾고 계신다면', '공실개발, 공간 창업, 무인 운영, 실행 — 대상과 시간에 맞춰 강의를 구성합니다.',
+                'contact.html?inquiry=lecture', '강의 문의하기', 'media.html', '강연 · 미디어 기록 보기'),
 }
 ARTICLE_CTA_DEFAULT = ('함께 이야기해 보시죠', '공실, 창업, 강의 — 어떤 주제든 문의를 남겨주세요.',
                        'contact.html', '문의하기', 'about.html', '최시준 소개 보기')
@@ -1098,6 +1125,9 @@ TOKENS['INSIGHT_LIST'] = insight_list()
 TOKENS['INSIGHT_LATEST'] = insight_latest()
 TOKENS['INSIGHT_COUNT'] = str(len(INSIGHTS))
 TOKENS['INSIGHT_CATS'] = insight_cats()
+TOKENS['INSIGHT_TOPIC_COUNT'] = str(len(CATEGORY_ORDER))
+TOKENS['INSIGHT_SERIES'] = '<ol class="in-series">' + ''.join(
+    f'<li><span class="mono">{esc(d)}</span><strong>{esc(t)}</strong><em>{esc(c)}</em></li>' for d, t, c in SERIES_DAYS) + '</ol>'
 
 def insight_block(eyebrow, title, lede, cats, tint=False):
     picks = [a for a in INSIGHTS if a['category'] in cats][:3]
@@ -1124,7 +1154,7 @@ TOKENS['INSIGHT_BLOCK_OWNER'] = insight_block('READ — FOR OWNERS', '건물주�
 TOKENS['INSIGHT_BLOCK_FOUNDER'] = insight_block('READ — FOR FOUNDERS', '창업 전에 읽어 둘 글',
     '매물을 고르는 기준과 무인 운영의 구조를 짧은 글로 먼저 만나보세요.', ('창업', '무인 운영', '생각'))
 TOKENS['INSIGHT_BLOCK_ALL'] = insight_block('READ', '최시준의 글',
-    '10년 동안 공간을 만들며 굳어진 판단기준을 글로 정리하고 있습니다.', ('생각', '공실개발', '창업'), tint=True)
+    '10년 동안 공간을 만들며 굳어진 판단기준과 지나온 일을 글로 정리하고 있습니다.', ('사업 이야기', '생각', '공실개발'), tint=True)
 
 
 # ------------------------------------------------------------------
@@ -1220,6 +1250,9 @@ NETWORK_BY_CATEGORY = {
     '창업': ["coremood", "ssople", "orbis"],
     '무인 운영': ["ssople", "mingle", "playtion"],
     '생각': ["ssople", "socialfactory", "gongbaek"],
+    '시장 · 산업': ["gongbaek", "orbis", "megaspot"],
+    '사업 이야기': ["ssople", "socialfactory", "playtion"],
+    '강연 · 교육': ["socialfactory", "megaspot", "myworks"],
 }
 
 
@@ -1504,7 +1537,11 @@ def page_date(p):
         return p['article']['updated']
     if p['key'].startswith('region-'):
         return max(DATA_DATE, '2026-10-11')
-    return CONTENT_DATES.get(p['key'], '2026-09-07')
+    base = CONTENT_DATES.get(p['key'], '2026-09-07')
+    # 최신 글 목록을 보여주는 페이지는 새 글이 올라온 날 함께 바뀐다
+    if p['key'] in ('insights', 'home', 'media') and INSIGHTS:
+        return max(base, INSIGHTS[0]['updated'], INSIGHTS[0]['date'])
+    return base
 
 
 def build_sitemap():

@@ -3,13 +3,25 @@
       <div class="container">
         <nav class="crumbs mono" aria-label="현재 위치"><a href="index.html">홈</a><span aria-hidden="true">/</span><span aria-current="page">인사이트</span></nav>
         <p class="eyebrow mono reveal">INSIGHTS</p>
-        <h1 class="reveal">공간사업 10년의 <span class="accent">판단기준</span></h1>
-        <p class="lede reveal">상가 공실을 어떻게 볼 것인가, 파티룸 창업에서 무엇을 먼저 따질 것인가, 무인공간은 어떻게 굴러가는가. 340개+ 공간을 만들며 굳어진 기준을 글로 정리합니다. 짧지만 현장에서 나온 글입니다.</p>
+        <h1 class="reveal">공간사업 10년의 <span class="accent">판단기준</span>과 기록</h1>
+        <p class="lede reveal">상가 공실을 어떻게 볼 것인가, 파티룸 창업에서 무엇을 먼저 따질 것인가, 무인공간은 어떻게 굴러가는가. 340개+ 공간을 만들며 굳어진 기준과 지나온 일, 지금 하는 일, 앞으로의 방향을 매일 아침 한 편씩 씁니다.</p>
         <ul class="stats pf-kpis reveal" aria-label="인사이트 요약">
           <li class="stat"><span class="stat-num">{{INSIGHT_COUNT}}</span><span class="stat-label mono">편의 글</span></li>
-          <li class="stat"><span class="stat-num">5</span><span class="stat-label mono">주제 — 공실개발 · 건물 기획 · 창업 · 무인 운영 · 생각</span></li>
+          <li class="stat"><span class="stat-num">{{INSIGHT_TOPIC_COUNT}}</span><span class="stat-label mono">주제 — 현장 실무 · 시장 · 사업 이야기 · 강연 · 생각</span></li>
           <li class="stat"><span class="stat-num">340<small>개+</small></span><span class="stat-label mono">공간에서 나온 기준</span></li>
         </ul>
+      </div>
+    </section>
+
+    <!-- ===================== SERIES ===================== -->
+    <section class="section in-series-section" aria-labelledby="seriesTitle">
+      <div class="container">
+        <div class="in-series-head">
+          <p class="eyebrow mono">DAILY · 07:00</p>
+          <h2 id="seriesTitle">요일마다 다른 이야기</h2>
+          <p>월요일엔 공실 실무, 화요일엔 지나온 사업, 일요일엔 생각과 비전. 매일 아침 일곱 시 전후로 새 글이 올라옵니다.</p>
+        </div>
+        {{INSIGHT_SERIES}}
       </div>
     </section>
 

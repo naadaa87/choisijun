@@ -2405,3 +2405,22 @@ section.is-empty { display: none; }
   .net-guide li { flex-direction: column; gap: 4px; }
   .footer-family p .mono { min-width: 0; width: 100%; }
 }
+
+/* ---------- 인사이트 요일별 연재 ---------- */
+.in-series-section { padding-top: 44px; padding-bottom: 0; }
+.in-series-head { display: grid; grid-template-columns: auto 1fr; gap: 6px 20px; align-items: baseline; margin-bottom: 16px; }
+.in-series-head .eyebrow { grid-column: 1 / -1; margin: 0; }
+.in-series-head h2 { font-size: clamp(1.15rem, 2.2vw, 1.4rem); font-weight: 800; letter-spacing: -0.03em; }
+.in-series-head p:not(.eyebrow) { color: var(--concrete); font-size: 0.95rem; }
+.in-series { list-style: none; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
+.in-series li { border: 1px solid var(--line); border-radius: var(--radius); background: #fff; padding: 12px 12px 14px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.in-series li span { font-size: 0.78rem; font-weight: 700; color: var(--signal); }
+.in-series li strong { font-size: 0.95rem; letter-spacing: -0.02em; }
+.in-series li em { font-style: normal; font-size: 0.78rem; color: var(--concrete); }
+@media (max-width: 900px) {
+  .in-series-head { grid-template-columns: 1fr; }
+  .in-series { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+@media (max-width: 560px) {
+  .in-series { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

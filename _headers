@@ -28,6 +28,8 @@
   X-Robots-Tag: noindex
 /setup/*
   X-Robots-Tag: noindex
+/tools/*
+  X-Robots-Tag: noindex
 
 # 설정 파일은 늘 최신으로 (키를 바꾸면 바로 반영)
 /site-config.js
