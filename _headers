@@ -19,6 +19,16 @@
 /insights/*
   Cache-Control: public, max-age=0, must-revalidate
 
+# 관리자 페이지는 저장하지 않고 검색에도 나오지 않게
+/admin
+  Cache-Control: no-store
+  X-Robots-Tag: noindex, nofollow
+/admin.html
+  Cache-Control: no-store
+  X-Robots-Tag: noindex, nofollow
+/admin.js
+  Cache-Control: no-store
+
 # 원고·조각 파일은 검색 결과에 나오지 않게
 /fragments/*
   X-Robots-Tag: noindex

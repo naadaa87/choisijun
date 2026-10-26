@@ -1525,8 +1525,8 @@ def indexable():
 CONTENT_DATES = {
     'home': '2026-10-20', 'about': '2026-10-11', 'brands': '2026-10-20', 'community': '2026-10-11', 'books': '2026-10-11',
     'cases': '2026-10-11', 'services': '2026-10-20', 'portfolio': '2026-10-20', 'references': '2026-10-11',
-    'media': '2026-10-11', 'contact': '2026-10-20', 'socialfactory': '2026-10-20', 'insights': '2026-10-11',
-    'faq': '2026-10-11', 'glossary': '2026-10-11', 'privacy': '2026-10-11', 'terms': '2026-10-11', 'network': '2026-10-20',
+    'media': '2026-10-11', 'contact': '2026-10-26', 'socialfactory': '2026-10-20', 'insights': '2026-10-11',
+    'faq': '2026-10-11', 'glossary': '2026-10-11', 'privacy': '2026-10-26', 'terms': '2026-10-11', 'network': '2026-10-20',
 }
 DATA_DATE = (PF or {}).get('meta', {}).get('source', '')
 DATA_DATE = re.search(r'(\d{4}-\d{2}-\d{2})', DATA_DATE).group(1) if re.search(r'\d{4}-\d{2}-\d{2}', DATA_DATE) else '2026-10-11'

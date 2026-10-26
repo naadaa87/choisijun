@@ -2,11 +2,10 @@
    최시준 개인 브랜딩 홈페이지 — 공통 스크립트 (멀티페이지)
    순수 Vanilla JS · 프레임워크/빌드 불필요
    ---------------------------------------------------------
-   설정값(Supabase · Web3Forms · 문의 이메일)은 site-config.js 에 있습니다.
-   - Supabase 값이 비어 있으면: "데모 모드"
-     (게시판 글이 본인 브라우저에만 저장, 회원가입은 준비 중 안내)
-   - 값을 채우면: 회원가입·로그인, 공유 게시판, 문의 기록이 실제로 작동
-   - 설정 순서: 기능활성화-가이드.md
+   문의 · 커뮤니티 · 레퍼런스는 Cloudflare 서버 기능(/api, D1)으로 저장되고
+   관리자 페이지(/admin)에서 관리합니다. 설정 순서: 관리자-설정-가이드.md
+   - 서버 기능이 아직 켜지지 않았으면: 문의는 메일 앱으로, 게시판은 미리보기 모드
+   - 회원가입·로그인(Supabase)은 선택 기능입니다: 기능활성화-가이드.md
    ========================================================= */
 const SITE_CFG = window.SITE_CONFIG || {};
 const COMMUNITY_BACKEND = {
@@ -30,6 +29,71 @@ const $  = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const IS_REMOTE = Boolean(COMMUNITY_BACKEND.supabaseUrl && COMMUNITY_BACKEND.supabaseAnonKey);
+const TURNSTILE_SITE_KEY = String(SITE_CFG.turnstileSiteKey || '').trim();
+const PAGE_LOADED_AT = Date.now();
+
+/* ---------------------------------------------------------
+   Cloudflare 서버 기능 (/api) — 연결돼 있으면 문의·게시판·레퍼런스가 서버에 저장된다
+   --------------------------------------------------------- */
+let cfHealthPromise = null;
+function cfHealth() {
+  if (cfHealthPromise) return cfHealthPromise;
+  const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  const timer = setTimeout(() => { if (ctrl) ctrl.abort(); }, 4000);
+  cfHealthPromise = fetch('/api/health', { cache: 'no-store', signal: ctrl ? ctrl.signal : undefined })
+    .then((r) => (r.ok ? r.json() : { ok: false }))
+    .then((d) => ({ ok: Boolean(d && d.ok), turnstile: Boolean(d && d.turnstile) }))
+    .catch(() => ({ ok: false }))
+    .finally(() => clearTimeout(timer));
+  return cfHealthPromise;
+}
+async function cfPost(path, body) {
+  let res;
+  try {
+    res = await fetch('/api/' + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  } catch (_) { return { ok: false, error: '서버에 연결하지 못했습니다.' }; }
+  let data = {};
+  try { data = await res.json(); } catch (_) { data = {}; }
+  if (!res.ok || !data.ok) return { ok: false, error: data.error || ('전송하지 못했습니다 (' + res.status + ')') };
+  return data;
+}
+/** 스팸 방지용 숨은 칸을 폼에 넣는다 (사람에게는 보이지 않음) */
+function addHoneypot(form) {
+  if (!form || form.querySelector('.hp-field')) return;
+  const hp = document.createElement('input');
+  hp.type = 'text'; hp.name = 'website'; hp.className = 'hp-field';
+  hp.tabIndex = -1; hp.autocomplete = 'off'; hp.setAttribute('aria-hidden', 'true');
+  form.appendChild(hp);
+}
+const honeypotValue = (form) => { const hp = form && form.querySelector('.hp-field'); return hp ? hp.value : ''; };
+
+/** Cloudflare Turnstile (선택) — site-config.js 에 turnstileSiteKey 가 있을 때만 */
+let turnstileLoading = null;
+function loadTurnstile() {
+  if (!TURNSTILE_SITE_KEY) return Promise.resolve(null);
+  if (window.turnstile) return Promise.resolve(window.turnstile);
+  if (!turnstileLoading) turnstileLoading = new Promise((resolve) => {
+    const sc = document.createElement('script');
+    sc.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+    sc.async = true; sc.defer = true;
+    sc.onload = () => resolve(window.turnstile || null);
+    sc.onerror = () => resolve(null);
+    document.head.appendChild(sc);
+  });
+  return turnstileLoading;
+}
+async function mountTurnstile(form) {
+  const health = await cfHealth();
+  if (!TURNSTILE_SITE_KEY || !health.ok) return { token: () => '', reset: () => {} };
+  const ts = await loadTurnstile();
+  if (!ts) return { token: () => '', reset: () => {} };
+  const box = document.createElement('div');
+  box.className = 'cf-turnstile-box';
+  const submit = form.querySelector('button[type="submit"]');
+  if (submit && submit.parentNode) submit.parentNode.insertBefore(box, submit); else form.appendChild(box);
+  const id = ts.render(box, { sitekey: TURNSTILE_SITE_KEY, language: 'ko' });
+  return { token: () => { try { return ts.getResponse(id) || ''; } catch (_) { return ''; } }, reset: () => { try { ts.reset(id); } catch (_) { /* ignore */ } } };
+}
 
 function escapeHtml(str) {
   return String(str)
@@ -630,12 +694,21 @@ const INQUIRY_MAP = {
   });
 
   /* 연결 상태에 맞춘 안내 문구 */
-  const DIRECT = IS_REMOTE || Boolean(FORM_ACCESS_KEY);
-  if (noteEl) {
+  addHoneypot(form);
+  let DIRECT = IS_REMOTE || Boolean(FORM_ACCESS_KEY);
+  let CF_OK = false;
+  const paintNote = () => {
+    if (!noteEl) return;
     noteEl.textContent = DIRECT
       ? '※ 보내주신 내용은 문의 답변에만 쓰고, 처리 후 개인정보처리방침에 따라 보관·파기합니다.'
       : '※ 지금은 버튼을 누르면 사용 중인 메일 앱이 열리고 내용이 자동으로 채워집니다.';
-  }
+  };
+  paintNote();
+  let captcha = { token: () => '', reset: () => {} };
+  cfHealth().then((h) => {
+    CF_OK = h.ok;
+    if (CF_OK) { DIRECT = true; paintNote(); mountTurnstile(form).then((c) => { captcha = c; }); }
+  });
 
   /* 회원 안내 + 로그인한 경우 이름·연락처 채우기 */
   async function paintMember() {
@@ -684,6 +757,9 @@ const INQUIRY_MAP = {
     const bodyText = `문의 유형: ${type}\n성함/소속: ${name}\n연락처: ${contact}\n회원 여부: ${memberLine}\n\n문의 내용:\n${msg}\n\n— 최시준 홈페이지에서 발송`;
     const mailto = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyText)}`;
 
+    if (!CF_OK) CF_OK = (await cfHealth()).ok;
+    if (CF_OK) DIRECT = true;
+
     /* 직접 접수 설정이 없으면: 메일 앱 열기 */
     if (!DIRECT) {
       window.location.href = mailto;
@@ -696,9 +772,20 @@ const INQUIRY_MAP = {
     showStatus('문의를 보내고 있습니다…', 'wait');
     let saved = false;
     let mailed = false;
+    let cfError = '';
 
-    /* ① 문의 기록 저장 (Supabase) — 회원이면 마이페이지에서 볼 수 있다 */
-    if (IS_REMOTE) {
+    /* ① 문의 기록 저장 (Cloudflare) — 관리자 페이지에서 확인 */
+    if (CF_OK) {
+      const r = await cfPost('inquiry', {
+        type, name, contact, message: msg, page: location.pathname,
+        agree: true, hp: honeypotValue(form), t: PAGE_LOADED_AT, turnstile: captcha.token()
+      });
+      saved = Boolean(r.ok);
+      if (!r.ok) cfError = r.error || '';
+      captcha.reset();
+    }
+    /* ①' 문의 기록 저장 (Supabase, 회원 기능을 켠 경우) — 회원이면 마이페이지에서 볼 수 있다 */
+    if (!saved && IS_REMOTE) {
       try {
         await Auth.ready;
         const t = await Auth.token();
@@ -732,6 +819,8 @@ const INQUIRY_MAP = {
       if (Auth.user) paintMember();
       const extra = (saved && Auth.user) ? ' 진행 상황은 <a href="/account#my-inquiries">마이페이지</a>에서 볼 수 있습니다.' : '';
       showStatus('문의가 접수되었습니다. 영업일 기준 1~2일 안에 회신드리겠습니다. 감사합니다.' + extra, 'ok');
+    } else if (cfError && /천천히|10분|자동 등록|모두 적어|동의/.test(cfError)) {
+      showStatus(escapeHtml(cfError), 'err');
     } else {
       showStatus('전송하지 못했습니다. 메일 앱으로 대신 열어드립니다.', 'err');
       window.location.href = mailto;
@@ -805,11 +894,32 @@ async function fetchRemotePosts() {
   let openId = null;
   let me = null;          // 로그인한 회원 (Supabase 연결 시)
   let admin = false;
+  let cf = false;         // Cloudflare 서버 기능 연결 시: 운영자 확인 후 게시
+  let captcha = { token: () => '', reset: () => {} };
 
-  const isStaff = (row) => Boolean(row.is_staff) || (!IS_REMOTE && (row.author === '최시준' || row.author === '운영자'));
-  const canDelete = (post) => IS_REMOTE ? Boolean(me && (post.user_id === me.id || admin)) : Boolean(post.pass);
+  const isStaff = (row) => Boolean(row.is_staff) || (!IS_REMOTE && !cf && (row.author === '최시준' || row.author === '운영자'));
+  const canDelete = (post) => cf ? false : IS_REMOTE ? Boolean(me && (post.user_id === me.id || admin)) : Boolean(post.pass);
 
   function setMode(text) { if (modeEl) modeEl.textContent = text; }
+
+  let noticeEl = null;
+  function notice(text, kind = 'ok') {
+    if (!noticeEl) {
+      noticeEl = document.createElement('p');
+      noticeEl.className = 'cf-status';
+      noticeEl.setAttribute('role', 'status');
+      list.parentNode.insertBefore(noticeEl, list);
+    }
+    noticeEl.textContent = text;
+    noticeEl.className = 'cf-status is-' + kind;
+    noticeEl.hidden = !text;
+  }
+  async function fetchCfPosts() {
+    const res = await fetch('/api/community', { cache: 'no-store' });
+    const data = await res.json();
+    if (!res.ok || !data.ok) throw new Error('load');
+    return data.posts;
+  }
 
   function render() {
     const shown = currentCat === '전체' ? posts : posts.filter((p) => p.category === currentCat);
@@ -875,6 +985,14 @@ async function fetchRemotePosts() {
   }
 
   function commentFormHtml(post) {
+    if (cf) {
+      return `
+            <form class="comment-form" data-post="${escapeHtml(String(post.id))}">
+              <input type="text" class="cm-author" maxlength="20" placeholder="닉네임" required />
+              <textarea class="cm-content" maxlength="800" rows="1" placeholder="답글을 남겨주세요 (확인 후 게시)" required></textarea>
+              <button type="submit" class="btn btn-sm btn-line">등록</button>
+            </form>`;
+    }
     if (IS_REMOTE && !me) {
       return `<p class="comment-login">답글은 회원만 남길 수 있습니다. <a href="${loginUrl('/community')}">로그인 · 회원가입</a></p>`;
     }
@@ -888,6 +1006,14 @@ async function fetchRemotePosts() {
 
   async function addComment(postId, author, content) {
     const comment = { post_id: postId, author, content, created_at: new Date().toISOString() };
+    if (cf) {
+      const r = await cfPost('community/comment', { post_id: postId, author, content, hp: '', t: PAGE_LOADED_AT });
+      if (!r.ok) { notice(r.error || '답글을 등록하지 못했습니다.', 'err'); return; }
+      notice('답글이 접수되었습니다. 운영자가 확인한 뒤 게시됩니다. 감사합니다.');
+      openId = postId;
+      render();
+      return;
+    }
     if (IS_REMOTE) {
       try { await sbInsert(COMMUNITY_BACKEND.commentsTable, { post_id: postId, author, content }, { token: await Auth.token() }); }
       catch (_) { alert('답글 등록에 실패했습니다. 로그인 상태를 확인하고 다시 시도해 주세요.'); return; }
@@ -923,23 +1049,37 @@ async function fetchRemotePosts() {
   /* 글쓰기 폼 토글 */
   if (writeBtn && formEl) {
     writeBtn.addEventListener('click', () => {
-      if (IS_REMOTE && !me) { location.href = loginUrl('/community'); return; }
+      if (!cf && IS_REMOTE && !me) { location.href = loginUrl('/community'); return; }
       const show = formEl.hidden;
       formEl.hidden = !show;
       writeBtn.setAttribute('aria-expanded', String(show));
-      if (show) (IS_REMOTE ? $('#bfTitle') : $('#bfAuthor')).focus();
+      if (show) ((IS_REMOTE && !cf) ? $('#bfTitle') : $('#bfAuthor')).focus();
     });
   }
   if (cancelBtn && formEl) cancelBtn.addEventListener('click', () => { formEl.hidden = true; });
 
   if (formEl) formEl.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const author = IS_REMOTE ? Auth.displayName() : $('#bfAuthor').value.trim();
+    const author = (IS_REMOTE && !cf) ? Auth.displayName() : $('#bfAuthor').value.trim();
     const category = $('#bfCategory').value;
-    const passRaw = $('#bfPass').value;
+    const passRaw = $('#bfPass') ? $('#bfPass').value : '';
     const title = $('#bfTitle').value.trim();
     const content = $('#bfContent').value.trim();
     if (!author || !title || !content) return;
+
+    if (cf) {
+      const btn = formEl.querySelector('button[type="submit"]');
+      if (btn) btn.disabled = true;
+      const r = await cfPost('community', { author, category, title, content, hp: honeypotValue(formEl), t: PAGE_LOADED_AT, turnstile: captcha.token() });
+      if (btn) btn.disabled = false;
+      captcha.reset();
+      if (!r.ok) { notice(r.error || '글을 등록하지 못했습니다.', 'err'); return; }
+      formEl.reset();
+      formEl.hidden = true;
+      if (writeBtn) writeBtn.setAttribute('aria-expanded', 'false');
+      notice('글이 접수되었습니다. 운영자가 확인한 뒤 게시됩니다. 감사합니다.');
+      return;
+    }
 
     if (IS_REMOTE) {
       try {
@@ -972,6 +1112,19 @@ async function fetchRemotePosts() {
 
   /* 초기 로드 */
   (async function init() {
+    if ((await cfHealth()).ok) {
+      try {
+        posts = await fetchCfPosts();
+        cf = true;
+        const passInput = $('#bfPass');
+        if (passInput) { passInput.required = false; const lab = passInput.closest('label'); if (lab) lab.hidden = true; }
+        addHoneypot(formEl);
+        setMode('LIVE — 누구나 읽고 쓸 수 있습니다. 새 글과 답글은 운영자가 확인한 뒤 게시됩니다.');
+        render();
+        if (formEl) mountTurnstile(formEl).then((c) => { captcha = c; });
+        return;
+      } catch (_) { cf = false; }
+    }
     if (IS_REMOTE) {
       /* 회원 게시판: 닉네임·삭제 비밀번호 대신 회원 정보 사용 */
       ['#bfAuthor', '#bfPass'].forEach((sel) => {
@@ -1020,6 +1173,13 @@ async function fetchRemotePosts() {
   }
 
   (async function init() {
+    if ((await cfHealth()).ok) {
+      try {
+        const res = await fetch('/api/community?limit=3', { cache: 'no-store' });
+        const data = await res.json();
+        if (res.ok && data.ok) { paint(data.posts); return; }
+      } catch (_) { /* fall through */ }
+    }
     if (IS_REMOTE) {
       try { paint(await sbSelect(COMMUNITY_BACKEND.table, 'select=*&order=created_at.desc&limit=3')); return; }
       catch (_) { /* fall through to local */ }
@@ -1262,6 +1422,21 @@ function fileToResizedDataUrl(file) {
   }));
 
   (async function init() {
+    if ((await cfHealth()).ok) {
+      /* Cloudflare 연결: 레퍼런스 등록은 관리자 페이지(/admin)에서 */
+      if (writeBtn) writeBtn.hidden = true;
+      if (formEl) formEl.hidden = true;
+      if (modeEl) modeEl.textContent = '';
+      try {
+        const res = await fetch('/api/references', { cache: 'no-store' });
+        const data = await res.json();
+        if (res.ok && data.ok) {
+          userRefs = data.refs.map((r) => ({ id: 'cf-' + r.id, year: r.year, category: r.category, title: r.title, desc: r.description, link: r.link, image: r.image, created_at: r.created_at }));
+          render();
+          return;
+        }
+      } catch (_) { /* fall through */ }
+    }
     if (IS_REMOTE) {
       /* 관리자 계정일 때만 등록 버튼을 보여준다 (서버 정책으로도 막혀 있음) */
       const codeInput = $('#rfCode');

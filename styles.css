@@ -2425,3 +2425,50 @@ section.is-empty { display: none; }
 @media (max-width: 560px) {
   .in-series { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* ---------- 관리자 페이지 (Cloudflare) ---------- */
+.adm-gate { display: grid; grid-template-columns: minmax(0, 380px) minmax(0, 1fr); gap: 20px; align-items: start; }
+.adm-gate > [hidden] { display: none; }
+.adm-login { max-width: 420px; }
+.adm-steps { display: flex; flex-direction: column; gap: 12px; padding-left: 1.3em; margin-bottom: 16px; font-size: 0.93rem; line-height: 1.7; }
+.adm-steps code, .acc-help code, .auth-msg code, .adm-checks code { font-family: var(--font-mono); font-size: 0.84em; background: var(--paper-tint); border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; }
+.adm-sub { font-size: 0.95rem; font-weight: 800; margin: 18px 0 8px; }
+.adm-sched { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+.adm-sched li { font-size: 0.92rem; line-height: 1.55; }
+.adm-sched .mono { display: inline-block; min-width: 82px; color: #C2380C; font-size: 0.8rem; font-weight: 700; }
+.adm-daily-state { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 0.93rem; }
+.adm-label { display: block; font-size: 0.72rem; font-weight: 800; color: var(--concrete); margin-bottom: 6px; letter-spacing: 0.04em; }
+.adm-label small { font-weight: 500; letter-spacing: 0; }
+.adm-status { margin-bottom: 14px; }
+.adm-memo { display: flex; flex-direction: column; margin-bottom: 10px; }
+.adm-memo textarea { font: inherit; font-size: 0.92rem; border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; background: #FDFCFA; resize: vertical; }
+.adm-row-btns { margin-top: 10px; }
+.adm-comments { margin: 12px 0 0 14px; border-left: 2px solid var(--line); padding-left: 14px; display: flex; flex-direction: column; gap: 12px; }
+.adm-comments .acc-item-head strong { color: var(--ink); font-size: 0.86rem; }
+.adm-row .adm-note-form { margin-top: 12px; }
+.adm-ref-item { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 14px; align-items: start; }
+.adm-ref-item img, .adm-ref-noimg { width: 76px; height: 76px; border-radius: 8px; object-fit: cover; background: var(--paper-tint); display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: var(--concrete); }
+.adm-ref-item .acc-help { margin: 4px 0 8px; }
+.adm-ref-preview { display: flex; align-items: center; gap: 12px; }
+.adm-ref-preview img { width: 120px; height: 80px; object-fit: cover; border-radius: 6px; border: 1px solid var(--line); }
+.adm-lanes { display: flex; flex-direction: column; gap: 8px; }
+.adm-lane { border: 1px solid var(--line); border-radius: 8px; background: #FDFCFA; }
+.adm-lane summary { list-style: none; cursor: pointer; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 12px 14px; font-size: 0.92rem; }
+.adm-lane summary::-webkit-details-marker { display: none; }
+.adm-lane summary::before { content: "▸"; color: var(--concrete); }
+.adm-lane[open] summary::before { content: "▾"; }
+.adm-lane-next { color: var(--concrete); font-size: 0.86rem; flex: 1 1 260px; }
+.adm-lane-list { padding: 0 14px 12px 34px; display: flex; flex-direction: column; gap: 6px; }
+.adm-lane-list li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; font-size: 0.9rem; padding: 6px 0; border-top: 1px dashed var(--line); }
+.adm-lane-list li:first-child { border-top: 0; }
+.adm-lane-list em { font-style: normal; font-size: 0.72rem; color: #C2380C; padding: 0 6px; }
+.adm-btns select { font: inherit; font-size: 0.86rem; border: 1px solid var(--line); border-radius: 6px; padding: 7px 10px; background: #fff; }
+.acc-card h2 small { font-weight: 500; font-size: 0.74rem; color: var(--concrete); margin-left: 6px; }
+@media (max-width: 900px) {
+  .adm-gate { grid-template-columns: 1fr; }
+}
+
+/* 스팸 방지용 숨은 칸 (사람에게는 보이지 않음) */
+.hp-field { position: absolute !important; left: -9999px !important; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.cf-turnstile-box { margin-top: 4px; min-height: 0; }
+.btn:disabled, .btn[disabled], .adm-btns select:disabled { opacity: 0.45; cursor: not-allowed; transform: none !important; box-shadow: none !important; }

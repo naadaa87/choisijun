@@ -214,8 +214,8 @@
 
 ## 보류 — 대표가 승인한 뒤에만 (예약 작업은 쓰지 않음)
 
-- [ ] `first-store-from-gosiwon` 고시원에서 준비한 첫 매장 — 퇴사 직후 첫 공간을 직접 인테리어하며 연 이야기. 개인 형편이 드러나 공개 여부를 대표가 정함
-- [ ] `letter-to-juniors-2013` 2013년 후배들에게 남긴 경험담 — 가족 이야기가 포함된 글이라 공개 범위를 대표가 정함
-- [ ] `matchmaking-programs` 10년 동안 운영한 소개팅 프로그램에서 배운 운영 — 홈페이지에 아직 없는 이력이라 공개 여부를 대표가 정함
-- [ ] `pizza-and-fixed-costs` 피자 가게를 하며 배운 고정비 — 매장 운영 상태를 다뤄야 해서 대표가 정함
-- [ ] `party-room-partner-model` 파티룸 파트너 모델의 변화 — 운영방식·비율을 다뤄야 해서 대표가 정함
+- [ ] `first-store-from-gosiwon` 고시원에서 준비한 첫 매장 — 퇴사 직후 첫 공간을 직접 인테리어하며 연 이야기. 개인 형편이 드러나 공개 여부를 대표가 정함 (자료: 드라이브 '퍼스널브랜딩질문지' 13번 답변)
+- [ ] `letter-to-juniors-2013` 2013년 후배들에게 남긴 경험담 — 가족 이야기가 포함된 글이라 공개 범위를 대표가 정함 (자료: 드라이브 '퍼스널브랜딩질문지' 13번, 가족사는 빼고)
+- [ ] `matchmaking-programs` 10년 동안 운영한 소개팅 프로그램에서 배운 운영 — 홈페이지에 아직 없는 이력이라 공개 여부를 대표가 정함 (자료: 메모리 /areas/matchmaking-history.md)
+- [ ] `pizza-and-fixed-costs` 피자 가게를 하며 배운 고정비 — 매장 운영 상태를 다뤄야 해서 대표가 정함 (자료: 메모리 /projects/019f46e7-8157-74ca-afa2-3f7108547a24/areas/jacksonville-pizza.md)
+- [ ] `party-room-partner-model` 파티룸 파트너 모델의 변화 — 운영방식·비율을 다뤄야 해서 대표가 정함 (자료: 메모리 /areas/ssople-website.md, /areas/dudumchit.md)
