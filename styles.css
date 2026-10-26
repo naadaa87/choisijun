@@ -2408,6 +2408,7 @@ section.is-empty { display: none; }
 
 /* ---------- 인사이트 요일별 연재 ---------- */
 .in-series-section { padding-top: 44px; padding-bottom: 0; }
+.in-series-section + .section { padding-top: 36px; }
 .in-series-head { display: grid; grid-template-columns: auto 1fr; gap: 6px 20px; align-items: baseline; margin-bottom: 16px; }
 .in-series-head .eyebrow { grid-column: 1 / -1; margin: 0; }
 .in-series-head h2 { font-size: clamp(1.15rem, 2.2vw, 1.4rem); font-weight: 800; letter-spacing: -0.03em; }
