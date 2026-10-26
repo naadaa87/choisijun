@@ -12,3 +12,7 @@ __pycache__/
 # 에디터
 .vscode/
 .idea/
+
+# Cloudflare 로컬 테스트 도구가 만드는 임시 파일
+.wrangler/
+node_modules/
