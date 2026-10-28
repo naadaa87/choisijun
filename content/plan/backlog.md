@@ -93,7 +93,7 @@
 
 ## THU — 창업 · 운영 실무
 
-- [d] 초안 2026-10-29 `beyond-thirty-spaces` 공간이 서른 개를 넘으면 사람이 아니라 시스템이 필요합니다 · 무인 운영
+- [x] 2026-10-29 `beyond-thirty-spaces` 공간이 서른 개를 넘으면 사람이 아니라 시스템이 필요합니다
 - [ ] `first-month-checklist` 공간 창업 첫 달에 챙길 일 · 창업
   각도: 오픈 전 촬영·등록, 첫 리뷰, 청소·소모품 동선, 문의 응답 기준. /insights/party-room-startup-criteria 와 이어지게
 - [ ] `unmanned-business-types` 무인으로 운영하기 쉬운 업종, 어려운 업종 · 창업

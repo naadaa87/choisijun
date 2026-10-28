@@ -6,34 +6,42 @@
     <atom:link href="https://choisijun.com/rss.xml" rel="self" type="application/rss+xml" />
     <description>최시준 공식 홈페이지의 새 소식 — 공간 포트폴리오, 공실개발 사례, 브랜드, 강의·미디어.</description>
     <language>ko</language>
-    <lastBuildDate>Wed, 28 Oct 2026 06:48:33 +0900</lastBuildDate>
+    <lastBuildDate>Thu, 29 Oct 2026 06:48:34 +0900</lastBuildDate>
     <item>
-      <title>상가 공실률 13.4%, 이 숫자를 내 건물에 대입하는 법 | 최시준</title>
-      <link>https://choisijun.com/insights/reading-commercial-vacancy-rate</link>
-      <guid isPermaLink="true">https://choisijun.com/insights/reading-commercial-vacancy-rate</guid>
-      <description>한국부동산원 2026년 2분기 상업용부동산 임대동향에서 일반 상가 공실률은 13.4%, 1층 공실률은 6.7%였습니다. 평균 공실률이 내 건물에 대해 말해 주는 것과 말해 주지 않는 것, 그리고 숫자를 읽은 뒤 확인할 것을 정리했습니다.</description>
-      <category>시장 · 산업</category>
-      <pubDate>Wed, 28 Oct 2026 09:00:00 +0900</pubDate>
+      <title>공간이 서른 개를 넘으면 사람이 아니라 시스템이 필요합니다 | 최시준</title>
+      <link>https://choisijun.com/insights/beyond-thirty-spaces</link>
+      <guid isPermaLink="true">https://choisijun.com/insights/beyond-thirty-spaces</guid>
+      <description>공간대여 매장은 20~30개까지는 사람을 늘려서 버틸 수 있습니다. 그 이상은 관리 방식 자체를 바꿔야 합니다. 공간 수에 따라 운영이 어디서부터 흔들리는지, 무엇을 시스템으로 옮겨야 하는지 정리했습니다.</description>
+      <category>무인 운영</category>
+      <pubDate>Thu, 29 Oct 2026 09:00:00 +0900</pubDate>
     </item>
     <item>
       <title>최시준 | 공실개발·공간수익화 전문가, 쏘플파티룸 대표</title>
       <link>https://choisijun.com/</link>
       <guid isPermaLink="true">https://choisijun.com/</guid>
       <description>비어 있는 공간을 수익공간으로 바꾸는 최시준. 10년+ 340개+ 공간을 직접 기획·오픈·운영했고, 전국 15개 시·도의 파티룸·모임공간·게임파티룸 기록과 공실개발 상담, 강의, 전자책을 한곳에 모았습니다.</description>
-      <pubDate>Wed, 28 Oct 2026 09:00:00 +0900</pubDate>
+      <pubDate>Thu, 29 Oct 2026 09:00:00 +0900</pubDate>
     </item>
     <item>
       <title>미디어 — 쇼릴·언론 보도·방송 출연 | 최시준</title>
       <link>https://choisijun.com/media</link>
       <guid isPermaLink="true">https://choisijun.com/media</guid>
       <description>15초 쇼릴 2026, KBS·JTBC·CCTV 등 언론 보도와 방송 출연, 공식 채널, 그리고 공간사업 판단기준을 담은 최시준의 최근 글.</description>
-      <pubDate>Wed, 28 Oct 2026 09:00:00 +0900</pubDate>
+      <pubDate>Thu, 29 Oct 2026 09:00:00 +0900</pubDate>
     </item>
     <item>
       <title>인사이트 — 공실개발·파티룸 창업·무인공간 운영의 판단기준 | 최시준</title>
       <link>https://choisijun.com/insights</link>
       <guid isPermaLink="true">https://choisijun.com/insights</guid>
       <description>340개+ 공간을 만들며 굳어진 판단기준을 글로 정리합니다. 상가 공실 해결, 지하·고층 공실 활용, 파티룸·공간대여 창업, 무인공간 운영, 건물 단위 기획.</description>
+      <pubDate>Thu, 29 Oct 2026 09:00:00 +0900</pubDate>
+    </item>
+    <item>
+      <title>상가 공실률 13.4%, 이 숫자를 내 건물에 대입하는 법 | 최시준</title>
+      <link>https://choisijun.com/insights/reading-commercial-vacancy-rate</link>
+      <guid isPermaLink="true">https://choisijun.com/insights/reading-commercial-vacancy-rate</guid>
+      <description>한국부동산원 2026년 2분기 상업용부동산 임대동향에서 일반 상가 공실률은 13.4%, 1층 공실률은 6.7%였습니다. 평균 공실률이 내 건물에 대해 말해 주는 것과 말해 주지 않는 것, 그리고 숫자를 읽은 뒤 확인할 것을 정리했습니다.</description>
+      <category>시장 · 산업</category>
       <pubDate>Wed, 28 Oct 2026 09:00:00 +0900</pubDate>
     </item>
     <item>
@@ -292,14 +300,6 @@
       <link>https://choisijun.com/insights/vacancy-is-inventory</link>
       <guid isPermaLink="true">https://choisijun.com/insights/vacancy-is-inventory</guid>
       <description>임대인은 공실을 손실이라 부르고 저는 재고라 부릅니다. 팔리지 않는 재고의 원인은 상품이 아니라 진열에 있습니다. 비선호층의 낮은 임대료가 목적형 공간에게는 원가 경쟁력이 되는 이유.</description>
-      <category>생각</category>
-      <pubDate>Mon, 07 Sep 2026 09:00:00 +0900</pubDate>
-    </item>
-    <item>
-      <title>무인공간은 사람이 없는 사업이 아니라 프로세스가 있는 사업이다 | 최시준</title>
-      <link>https://choisijun.com/insights/unmanned-is-process</link>
-      <guid isPermaLink="true">https://choisijun.com/insights/unmanned-is-process</guid>
-      <description>&quot;무인이면 편하겠네요&quot;는 가장 많이 듣고 가장 위험한 말입니다. 사람이 하던 일은 사라지지 않고 프로세스로 옮겨질 뿐입니다. 전국 120여 개 공간을 최소 인력으로 운영하는 이유.</description>
       <category>생각</category>
       <pubDate>Mon, 07 Sep 2026 09:00:00 +0900</pubDate>
     </item>
