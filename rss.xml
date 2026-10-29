@@ -6,34 +6,42 @@
     <atom:link href="https://choisijun.com/rss.xml" rel="self" type="application/rss+xml" />
     <description>최시준 공식 홈페이지의 새 소식 — 공간 포트폴리오, 공실개발 사례, 브랜드, 강의·미디어.</description>
     <language>ko</language>
-    <lastBuildDate>Thu, 29 Oct 2026 06:48:34 +0900</lastBuildDate>
+    <lastBuildDate>Fri, 30 Oct 2026 06:48:03 +0900</lastBuildDate>
     <item>
-      <title>공간이 서른 개를 넘으면 사람이 아니라 시스템이 필요합니다 | 최시준</title>
-      <link>https://choisijun.com/insights/beyond-thirty-spaces</link>
-      <guid isPermaLink="true">https://choisijun.com/insights/beyond-thirty-spaces</guid>
-      <description>공간대여 매장은 20~30개까지는 사람을 늘려서 버틸 수 있습니다. 그 이상은 관리 방식 자체를 바꿔야 합니다. 공간 수에 따라 운영이 어디서부터 흔들리는지, 무엇을 시스템으로 옮겨야 하는지 정리했습니다.</description>
-      <category>무인 운영</category>
-      <pubDate>Thu, 29 Oct 2026 09:00:00 +0900</pubDate>
+      <title>&#x27;실행하라&#x27; — 2014년 강의에서 지금까지 남은 세 문장 | 최시준</title>
+      <link>https://choisijun.com/insights/run-activator-2014</link>
+      <guid isPermaLink="true">https://choisijun.com/insights/run-activator-2014</guid>
+      <description>2014년 회사에 다니며 대학을 돌던 강의의 제목은 &#x27;Run Activator, 실행하라&#x27;였습니다. 그 무렵 강의 교안 마지막 장에 적던 세 문장이 10년 넘게 공간 사업을 하는 지금도 일하는 기준으로 남아 있습니다.</description>
+      <category>강연 · 교육</category>
+      <pubDate>Fri, 30 Oct 2026 09:00:00 +0900</pubDate>
     </item>
     <item>
       <title>최시준 | 공실개발·공간수익화 전문가, 쏘플파티룸 대표</title>
       <link>https://choisijun.com/</link>
       <guid isPermaLink="true">https://choisijun.com/</guid>
       <description>비어 있는 공간을 수익공간으로 바꾸는 최시준. 10년+ 340개+ 공간을 직접 기획·오픈·운영했고, 전국 15개 시·도의 파티룸·모임공간·게임파티룸 기록과 공실개발 상담, 강의, 전자책을 한곳에 모았습니다.</description>
-      <pubDate>Thu, 29 Oct 2026 09:00:00 +0900</pubDate>
+      <pubDate>Fri, 30 Oct 2026 09:00:00 +0900</pubDate>
     </item>
     <item>
       <title>미디어 — 쇼릴·언론 보도·방송 출연 | 최시준</title>
       <link>https://choisijun.com/media</link>
       <guid isPermaLink="true">https://choisijun.com/media</guid>
       <description>15초 쇼릴 2026, KBS·JTBC·CCTV 등 언론 보도와 방송 출연, 공식 채널, 그리고 공간사업 판단기준을 담은 최시준의 최근 글.</description>
-      <pubDate>Thu, 29 Oct 2026 09:00:00 +0900</pubDate>
+      <pubDate>Fri, 30 Oct 2026 09:00:00 +0900</pubDate>
     </item>
     <item>
       <title>인사이트 — 공실개발·파티룸 창업·무인공간 운영의 판단기준 | 최시준</title>
       <link>https://choisijun.com/insights</link>
       <guid isPermaLink="true">https://choisijun.com/insights</guid>
       <description>340개+ 공간을 만들며 굳어진 판단기준을 글로 정리합니다. 상가 공실 해결, 지하·고층 공실 활용, 파티룸·공간대여 창업, 무인공간 운영, 건물 단위 기획.</description>
+      <pubDate>Fri, 30 Oct 2026 09:00:00 +0900</pubDate>
+    </item>
+    <item>
+      <title>공간이 서른 개를 넘으면 사람이 아니라 시스템이 필요합니다 | 최시준</title>
+      <link>https://choisijun.com/insights/beyond-thirty-spaces</link>
+      <guid isPermaLink="true">https://choisijun.com/insights/beyond-thirty-spaces</guid>
+      <description>공간대여 매장은 20~30개까지는 사람을 늘려서 버틸 수 있습니다. 그 이상은 관리 방식 자체를 바꿔야 합니다. 공간 수에 따라 운영이 어디서부터 흔들리는지, 무엇을 시스템으로 옮겨야 하는지 정리했습니다.</description>
+      <category>무인 운영</category>
       <pubDate>Thu, 29 Oct 2026 09:00:00 +0900</pubDate>
     </item>
     <item>
@@ -294,14 +302,6 @@
       <guid isPermaLink="true">https://choisijun.com/portfolio-jeolla</guid>
       <description>최시준이 전라권에서 기획·오픈·운영한 공간 3개. 광주 2, 전주 1 등 2개 지역의 파티룸 기록과 공실개발 프로젝트 2건을 모았습니다.</description>
       <pubDate>Sun, 11 Oct 2026 09:00:00 +0900</pubDate>
-    </item>
-    <item>
-      <title>공실은 문제가 아니라, 아직 설계되지 않은 자산이다 | 최시준</title>
-      <link>https://choisijun.com/insights/vacancy-is-inventory</link>
-      <guid isPermaLink="true">https://choisijun.com/insights/vacancy-is-inventory</guid>
-      <description>임대인은 공실을 손실이라 부르고 저는 재고라 부릅니다. 팔리지 않는 재고의 원인은 상품이 아니라 진열에 있습니다. 비선호층의 낮은 임대료가 목적형 공간에게는 원가 경쟁력이 되는 이유.</description>
-      <category>생각</category>
-      <pubDate>Mon, 07 Sep 2026 09:00:00 +0900</pubDate>
     </item>
   </channel>
 </rss>
