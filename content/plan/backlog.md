@@ -183,8 +183,7 @@
 ## SUN — 생각과 비전
 
 - [x] 2026-10-25 `space-that-remembers-time` 사람들의 시간과 즐거움을 기억하는 공간
-- [ ] `sunk-cost-what-now` 지나간 일보다 지금 할 일 — 매몰비용이라는 말을 좋아하는 이유 · 생각
-  근거: VOICE.md 2장 2번, 어려운 순간마다 "그럼 나는 지금 무엇을 해야 하는가"를 묻는 습관(중고등학생 때부터 — 가족사는 쓰지 않음)
+- [x] 2026-11-01 `sunk-cost-what-now` 매몰비용이라는 말을 좋아하는 이유 — 지나간 일보다 지금 할 일
 - [ ] `fixed-cost-first` 수익모델보다 비용구조가 먼저인 이유 · 생각
   근거: 원칙 ① 고정비 최소화, 코로나 시기의 교훈(/insights/built-while-holding-on), 금액 없이 구조로
 - [ ] `feet-faster-than-head` 머리보다 발이 빨라야 한다 · 생각
