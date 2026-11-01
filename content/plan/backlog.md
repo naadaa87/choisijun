@@ -18,8 +18,7 @@
 ## MON — 공실 · 건물 실무
 
 - [x] 2026-10-26 `vacancy-hidden-costs` 공실이 길어질 때 쌓이는 비용 — 관리비만이 아닙니다
-- [ ] `master-lease-basics` 마스터리스(통임차)란 — 건물주가 알아야 할 구조 · 건물 기획
-  각도: 건물 전체를 한 운영자가 맡는 방식의 장단점, 확인할 조건(기간·원상복구·운영 보고). 비율·금액 없이. /insights/landlord-four-structures 와 겹치지 않게 '계약 전에 확인할 것'에 집중. 근거: TGRZ SPACE, 『공실은 자산이다』 5장
+- [x] 2026-11-02 `master-lease-basics` 마스터리스(통임차)란 — 건물주가 알아야 할 구조
 - [ ] `first-floor-sets-the-building` 1층이 건물 전체의 인상을 정합니다 · 건물 기획
   각도: 1층 업종이 위층 손님 동선과 신뢰에 주는 영향. 근거: 건대 1층 밍글·플레이션(GUIDE 6장)
 - [ ] `room-type-from-office-units` 오피스텔·호실 공실을 객실형 공간으로 · 공실개발
