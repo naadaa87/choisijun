@@ -6,34 +6,42 @@
     <atom:link href="https://choisijun.com/rss.xml" rel="self" type="application/rss+xml" />
     <description>최시준 공식 홈페이지의 새 소식 — 공간 포트폴리오, 공실개발 사례, 브랜드, 강의·미디어.</description>
     <language>ko</language>
-    <lastBuildDate>Mon, 02 Nov 2026 06:49:09 +0900</lastBuildDate>
+    <lastBuildDate>Tue, 03 Nov 2026 06:48:58 +0900</lastBuildDate>
     <item>
-      <title>마스터리스(통임차)란 — 건물주가 알아야 할 구조 | 최시준</title>
-      <link>https://choisijun.com/insights/master-lease-basics</link>
-      <guid isPermaLink="true">https://choisijun.com/insights/master-lease-basics</guid>
-      <description>마스터리스는 한 운영자가 층이나 건물 전체를 임차해 개발하고 운영하는 구조입니다. 건물주에게 무엇이 좋고 무엇을 내줘야 하는지, 계약서에 서명하기 전에 확인할 기간·원상복구·운영 보고 기준을 정리했습니다.</description>
-      <category>건물 기획</category>
-      <pubDate>Mon, 02 Nov 2026 09:00:00 +0900</pubDate>
+      <title>대학 시절, 창업 경진대회와 햄버거 메뉴 하나 | 최시준</title>
+      <link>https://choisijun.com/insights/campus-ceo-and-my-burger</link>
+      <guid isPermaLink="true">https://choisijun.com/insights/campus-ceo-and-my-burger</guid>
+      <description>2006년 마케팅조사 수업에서 햄버거 가게를 세 시간 동안 지켜보고 373명에게 물었습니다. 그 제안이 &#x27;마이버거&#x27;라는 메뉴로 나오기까지, 그리고 2012년 창업 경진대회 대상까지의 대학 시절을 적었습니다.</description>
+      <category>사업 이야기</category>
+      <pubDate>Tue, 03 Nov 2026 09:00:00 +0900</pubDate>
     </item>
     <item>
       <title>최시준 | 공실개발·공간수익화 전문가, 쏘플파티룸 대표</title>
       <link>https://choisijun.com/</link>
       <guid isPermaLink="true">https://choisijun.com/</guid>
       <description>비어 있는 공간을 수익공간으로 바꾸는 최시준. 10년+ 340개+ 공간을 직접 기획·오픈·운영했고, 전국 15개 시·도의 파티룸·모임공간·게임파티룸 기록과 공실개발 상담, 강의, 전자책을 한곳에 모았습니다.</description>
-      <pubDate>Mon, 02 Nov 2026 09:00:00 +0900</pubDate>
+      <pubDate>Tue, 03 Nov 2026 09:00:00 +0900</pubDate>
     </item>
     <item>
       <title>미디어 — 쇼릴·언론 보도·방송 출연 | 최시준</title>
       <link>https://choisijun.com/media</link>
       <guid isPermaLink="true">https://choisijun.com/media</guid>
       <description>15초 쇼릴 2026, KBS·JTBC·CCTV 등 언론 보도와 방송 출연, 공식 채널, 그리고 공간사업 판단기준을 담은 최시준의 최근 글.</description>
-      <pubDate>Mon, 02 Nov 2026 09:00:00 +0900</pubDate>
+      <pubDate>Tue, 03 Nov 2026 09:00:00 +0900</pubDate>
     </item>
     <item>
       <title>인사이트 — 공실개발·파티룸 창업·무인공간 운영의 판단기준 | 최시준</title>
       <link>https://choisijun.com/insights</link>
       <guid isPermaLink="true">https://choisijun.com/insights</guid>
       <description>340개+ 공간을 만들며 굳어진 판단기준을 글로 정리합니다. 상가 공실 해결, 지하·고층 공실 활용, 파티룸·공간대여 창업, 무인공간 운영, 건물 단위 기획.</description>
+      <pubDate>Tue, 03 Nov 2026 09:00:00 +0900</pubDate>
+    </item>
+    <item>
+      <title>마스터리스(통임차)란 — 건물주가 알아야 할 구조 | 최시준</title>
+      <link>https://choisijun.com/insights/master-lease-basics</link>
+      <guid isPermaLink="true">https://choisijun.com/insights/master-lease-basics</guid>
+      <description>마스터리스는 한 운영자가 층이나 건물 전체를 임차해 개발하고 운영하는 구조입니다. 건물주에게 무엇이 좋고 무엇을 내줘야 하는지, 계약서에 서명하기 전에 확인할 기간·원상복구·운영 보고 기준을 정리했습니다.</description>
+      <category>건물 기획</category>
       <pubDate>Mon, 02 Nov 2026 09:00:00 +0900</pubDate>
     </item>
     <item>
@@ -297,13 +305,6 @@
       <link>https://choisijun.com/portfolio-gyeonggi</link>
       <guid isPermaLink="true">https://choisijun.com/portfolio-gyeonggi</guid>
       <description>최시준이 경기에서 기획·오픈·운영한 공간 48개. 수원 17, 부천 5, 평택 4, 안양 3, 미사 2, 분당 2 등 19개 지역의 파티룸, 게임파티룸, 게임·커뮤니티 기록과 공실개발 프로젝트 10건을 모았습니다.</description>
-      <pubDate>Sun, 11 Oct 2026 09:00:00 +0900</pubDate>
-    </item>
-    <item>
-      <title>인천 파티룸·모임공간 포트폴리오 13곳 — 인천·강화도·부평·월미도 | 최시준</title>
-      <link>https://choisijun.com/portfolio-incheon</link>
-      <guid isPermaLink="true">https://choisijun.com/portfolio-incheon</guid>
-      <description>최시준이 인천에서 기획·오픈·운영한 공간 13개. 인천 6, 강화도 5, 부평 1, 월미도 1 등 4개 지역의 파티룸, 모임·교육 공간 기록을 모았습니다.</description>
       <pubDate>Sun, 11 Oct 2026 09:00:00 +0900</pubDate>
     </item>
   </channel>
