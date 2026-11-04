@@ -91,8 +91,7 @@
 ## THU — 창업 · 운영 실무
 
 - [x] 2026-10-29 `beyond-thirty-spaces` 공간이 서른 개를 넘으면 사람이 아니라 시스템이 필요합니다
-- [ ] `first-month-checklist` 공간 창업 첫 달에 챙길 일 · 창업
-  각도: 오픈 전 촬영·등록, 첫 리뷰, 청소·소모품 동선, 문의 응답 기준. /insights/party-room-startup-criteria 와 이어지게
+- [x] 2026-11-05 `first-month-checklist` 공간 창업 첫 달에 챙길 일 — 오픈 전 촬영부터 문의 응답까지
 - [ ] `unmanned-business-types` 무인으로 운영하기 쉬운 업종, 어려운 업종 · 창업
   근거: 직접 해 본 무인 업종(무인카페, 무인키즈룸, 게임파티룸, 스테이, 파티룸). 업종별로 사람이 꼭 필요한 순간이 다르다는 관점. 매출 없이
 - [ ] `reviews-make-bookings` 리뷰가 다음 예약을 만듭니다 · 무인 운영

@@ -6,34 +6,42 @@
     <atom:link href="https://choisijun.com/rss.xml" rel="self" type="application/rss+xml" />
     <description>최시준 공식 홈페이지의 새 소식 — 공간 포트폴리오, 공실개발 사례, 브랜드, 강의·미디어.</description>
     <language>ko</language>
-    <lastBuildDate>Wed, 04 Nov 2026 06:51:23 +0900</lastBuildDate>
+    <lastBuildDate>Thu, 05 Nov 2026 06:48:36 +0900</lastBuildDate>
     <item>
-      <title>사고파는 시장에서 채우는 시장으로 — 상가 수익은 어디서 나오나 | 최시준</title>
-      <link>https://choisijun.com/insights/beyond-buy-and-sell</link>
-      <guid isPermaLink="true">https://choisijun.com/insights/beyond-buy-and-sell</guid>
-      <description>한국부동산원 2026년 3분기 상업용부동산 임대동향에서 상가 투자수익률의 70% 이상은 임대 소득에서 나왔습니다. 가격 차익보다 공간을 채우는 일이 수익을 정하는 시장에서 건물주와 창업자가 볼 것을 정리했습니다.</description>
-      <category>시장 · 산업</category>
-      <pubDate>Wed, 04 Nov 2026 09:00:00 +0900</pubDate>
+      <title>공간 창업 첫 달에 챙길 일 — 오픈 전 촬영부터 문의 응답까지 | 최시준</title>
+      <link>https://choisijun.com/insights/first-month-checklist</link>
+      <guid isPermaLink="true">https://choisijun.com/insights/first-month-checklist</guid>
+      <description>공간대여 창업은 계약보다 오픈 후 첫 달이 더 바쁩니다. 사진 촬영과 등록, 첫 리뷰, 청소·소모품 동선, 문의 응답 기준까지 첫 달에 정해 두면 이후 운영이 가벼워지는 것들을 정리했습니다.</description>
+      <category>창업</category>
+      <pubDate>Thu, 05 Nov 2026 09:00:00 +0900</pubDate>
     </item>
     <item>
       <title>최시준 | 공실개발·공간수익화 전문가, 쏘플파티룸 대표</title>
       <link>https://choisijun.com/</link>
       <guid isPermaLink="true">https://choisijun.com/</guid>
       <description>비어 있는 공간을 수익공간으로 바꾸는 최시준. 10년+ 340개+ 공간을 직접 기획·오픈·운영했고, 전국 15개 시·도의 파티룸·모임공간·게임파티룸 기록과 공실개발 상담, 강의, 전자책을 한곳에 모았습니다.</description>
-      <pubDate>Wed, 04 Nov 2026 09:00:00 +0900</pubDate>
+      <pubDate>Thu, 05 Nov 2026 09:00:00 +0900</pubDate>
     </item>
     <item>
       <title>미디어 — 쇼릴·언론 보도·방송 출연 | 최시준</title>
       <link>https://choisijun.com/media</link>
       <guid isPermaLink="true">https://choisijun.com/media</guid>
       <description>15초 쇼릴 2026, KBS·JTBC·CCTV 등 언론 보도와 방송 출연, 공식 채널, 그리고 공간사업 판단기준을 담은 최시준의 최근 글.</description>
-      <pubDate>Wed, 04 Nov 2026 09:00:00 +0900</pubDate>
+      <pubDate>Thu, 05 Nov 2026 09:00:00 +0900</pubDate>
     </item>
     <item>
       <title>인사이트 — 공실개발·파티룸 창업·무인공간 운영의 판단기준 | 최시준</title>
       <link>https://choisijun.com/insights</link>
       <guid isPermaLink="true">https://choisijun.com/insights</guid>
       <description>340개+ 공간을 만들며 굳어진 판단기준을 글로 정리합니다. 상가 공실 해결, 지하·고층 공실 활용, 파티룸·공간대여 창업, 무인공간 운영, 건물 단위 기획.</description>
+      <pubDate>Thu, 05 Nov 2026 09:00:00 +0900</pubDate>
+    </item>
+    <item>
+      <title>사고파는 시장에서 채우는 시장으로 — 상가 수익은 어디서 나오나 | 최시준</title>
+      <link>https://choisijun.com/insights/beyond-buy-and-sell</link>
+      <guid isPermaLink="true">https://choisijun.com/insights/beyond-buy-and-sell</guid>
+      <description>한국부동산원 2026년 3분기 상업용부동산 임대동향에서 상가 투자수익률의 70% 이상은 임대 소득에서 나왔습니다. 가격 차익보다 공간을 채우는 일이 수익을 정하는 시장에서 건물주와 창업자가 볼 것을 정리했습니다.</description>
+      <category>시장 · 산업</category>
       <pubDate>Wed, 04 Nov 2026 09:00:00 +0900</pubDate>
     </item>
     <item>
@@ -299,13 +307,6 @@
       <link>https://choisijun.com/terms</link>
       <guid isPermaLink="true">https://choisijun.com/terms</guid>
       <description>최시준 홈페이지(choisijun.com) 회원 서비스 이용약관입니다. 회원가입, 커뮤니티 이용, 게시물 관리, 탈퇴에 관한 내용을 안내합니다.</description>
-      <pubDate>Sun, 11 Oct 2026 09:00:00 +0900</pubDate>
-    </item>
-    <item>
-      <title>서울 파티룸·모임공간 포트폴리오 143곳 — 홍대·신촌·건대·강남 | 최시준</title>
-      <link>https://choisijun.com/portfolio-seoul</link>
-      <guid isPermaLink="true">https://choisijun.com/portfolio-seoul</guid>
-      <description>최시준이 서울에서 기획·오픈·운영한 공간 143개. 홍대 50, 신촌 23, 건대 12, 강남 9, 사당 5, 신림 5 등 34개 지역의 파티룸, 테마 파티룸, 모임·교육 공간 기록과 공실개발 프로젝트 21건을 모았습니다.</description>
       <pubDate>Sun, 11 Oct 2026 09:00:00 +0900</pubDate>
     </item>
   </channel>
