@@ -6,34 +6,42 @@
     <atom:link href="https://choisijun.com/rss.xml" rel="self" type="application/rss+xml" />
     <description>최시준 공식 홈페이지의 새 소식 — 공간 포트폴리오, 공실개발 사례, 브랜드, 강의·미디어.</description>
     <language>ko</language>
-    <lastBuildDate>Thu, 05 Nov 2026 06:48:36 +0900</lastBuildDate>
+    <lastBuildDate>Fri, 06 Nov 2026 06:50:02 +0900</lastBuildDate>
     <item>
-      <title>공간 창업 첫 달에 챙길 일 — 오픈 전 촬영부터 문의 응답까지 | 최시준</title>
-      <link>https://choisijun.com/insights/first-month-checklist</link>
-      <guid isPermaLink="true">https://choisijun.com/insights/first-month-checklist</guid>
-      <description>공간대여 창업은 계약보다 오픈 후 첫 달이 더 바쁩니다. 사진 촬영과 등록, 첫 리뷰, 청소·소모품 동선, 문의 응답 기준까지 첫 달에 정해 두면 이후 운영이 가벼워지는 것들을 정리했습니다.</description>
-      <category>창업</category>
-      <pubDate>Thu, 05 Nov 2026 09:00:00 +0900</pubDate>
+      <title>대학 순회강연 열흘, 아홉 개 학교를 돌며 한 이야기 — 2014년 5월 | 최시준</title>
+      <link>https://choisijun.com/insights/regional-campus-tour-2014</link>
+      <guid isPermaLink="true">https://choisijun.com/insights/regional-campus-tour-2014</guid>
+      <description>2014년 5월 12일부터 23일까지, 회사에 다니며 서울·안산·춘천·아산·충주·광주·창원의 아홉 개 대학을 도는 순회강연에 연사로 섰습니다. 그때 들고 다닌 교안 &#x27;선순환, 인생의 목표&#x27;와 지금 다시 보이는 것을 적습니다.</description>
+      <category>강연 · 교육</category>
+      <pubDate>Fri, 06 Nov 2026 09:00:00 +0900</pubDate>
     </item>
     <item>
       <title>최시준 | 공실개발·공간수익화 전문가, 쏘플파티룸 대표</title>
       <link>https://choisijun.com/</link>
       <guid isPermaLink="true">https://choisijun.com/</guid>
       <description>비어 있는 공간을 수익공간으로 바꾸는 최시준. 10년+ 340개+ 공간을 직접 기획·오픈·운영했고, 전국 15개 시·도의 파티룸·모임공간·게임파티룸 기록과 공실개발 상담, 강의, 전자책을 한곳에 모았습니다.</description>
-      <pubDate>Thu, 05 Nov 2026 09:00:00 +0900</pubDate>
+      <pubDate>Fri, 06 Nov 2026 09:00:00 +0900</pubDate>
     </item>
     <item>
       <title>미디어 — 쇼릴·언론 보도·방송 출연 | 최시준</title>
       <link>https://choisijun.com/media</link>
       <guid isPermaLink="true">https://choisijun.com/media</guid>
       <description>15초 쇼릴 2026, KBS·JTBC·CCTV 등 언론 보도와 방송 출연, 공식 채널, 그리고 공간사업 판단기준을 담은 최시준의 최근 글.</description>
-      <pubDate>Thu, 05 Nov 2026 09:00:00 +0900</pubDate>
+      <pubDate>Fri, 06 Nov 2026 09:00:00 +0900</pubDate>
     </item>
     <item>
       <title>인사이트 — 공실개발·파티룸 창업·무인공간 운영의 판단기준 | 최시준</title>
       <link>https://choisijun.com/insights</link>
       <guid isPermaLink="true">https://choisijun.com/insights</guid>
       <description>340개+ 공간을 만들며 굳어진 판단기준을 글로 정리합니다. 상가 공실 해결, 지하·고층 공실 활용, 파티룸·공간대여 창업, 무인공간 운영, 건물 단위 기획.</description>
+      <pubDate>Fri, 06 Nov 2026 09:00:00 +0900</pubDate>
+    </item>
+    <item>
+      <title>공간 창업 첫 달에 챙길 일 — 오픈 전 촬영부터 문의 응답까지 | 최시준</title>
+      <link>https://choisijun.com/insights/first-month-checklist</link>
+      <guid isPermaLink="true">https://choisijun.com/insights/first-month-checklist</guid>
+      <description>공간대여 창업은 계약보다 오픈 후 첫 달이 더 바쁩니다. 사진 촬영과 등록, 첫 리뷰, 청소·소모품 동선, 문의 응답 기준까지 첫 달에 정해 두면 이후 운영이 가벼워지는 것들을 정리했습니다.</description>
+      <category>창업</category>
       <pubDate>Thu, 05 Nov 2026 09:00:00 +0900</pubDate>
     </item>
     <item>
@@ -300,13 +308,6 @@
       <link>https://choisijun.com/glossary</link>
       <guid isPermaLink="true">https://choisijun.com/glossary</guid>
       <description>공실개발, 공간수익화, 비선호층, 마스터리스, 수익쉐어, 위탁운영, 목적형 공간, 무인공간, 예약제, SPMS, 가동률, 고정비 등 공간사업에서 쓰는 말을 최시준의 기준으로 풀었습니다.</description>
-      <pubDate>Sun, 11 Oct 2026 09:00:00 +0900</pubDate>
-    </item>
-    <item>
-      <title>이용약관 | 최시준 · ㈜블랭크</title>
-      <link>https://choisijun.com/terms</link>
-      <guid isPermaLink="true">https://choisijun.com/terms</guid>
-      <description>최시준 홈페이지(choisijun.com) 회원 서비스 이용약관입니다. 회원가입, 커뮤니티 이용, 게시물 관리, 탈퇴에 관한 내용을 안내합니다.</description>
       <pubDate>Sun, 11 Oct 2026 09:00:00 +0900</pubDate>
     </item>
   </channel>
