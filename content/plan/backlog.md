@@ -180,8 +180,7 @@
 
 - [x] 2026-10-25 `space-that-remembers-time` 사람들의 시간과 즐거움을 기억하는 공간
 - [x] 2026-11-01 `sunk-cost-what-now` 매몰비용이라는 말을 좋아하는 이유 — 지나간 일보다 지금 할 일
-- [ ] `fixed-cost-first` 수익모델보다 비용구조가 먼저인 이유 · 생각
-  근거: 원칙 ① 고정비 최소화, 코로나 시기의 교훈(/insights/built-while-holding-on), 금액 없이 구조로
+- [x] 2026-11-08 `fixed-cost-first` 수익모델보다 비용구조가 먼저인 이유
 - [ ] `feet-faster-than-head` 머리보다 발이 빨라야 한다 · 생각
   근거: 2015 교안 문구, 대학 시절 직접 기업에 전화해 메뉴를 제안한 일, 실행 원칙
 - [ ] `long-loved-brand` 오래 사랑받는 브랜드를 만들고 싶습니다 · 생각
