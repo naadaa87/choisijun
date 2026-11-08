@@ -19,7 +19,7 @@
 
 - [x] 2026-10-26 `vacancy-hidden-costs` 공실이 길어질 때 쌓이는 비용 — 관리비만이 아닙니다
 - [x] 2026-11-02 `master-lease-basics` 마스터리스(통임차)란 — 건물주가 알아야 할 구조
-- [ ] `first-floor-sets-the-building` 1층이 건물 전체의 인상을 정합니다 · 건물 기획
+- [x] 2026-11-09 `first-floor-sets-the-building` 1층이 건물 전체의 인상을 정합니다 — 위층 손님이 먼저 지나가는 자리
   각도: 1층 업종이 위층 손님 동선과 신뢰에 주는 영향. 근거: 건대 1층 밍글·플레이션(GUIDE 6장)
 - [ ] `room-type-from-office-units` 오피스텔·호실 공실을 객실형 공간으로 · 공실개발
   각도: 호실 단위 공실을 여러 룸으로 묶어 운영. 근거: 천안 7·9층 객실형 파티룸 11실(GUIDE 6장), 일산 테라스 호실 기획(data/portfolio.json projects)
