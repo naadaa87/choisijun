@@ -6,34 +6,42 @@
     <atom:link href="https://choisijun.com/rss.xml" rel="self" type="application/rss+xml" />
     <description>최시준 공식 홈페이지의 새 소식 — 공간 포트폴리오, 공실개발 사례, 브랜드, 강의·미디어.</description>
     <language>ko</language>
-    <lastBuildDate>Thu, 12 Nov 2026 06:50:17 +0900</lastBuildDate>
+    <lastBuildDate>Fri, 13 Nov 2026 06:52:52 +0900</lastBuildDate>
     <item>
-      <title>무인으로 운영하기 쉬운 업종, 어려운 업종 — 사람이 필요한 순간으로 나누기 | 최시준</title>
-      <link>https://choisijun.com/insights/unmanned-business-types</link>
-      <guid isPermaLink="true">https://choisijun.com/insights/unmanned-business-types</guid>
-      <description>무인 창업에서 업종을 고를 때는 사람이 꼭 필요한 순간이 언제 오는지를 먼저 봐야 합니다. 파티룸, 스테이, 게임파티룸, 무인카페, 키즈룸을 직접 운영하며 정리한 업종별 차이와 판단 기준입니다.</description>
-      <category>창업</category>
-      <pubDate>Thu, 12 Nov 2026 09:00:00 +0900</pubDate>
+      <title>회계를 가르치던 사람이 창업자에게 권하는 숫자 공부 | 최시준</title>
+      <link>https://choisijun.com/insights/numbers-for-founders</link>
+      <guid isPermaLink="true">https://choisijun.com/insights/numbers-for-founders</guid>
+      <description>대학 시절 회계 튜터를 하고 MBA 학생에게 원가회계를 가르쳤습니다. 공간 창업을 준비하는 분께 회계 전체가 아니라 직접 계산해 볼 숫자 네 가지를 권하는 이유를 적었습니다.</description>
+      <category>강연 · 교육</category>
+      <pubDate>Fri, 13 Nov 2026 09:00:00 +0900</pubDate>
     </item>
     <item>
       <title>최시준 | 공실개발·공간수익화 전문가, 쏘플파티룸 대표</title>
       <link>https://choisijun.com/</link>
       <guid isPermaLink="true">https://choisijun.com/</guid>
       <description>비어 있는 공간을 수익공간으로 바꾸는 최시준. 10년+ 340개+ 공간을 직접 기획·오픈·운영했고, 전국 15개 시·도의 파티룸·모임공간·게임파티룸 기록과 공실개발 상담, 강의, 전자책을 한곳에 모았습니다.</description>
-      <pubDate>Thu, 12 Nov 2026 09:00:00 +0900</pubDate>
+      <pubDate>Fri, 13 Nov 2026 09:00:00 +0900</pubDate>
     </item>
     <item>
       <title>미디어 — 쇼릴·언론 보도·방송 출연 | 최시준</title>
       <link>https://choisijun.com/media</link>
       <guid isPermaLink="true">https://choisijun.com/media</guid>
       <description>15초 쇼릴 2026, KBS·JTBC·CCTV 등 언론 보도와 방송 출연, 공식 채널, 그리고 공간사업 판단기준을 담은 최시준의 최근 글.</description>
-      <pubDate>Thu, 12 Nov 2026 09:00:00 +0900</pubDate>
+      <pubDate>Fri, 13 Nov 2026 09:00:00 +0900</pubDate>
     </item>
     <item>
       <title>인사이트 — 공실개발·파티룸 창업·무인공간 운영의 판단기준 | 최시준</title>
       <link>https://choisijun.com/insights</link>
       <guid isPermaLink="true">https://choisijun.com/insights</guid>
       <description>340개+ 공간을 만들며 굳어진 판단기준을 글로 정리합니다. 상가 공실 해결, 지하·고층 공실 활용, 파티룸·공간대여 창업, 무인공간 운영, 건물 단위 기획.</description>
+      <pubDate>Fri, 13 Nov 2026 09:00:00 +0900</pubDate>
+    </item>
+    <item>
+      <title>무인으로 운영하기 쉬운 업종, 어려운 업종 — 사람이 필요한 순간으로 나누기 | 최시준</title>
+      <link>https://choisijun.com/insights/unmanned-business-types</link>
+      <guid isPermaLink="true">https://choisijun.com/insights/unmanned-business-types</guid>
+      <description>무인 창업에서 업종을 고를 때는 사람이 꼭 필요한 순간이 언제 오는지를 먼저 봐야 합니다. 파티룸, 스테이, 게임파티룸, 무인카페, 키즈룸을 직접 운영하며 정리한 업종별 차이와 판단 기준입니다.</description>
+      <category>창업</category>
       <pubDate>Thu, 12 Nov 2026 09:00:00 +0900</pubDate>
     </item>
     <item>
@@ -307,13 +315,6 @@
       <guid isPermaLink="true">https://choisijun.com/insights/basement-upper-floor-vacancy</guid>
       <description>제가 만든 공간 가운데 층이 기록된 97곳을 세어 보니 지하가 21곳, 3층 이상이 60곳이었습니다. 비선호층이 목적형 공간에 맞는 이유와, 지하·고층을 고를 때 먼저 확인하는 것들.</description>
       <category>공실개발</category>
-      <pubDate>Sun, 11 Oct 2026 09:00:00 +0900</pubDate>
-    </item>
-    <item>
-      <title>최시준 소개 — 340개+ 공간을 만든 공간수익화 전문가</title>
-      <link>https://choisijun.com/about</link>
-      <guid isPermaLink="true">https://choisijun.com/about</guid>
-      <description>현대엔지니어링 자산관리팀에서 출발해 소셜팩토리, 두둠칫, 쏘플파티룸, 공백까지. 최시준의 이력과 타임라인, 일하는 원칙, 강의·대외활동을 정리했습니다.</description>
       <pubDate>Sun, 11 Oct 2026 09:00:00 +0900</pubDate>
     </item>
   </channel>
