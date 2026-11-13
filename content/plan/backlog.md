@@ -139,7 +139,7 @@
 - [x] 2026-10-31 `built-while-holding-on` 버티는 동안 만든 시스템 — 코로나 2년 반과 SPMS
 - [x] 2026-11-07 `ref-vacancy-projects-38` 공실개발 프로젝트 38건에서 반복된 자리 — 3층, 지하, 건물 전체
   근거: data/portfolio.json projects(공실개발 기획 31·신규 공간 기획 5·무인카페 개발 1·공간 리뉴얼 1, 지역·층 정보). 지하·3층·통건물·1층 상가·고층 라운지 등 유형별로 묶어 설명. 동네 이름까지만
-- [ ] `kondae-day-in-one-building` 건대입구 한 건물에서 하루가 이어지게 · 사업 이야기
+- [x] 2026-11-14 `kondae-day-in-one-building` 건대입구 한 건물에서 하루가 이어지게
   근거: GUIDE 6장 건대 구성, /network 의 하루 동선(10시 세미나 → 12시 반 카페 → 18시 행사 → 21시 게임). /insights/whole-building-portfolio 와 겹치지 않게 손님 동선 중심
 - [ ] `ref-basement-spaces` 지하 공간 21곳을 운영하며 알게 된 것 · 공실개발 (레퍼런스)
   근거: data/portfolio.json(floorClass basement 21곳, B1 19·B2 2), /insights/basement-upper-floor-vacancy 와 겹치지 않게 환기·방음·동선 등 운영 관점
