@@ -6,34 +6,42 @@
     <atom:link href="https://choisijun.com/rss.xml" rel="self" type="application/rss+xml" />
     <description>최시준 공식 홈페이지의 새 소식 — 공간 포트폴리오, 공실개발 사례, 브랜드, 강의·미디어.</description>
     <language>ko</language>
-    <lastBuildDate>Sat, 14 Nov 2026 06:49:35 +0900</lastBuildDate>
+    <lastBuildDate>Sun, 15 Nov 2026 06:49:04 +0900</lastBuildDate>
     <item>
-      <title>건대입구 한 건물에서 하루가 이어지게 — 손님 동선으로 짠 복합공간 | 최시준</title>
-      <link>https://choisijun.com/insights/kondae-day-in-one-building</link>
-      <guid isPermaLink="true">https://choisijun.com/insights/kondae-day-in-one-building</guid>
-      <description>건대입구의 한 건물에 세미나실, 무인 디저트카페, 190평 행사장, 게임파티룸을 층마다 나눠 두었습니다. 업종보다 손님의 하루가 어떻게 이어지는지를 먼저 보고 층을 짠 이유를 정리했습니다.</description>
-      <category>사업 이야기</category>
-      <pubDate>Sat, 14 Nov 2026 09:00:00 +0900</pubDate>
+      <title>머리보다 발이 빨라야 한다 — 생각을 정리하는 가장 빠른 방법은 가 보는 것 | 최시준</title>
+      <link>https://choisijun.com/insights/feet-faster-than-head</link>
+      <guid isPermaLink="true">https://choisijun.com/insights/feet-faster-than-head</guid>
+      <description>2014~2015년 강의 교안에 늘 적던 문장이 &quot;머리보다 발이 빨라야 한다&quot;였습니다. 공간 사업을 10년 넘게 하면서 이 말을 어떻게 지키고 있는지, 그리고 발이 빠른 것과 결정이 급한 것이 어떻게 다른지 적었습니다.</description>
+      <category>생각</category>
+      <pubDate>Sun, 15 Nov 2026 09:00:00 +0900</pubDate>
     </item>
     <item>
       <title>최시준 | 공실개발·공간수익화 전문가, 쏘플파티룸 대표</title>
       <link>https://choisijun.com/</link>
       <guid isPermaLink="true">https://choisijun.com/</guid>
       <description>비어 있는 공간을 수익공간으로 바꾸는 최시준. 10년+ 340개+ 공간을 직접 기획·오픈·운영했고, 전국 15개 시·도의 파티룸·모임공간·게임파티룸 기록과 공실개발 상담, 강의, 전자책을 한곳에 모았습니다.</description>
-      <pubDate>Sat, 14 Nov 2026 09:00:00 +0900</pubDate>
+      <pubDate>Sun, 15 Nov 2026 09:00:00 +0900</pubDate>
     </item>
     <item>
       <title>미디어 — 쇼릴·언론 보도·방송 출연 | 최시준</title>
       <link>https://choisijun.com/media</link>
       <guid isPermaLink="true">https://choisijun.com/media</guid>
       <description>15초 쇼릴 2026, KBS·JTBC·CCTV 등 언론 보도와 방송 출연, 공식 채널, 그리고 공간사업 판단기준을 담은 최시준의 최근 글.</description>
-      <pubDate>Sat, 14 Nov 2026 09:00:00 +0900</pubDate>
+      <pubDate>Sun, 15 Nov 2026 09:00:00 +0900</pubDate>
     </item>
     <item>
       <title>인사이트 — 공실개발·파티룸 창업·무인공간 운영의 판단기준 | 최시준</title>
       <link>https://choisijun.com/insights</link>
       <guid isPermaLink="true">https://choisijun.com/insights</guid>
       <description>340개+ 공간을 만들며 굳어진 판단기준을 글로 정리합니다. 상가 공실 해결, 지하·고층 공실 활용, 파티룸·공간대여 창업, 무인공간 운영, 건물 단위 기획.</description>
+      <pubDate>Sun, 15 Nov 2026 09:00:00 +0900</pubDate>
+    </item>
+    <item>
+      <title>건대입구 한 건물에서 하루가 이어지게 — 손님 동선으로 짠 복합공간 | 최시준</title>
+      <link>https://choisijun.com/insights/kondae-day-in-one-building</link>
+      <guid isPermaLink="true">https://choisijun.com/insights/kondae-day-in-one-building</guid>
+      <description>건대입구의 한 건물에 세미나실, 무인 디저트카페, 190평 행사장, 게임파티룸을 층마다 나눠 두었습니다. 업종보다 손님의 하루가 어떻게 이어지는지를 먼저 보고 층을 짠 이유를 정리했습니다.</description>
+      <category>사업 이야기</category>
       <pubDate>Sat, 14 Nov 2026 09:00:00 +0900</pubDate>
     </item>
     <item>
@@ -307,14 +315,6 @@
       <guid isPermaLink="true">https://choisijun.com/insights/consultation-prep</guid>
       <description>공실개발·공간 창업 상담에서 첫 회신의 질은 처음 보내주시는 정보로 정해집니다. 위치·층·면적·현재 상태·원하는 결과 — 상담 전에 정리하면 좋은 다섯 가지와 보내는 방법.</description>
       <category>공실개발</category>
-      <pubDate>Sun, 11 Oct 2026 09:00:00 +0900</pubDate>
-    </item>
-    <item>
-      <title>장사가 안 되는 카페를 무인·예약제로 바꿀 때 | 최시준</title>
-      <link>https://choisijun.com/insights/cafe-to-unmanned</link>
-      <guid isPermaLink="true">https://choisijun.com/insights/cafe-to-unmanned</guid>
-      <description>매출보다 비용구조가 문제인 유인 카페는 매출을 올리기 전에 운영 방식을 바꿔야 합니다. 무인 디저트카페와 예약제 공간으로 전환할 때 판단 기준과 순서.</description>
-      <category>무인 운영</category>
       <pubDate>Sun, 11 Oct 2026 09:00:00 +0900</pubDate>
     </item>
   </channel>
