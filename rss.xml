@@ -6,34 +6,42 @@
     <atom:link href="https://choisijun.com/rss.xml" rel="self" type="application/rss+xml" />
     <description>최시준 공식 홈페이지의 새 소식 — 공간 포트폴리오, 공실개발 사례, 브랜드, 강의·미디어.</description>
     <language>ko</language>
-    <lastBuildDate>Sun, 15 Nov 2026 06:49:04 +0900</lastBuildDate>
+    <lastBuildDate>Mon, 16 Nov 2026 06:49:47 +0900</lastBuildDate>
     <item>
-      <title>머리보다 발이 빨라야 한다 — 생각을 정리하는 가장 빠른 방법은 가 보는 것 | 최시준</title>
-      <link>https://choisijun.com/insights/feet-faster-than-head</link>
-      <guid isPermaLink="true">https://choisijun.com/insights/feet-faster-than-head</guid>
-      <description>2014~2015년 강의 교안에 늘 적던 문장이 &quot;머리보다 발이 빨라야 한다&quot;였습니다. 공간 사업을 10년 넘게 하면서 이 말을 어떻게 지키고 있는지, 그리고 발이 빠른 것과 결정이 급한 것이 어떻게 다른지 적었습니다.</description>
-      <category>생각</category>
-      <pubDate>Sun, 15 Nov 2026 09:00:00 +0900</pubDate>
+      <title>호실 공실을 객실형 공간으로 — 천안 두 개 층 11실에서 배운 것 | 최시준</title>
+      <link>https://choisijun.com/insights/room-type-from-office-units</link>
+      <guid isPermaLink="true">https://choisijun.com/insights/room-type-from-office-units</guid>
+      <description>한 층에 작은 호실이 여러 개 비어 있으면 호실마다 임차인을 찾기가 어렵습니다. 호실을 하나씩 채우는 대신 묶어서 객실형 공간으로 쓰는 방법을 천안 한 건물 7·9층 11실 사례로 설명합니다.</description>
+      <category>공실개발</category>
+      <pubDate>Mon, 16 Nov 2026 09:00:00 +0900</pubDate>
     </item>
     <item>
       <title>최시준 | 공실개발·공간수익화 전문가, 쏘플파티룸 대표</title>
       <link>https://choisijun.com/</link>
       <guid isPermaLink="true">https://choisijun.com/</guid>
       <description>비어 있는 공간을 수익공간으로 바꾸는 최시준. 10년+ 340개+ 공간을 직접 기획·오픈·운영했고, 전국 15개 시·도의 파티룸·모임공간·게임파티룸 기록과 공실개발 상담, 강의, 전자책을 한곳에 모았습니다.</description>
-      <pubDate>Sun, 15 Nov 2026 09:00:00 +0900</pubDate>
+      <pubDate>Mon, 16 Nov 2026 09:00:00 +0900</pubDate>
     </item>
     <item>
       <title>미디어 — 쇼릴·언론 보도·방송 출연 | 최시준</title>
       <link>https://choisijun.com/media</link>
       <guid isPermaLink="true">https://choisijun.com/media</guid>
       <description>15초 쇼릴 2026, KBS·JTBC·CCTV 등 언론 보도와 방송 출연, 공식 채널, 그리고 공간사업 판단기준을 담은 최시준의 최근 글.</description>
-      <pubDate>Sun, 15 Nov 2026 09:00:00 +0900</pubDate>
+      <pubDate>Mon, 16 Nov 2026 09:00:00 +0900</pubDate>
     </item>
     <item>
       <title>인사이트 — 공실개발·파티룸 창업·무인공간 운영의 판단기준 | 최시준</title>
       <link>https://choisijun.com/insights</link>
       <guid isPermaLink="true">https://choisijun.com/insights</guid>
       <description>340개+ 공간을 만들며 굳어진 판단기준을 글로 정리합니다. 상가 공실 해결, 지하·고층 공실 활용, 파티룸·공간대여 창업, 무인공간 운영, 건물 단위 기획.</description>
+      <pubDate>Mon, 16 Nov 2026 09:00:00 +0900</pubDate>
+    </item>
+    <item>
+      <title>머리보다 발이 빨라야 한다 — 생각을 정리하는 가장 빠른 방법은 가 보는 것 | 최시준</title>
+      <link>https://choisijun.com/insights/feet-faster-than-head</link>
+      <guid isPermaLink="true">https://choisijun.com/insights/feet-faster-than-head</guid>
+      <description>2014~2015년 강의 교안에 늘 적던 문장이 &quot;머리보다 발이 빨라야 한다&quot;였습니다. 공간 사업을 10년 넘게 하면서 이 말을 어떻게 지키고 있는지, 그리고 발이 빠른 것과 결정이 급한 것이 어떻게 다른지 적었습니다.</description>
+      <category>생각</category>
       <pubDate>Sun, 15 Nov 2026 09:00:00 +0900</pubDate>
     </item>
     <item>
@@ -306,14 +314,6 @@
       <link>https://choisijun.com/insights/landlord-four-structures</link>
       <guid isPermaLink="true">https://choisijun.com/insights/landlord-four-structures</guid>
       <description>컨설팅, 위탁운영, 마스터리스, 수익쉐어. 임대인이 공실개발을 할 때 고를 수 있는 협업 구조 네 가지를 투자·위험·수익 기준으로 비교하고, 어떤 상황에 어떤 구조가 맞는지 정리했습니다.</description>
-      <category>공실개발</category>
-      <pubDate>Sun, 11 Oct 2026 09:00:00 +0900</pubDate>
-    </item>
-    <item>
-      <title>공실 상담 전에 준비하면 답이 빨라지는 것들 | 최시준</title>
-      <link>https://choisijun.com/insights/consultation-prep</link>
-      <guid isPermaLink="true">https://choisijun.com/insights/consultation-prep</guid>
-      <description>공실개발·공간 창업 상담에서 첫 회신의 질은 처음 보내주시는 정보로 정해집니다. 위치·층·면적·현재 상태·원하는 결과 — 상담 전에 정리하면 좋은 다섯 가지와 보내는 방법.</description>
       <category>공실개발</category>
       <pubDate>Sun, 11 Oct 2026 09:00:00 +0900</pubDate>
     </item>
