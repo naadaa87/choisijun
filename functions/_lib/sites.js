@@ -7,6 +7,7 @@
    ========================================================= */
 import { json, fail, readJson, clean, nowIso, kst } from './core.js';
 import { SITE_SEED, METRICS, STAGES, SELF_ID } from './sites-seed.js';
+import { leadCounts } from './leads.js';
 
 const SEED_COLS = ['sort', 'tier', 'cluster', 'name', 'url', 'domain', 'alt', 'repo', 'priv', 'cf_kind', 'cf_project',
   'storage', 'entity', 'stage', 'summary', 'model', 'naver', 'google', 'bing', 'pages'];
@@ -57,7 +58,7 @@ export async function sitesRoute(DB, env, request, parts, method) {
     if (method === 'DELETE') return remove(DB, id);
   }
   if (parts[0] === 'skpi') {
-    if (parts.length === 1 && method === 'GET') return board(DB, request);
+    if (parts.length === 1 && method === 'GET') return board(DB, env, request);
     const id = String(parts[1] || '');
     if (!/^[a-z0-9][a-z0-9-]{0,48}$/.test(id)) return fail('잘못된 사이트 이름입니다.');
     if (method === 'PUT') return kpiSave(DB, request, id);
@@ -270,7 +271,7 @@ const monthAdd = (m, n) => {
 };
 const isoMonthStart = (m) => new Date(m + '-01T00:00:00+09:00').toISOString();
 
-async function board(DB, request) {
+async function board(DB, env, request) {
   const u = new URL(request.url).searchParams;
   const nowMonth = kst().day.slice(0, 7);
   let month = u.get('month') || nowMonth;
@@ -349,6 +350,13 @@ async function board(DB, request) {
     rows(5).forEach((r) => setAuto(SELF_ID, 'signups', r.m, r.n));
     setAuto(SELF_ID, 'members', nowMonth, (rows(7)[0] || {}).n || 0);
   }
+
+  /* 각 사이트 DB에 쌓인 문의 수 — 연결된 사이트는 문의·상담을 자동으로 센다 */
+  const lc = await leadCounts(env, months, only).catch(() => ({ counts: {}, seen: {} }));
+  Object.keys(lc.seen).forEach((site) => {
+    months.forEach((m) => setAuto(site, 'inquiries', m, 0));
+    Object.entries(lc.counts[site] || {}).forEach(([m, n]) => setAuto(site, 'inquiries', m, n));
+  });
 
   const sites = (await allSites(DB)).filter((s) => !s.archived && (!only || s.id === only))
     .map((s) => ({ id: s.id, name: s.name, tier: s.tier, cluster: s.cluster, stage: s.stage, url: s.url, kpis: s.kpis, tracked: Boolean(tracked[s.id]) }));

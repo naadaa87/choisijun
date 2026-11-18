@@ -1,6 +1,6 @@
 /* =========================================================
    최시준 홈페이지 — 관리자 페이지 (/admin)
-   대시보드 · 전체 사이트 · 전체 KPI · 방문 통계 · 문의 · 회원 · 커뮤니티 · 레퍼런스 · 매일 글 · 설정
+   대시보드 · 전체 사이트 · 전체 KPI · 전체 문의 · 방문 통계 · 문의 · 회원 · 커뮤니티 · 레퍼런스 · 매일 글 · 설정
    서버: Cloudflare Pages Functions (/api/admin/*) + D1
    ========================================================= */
 (function adminApp() {
@@ -128,6 +128,7 @@
     try { history.replaceState(null, '', '#' + tab); } catch (_) { /* ignore */ }
     if (tab === 'sites') loadSites();
     if (tab === 'skpi') { if (SK.open) SK.scroll = true; loadSkpi(); }
+    if (tab === 'leads') loadLeads();
     if (tab === 'kpi') loadKpi();
     if (tab === 'members') loadMembers();
     if (tab === 'inquiries') loadInquiries();
@@ -1712,6 +1713,147 @@
     downloadCsv(`전체KPI_${d.month}.csv`, rows);
   });
 
+  /* =========================================================
+     전체 문의 — 각 사이트에 들어온 고객 문의를 한 화면에서 (읽기 전용)
+     ========================================================= */
+  const LD = { data: null, filter: { f: '', site: '', q: '' }, open: null };
+  const ldKey = (r) => `${r.site}|${r.label}|${r.ref}`;
+  const ldDate = (ms) => (ms ? KST(new Date(ms).toISOString()) : '날짜 없음');
+
+  async function loadLeads() {
+    const list = q('#ldList');
+    try {
+      const d = await api('leads');
+      LD.data = d;
+      const sel = q('#ldSite');
+      const seen = [];
+      d.sources.forEach((s) => { if (!seen.find((x) => x.site === s.site)) seen.push(s); });
+      sel.innerHTML = '<option value="">모든 사이트</option>' + seen.map((s) => `<option value="${esc(s.site)}"${s.site === LD.filter.site ? ' selected' : ''}>${esc(s.siteName)}</option>`).join('');
+      renderLeads();
+    } catch (err) {
+      showMsg(err.message, 'err');
+      if (!LD.data) list.innerHTML = `<li class="acc-empty">${esc(err.message)}</li>`;
+    }
+  }
+
+  qa('#ldFilter .f-chip').forEach((b) => b.addEventListener('click', () => {
+    qa('#ldFilter .f-chip').forEach((x) => x.classList.toggle('is-active', x === b));
+    LD.filter.f = b.dataset.f;
+    renderLeads();
+  }));
+  q('#ldSite').addEventListener('change', (e) => { LD.filter.site = e.target.value; renderLeads(); });
+  let ldTimer;
+  q('#ldSearch').addEventListener('input', (e) => { clearTimeout(ldTimer); ldTimer = setTimeout(() => { LD.filter.q = e.target.value.trim(); renderLeads(); }, 200); });
+
+  function shownLeads() {
+    const d = LD.data;
+    const f = LD.filter;
+    const k = f.q.toLowerCase();
+    const weekAgo = d.now - 7 * 86400 * 1000;
+    return d.items.filter((r) => {
+      if (f.site && r.site !== f.site) return false;
+      if (f.f === 'new' && !r.isNew) return false;
+      if (f.f === '7' && r.at < weekAgo) return false;
+      if (k && ![r.siteName, r.kind, r.name, r.contact, r.text, r.ref].join(' ').toLowerCase().includes(k)) return false;
+      return true;
+    });
+  }
+
+  function leadContactLinks(r) {
+    const out = [];
+    const email = (r.contact.match(/[^\s@,]+@[^\s@,]+\.[^\s@,]{2,}/) || [])[0];
+    const phone = ((r.contact.match(/\+?\d[\d\- ]{7,14}\d/) || [])[0] || '').replace(/[^\d+]/g, '');
+    if (phone) { out.push(`<a href="tel:${esc(phone)}">전화</a>`); out.push(`<a href="sms:${esc(phone)}">문자</a>`); }
+    if (email) {
+      const subject = `Re: ${r.siteName} 문의 주셔서 감사합니다`;
+      const body = `${r.name ? r.name + '님, ' : ''}안녕하세요. ${r.siteName}입니다.\n\n남겨 주신 문의 잘 받았습니다.\n\n\n\n----- 보내 주신 문의 (${ldDate(r.at)}) -----\n${r.text}`;
+      out.push(`<a href="mailto:${esc(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}">메일로 답장</a>`);
+    }
+    if (r.contact) out.push('<button type="button" class="link-btn" data-ld-copy>연락처 복사</button>');
+    return out.join('');
+  }
+
+  function renderLeads() {
+    const d = LD.data;
+    if (!d) return;
+    const real = d.items.filter((r) => !r.soft);
+    const day = 86400 * 1000;
+    const todayStart = new Date(todayKST() + 'T00:00:00+09:00').getTime();
+    const okSites = new Set(d.sources.filter((s) => s.ok).map((s) => s.site));
+    const allSites = new Set(d.sources.map((s) => s.site));
+    const fresh = real.filter((r) => r.isNew);
+    q('#cntLeads').textContent = fresh.length ? String(fresh.length) : '';
+    const tiles = [
+      [fmtN(fresh.length), '아직 처리 전', '각 사이트에서 상태가 새 문의·접수인 것'],
+      [fmtN(real.filter((r) => r.at >= todayStart).length), '오늘 들어온 문의', `어제 ${fmtN(real.filter((r) => r.at >= todayStart - day && r.at < todayStart).length)}건`],
+      [fmtN(real.filter((r) => r.at >= d.now - 7 * day).length), '최근 7일', `최근 30일 ${fmtN(real.filter((r) => r.at >= d.now - 30 * day).length)}건`],
+      [`${okSites.size}<small>/${allSites.size}</small>`, '연결된 사이트', '문의를 DB에 저장하는 사이트 가운데']
+    ];
+    q('#ldTiles').innerHTML = tiles.map(([n, label, foot]) => `<li><button type="button" tabindex="-1"><span class="adm-kpi-num">${n}</span><span class="adm-kpi-label">${esc(label)}</span><span class="adm-kpi-foot">${esc(foot)}</span></button></li>`).join('');
+
+    const rows = shownLeads();
+    q('#ldInfo').innerHTML = `<strong>${fmtN(rows.length)}건</strong> 보는 중 · 사이트마다 최근 ${d.per}건까지 불러옵니다 · 여기서는 보기만 하고, 상태 변경과 답변 기록은 각 사이트 관리자 화면에서 합니다`;
+
+    /* 사이트별 현황 */
+    const bySite = [];
+    d.sources.forEach((s) => {
+      let g = bySite.find((x) => x.site === s.site);
+      if (!g) { g = { site: s.site, name: s.siteName, url: s.url, count: 0, fresh: 0, bad: [], full: false }; bySite.push(g); }
+      g.count += s.count; g.fresh += s.fresh; g.full = g.full || s.full;
+      if (!s.ok) g.bad.push(`${s.label}: ${s.error}`);
+    });
+    const problem = bySite.filter((g) => g.bad.length);
+    q('#ldSources').innerHTML = `
+      <details class="ld-src"${LD.srcOpen ? ' open' : ''}><summary>사이트별 현황 <small>${bySite.filter((g) => g.fresh).length}곳에 처리 전 문의${problem.length ? ` · 읽지 못한 곳 ${problem.length}곳` : ''}</small></summary>
+        <ul class="ld-src-list">${bySite.map((g) => `<li><button type="button" class="link-btn" data-ld-site="${esc(g.site)}">${esc(g.name)}</button><span>${g.bad.length && !g.count ? esc(g.bad[0].split(': ')[1]) : `최근 ${fmtN(g.count)}${g.full ? '+' : ''}건`}</span>${g.fresh ? `<span class="adm-tag is-ad">처리 전 ${g.fresh}</span>` : ''}${g.url ? `<a href="${esc(g.url)}/admin" target="_blank" rel="noopener">관리자 ↗</a>` : ''}</li>`).join('')}</ul>
+        <p class="acc-help">'연결 전'은 그 사이트의 DB가 아직 이 관리자에 연결되지 않은 것이고, '아직 문의 표가 없음'은 그 사이트에 첫 문의가 들어오기 전이라는 뜻입니다. 지유공간개발·프빗·플레이션 등 문의를 DB에 저장하지 않는 사이트는 목록에 없습니다.</p>
+      </details>`;
+    const det = q('.ld-src');
+    if (det) det.addEventListener('toggle', () => { LD.srcOpen = det.open; });
+    qa('[data-ld-site]').forEach((b) => b.addEventListener('click', () => { LD.filter.site = b.dataset.ldSite; q('#ldSite').value = LD.filter.site; renderLeads(); }));
+
+    const list = q('#ldList');
+    list.innerHTML = rows.length ? rows.slice(0, 300).map((r) => {
+      const open = LD.open === ldKey(r);
+      const text = r.text || '';
+      return `
+      <li class="adm-row ld-row${open ? ' is-open' : ''}" tabindex="0" data-key="${esc(ldKey(r))}">
+        <div class="acc-item-head"><span class="adm-tag is-site">${esc(r.siteName)}</span>${r.kind ? `<span class="adm-tag">${esc(r.kind)}</span>` : ''}${r.status ? `<span class="adm-tag ${r.isNew ? 'is-ad' : 'is-off'}">${esc(r.status)}</span>` : ''}<span class="acc-date mono">${esc(ldDate(r.at))}${r.at ? ' · ' + ago(new Date(r.at).toISOString()) : ''}</span></div>
+        <p class="adm-row-title"><strong>${esc(r.name || '(이름 없음)')}</strong><span>${esc(r.contact)}</span></p>
+        ${open ? `<div class="adm-message ld-text">${esc(text) || '<em>내용 없음</em>'}</div>
+          <p class="adm-contact">${leadContactLinks(r)}</p>
+          <p class="acc-help ld-foot">${esc(r.label)} · 접수번호 ${esc(r.ref)} · <a href="${esc((d.sources.find((s) => s.site === r.site) || {}).url || '')}/admin" target="_blank" rel="noopener">${esc(r.siteName)} 관리자에서 처리하기 ↗</a></p>`
+          : `<p class="adm-row-text ld-clip">${esc(text.slice(0, 140))}${text.length > 140 ? '…' : ''}</p>`}
+      </li>`;
+    }).join('') + (rows.length > 300 ? `<li class="acc-empty">${fmtN(rows.length - 300)}건이 더 있습니다. 사이트를 고르거나 검색해 좁혀 보세요.</li>` : '')
+      : `<li class="acc-empty">${d.items.length ? '조건에 맞는 문의가 없습니다.' : '아직 불러온 문의가 없습니다. 사이트별 현황을 열어 연결 상태를 확인해 주세요.'}</li>`;
+    qa('.ld-row', list).forEach((li) => {
+      const toggle = (e) => {
+        if (e.target.closest('a, button')) return;
+        LD.open = LD.open === li.dataset.key ? null : li.dataset.key;
+        renderLeads();
+      };
+      li.addEventListener('click', toggle);
+      li.addEventListener('keydown', (e) => { if (e.key === 'Enter') toggle(e); });
+    });
+    const copy = q('[data-ld-copy]', list);
+    if (copy) copy.addEventListener('click', async () => {
+      const r = d.items.find((x) => ldKey(x) === LD.open);
+      if (!r) return;
+      try { await navigator.clipboard.writeText(r.contact); showMsg('연락처를 복사했습니다.', 'ok'); } catch (_) { showMsg(r.contact, 'info'); }
+    });
+  }
+
+  q('#ldCsv').addEventListener('click', () => {
+    if (!LD.data) { showMsg('먼저 문의를 불러와 주세요.', 'info'); return; }
+    const rows = shownLeads();
+    if (!rows.length) { showMsg('내려받을 문의가 없습니다.', 'info'); return; }
+    downloadCsv(`전체문의_${todayKST()}.csv`, [
+      ['접수일시', '사이트', '구분', '유형', '이름·소속', '연락처', '내용', '상태', '접수번호'],
+      ...rows.map((r) => [r.at ? ldDate(r.at) : '', r.siteName, r.label, r.kind, r.name, r.contact, r.text, r.status, r.ref])
+    ]);
+  });
+
   /* ---------------- 설정 · 바로가기 ---------------- */
   function renderSystem() {
     const s = state.setup || {};
@@ -1767,7 +1909,7 @@
     const start = (location.hash || '').replace('#', '');
     /* 관리자가 쓰는 브라우저는 방문 통계에서 뺀다 (KPI 화면에서 바꿀 수 있음) */
     try { if (localStorage.getItem('csj_no_stats') === null) localStorage.setItem('csj_no_stats', 'true'); } catch (_) { /* ignore */ }
-    go(['sites', 'skpi', 'kpi', 'inquiries', 'members', 'community', 'refs', 'content', 'system'].includes(start) ? start : 'dash');
+    go(['sites', 'skpi', 'leads', 'kpi', 'inquiries', 'members', 'community', 'refs', 'content', 'system'].includes(start) ? start : 'dash');
   }
 
   boot();

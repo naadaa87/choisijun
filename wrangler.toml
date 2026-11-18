@@ -1,0 +1,113 @@
+# Cloudflare Pages 설정 — 데이터베이스 연결(바인딩)을 이 파일에서 관리합니다.
+# · 이 파일이 있으면 Cloudflare 대시보드의 '바인딩' 화면에서는 고칠 수 없고, 여기를 고쳐 커밋하면 반영됩니다.
+# · 비밀 값(ADMIN_PASSWORD 등)은 지금처럼 대시보드 → 설정 → 변수 및 비밀에서 넣습니다. 이 파일에는 비밀 값이 없습니다.
+# · DB 는 이 홈페이지의 데이터, DB_… 는 관리자 '전체 문의'에서 읽기만 하는 다른 사이트의 데이터입니다.
+name = "choisijun"
+pages_build_output_dir = "."
+compatibility_date = "2026-07-24"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "choisijun-db"
+database_id = "60c174d3-440c-4468-a57f-90060df35789"
+
+# ---- 아래는 '전체 문의'용 (읽기만 함) ----
+[[d1_databases]]
+binding = "DB_SSOPLE"
+database_name = "ssople-web"
+database_id = "da797810-a703-49b5-ac96-231d7b7c7b26"
+
+[[d1_databases]]
+binding = "DB_RESTEL"
+database_name = "restel-db"
+database_id = "d13afed0-2b54-49da-ba49-56d9971089e9"
+
+[[d1_databases]]
+binding = "DB_MEGASPOT"
+database_name = "megaspot-db"
+database_id = "3f0aa07f-5d18-42f5-a45d-c89bbab99f28"
+
+[[d1_databases]]
+binding = "DB_MEZZANINE"
+database_name = "mezzanine-db"
+database_id = "b1401fea-ad2a-4111-89df-f736bba2e0c1"
+
+[[d1_databases]]
+binding = "DB_SOCIALFACTORY"
+database_name = "socialfactory-db"
+database_id = "7eae7e21-900b-409a-99a0-a739086f8624"
+
+[[d1_databases]]
+binding = "DB_VACANCY"
+database_name = "gongbaek-db"
+database_id = "f5e2b42e-278d-48d6-95ae-02b8af982c8f"
+
+[[d1_databases]]
+binding = "DB_SEUSEURO"
+database_name = "seuseuro-db"
+database_id = "b7c4e48a-9e8e-4b20-8e4f-b1d3c91e5aab"
+
+[[d1_databases]]
+binding = "DB_ORBIS"
+database_name = "orbis-leads"
+database_id = "2b3c6d13-dc47-4421-ad8d-0b31700be936"
+
+[[d1_databases]]
+binding = "DB_WONSANGTAERO"
+database_name = "wonsangtaero-db"
+database_id = "83efdb8b-5618-4985-b403-37c092aabce9"
+
+[[d1_databases]]
+binding = "DB_COREMOOD"
+database_name = "coremood-db"
+database_id = "df58fe1f-cbfd-4727-909c-4e076c8b225f"
+
+[[d1_databases]]
+binding = "DB_RULERULE"
+database_name = "rulerule-db"
+database_id = "c1e64cda-b2b8-4c27-bd02-a2ddc4377b67"
+
+[[d1_databases]]
+binding = "DB_MYCHALLENGE"
+database_name = "machal-db"
+database_id = "2edb236d-958b-42f3-b550-f8615defcbb7"
+
+[[d1_databases]]
+binding = "DB_BAREUNBP"
+database_name = "bareunbp"
+database_id = "7705ab09-ad97-421d-8b91-8bfe4d4b4b12"
+
+[[d1_databases]]
+binding = "DB_BAGSTOP"
+database_name = "bagstop-db"
+database_id = "a7ef944e-eae2-4bf2-a7e4-4c30152b4d67"
+
+[[d1_databases]]
+binding = "DB_YEODEOL"
+database_name = "yeodeol-db"
+database_id = "d178c467-1adc-4392-bf58-358ea556b0e0"
+
+[[d1_databases]]
+binding = "DB_PASSIONSTORE"
+database_name = "passionstore"
+database_id = "32b3a7a1-c946-4cc2-9f68-2d42807b93ae"
+
+[[d1_databases]]
+binding = "DB_WRITERCHOI"
+database_name = "total-db"
+database_id = "5bcf38aa-f078-4adb-a3d2-1de3e5793722"
+
+[[d1_databases]]
+binding = "DB_HONPLACE"
+database_name = "honplace-db"
+database_id = "f87e607c-b1ba-4890-ab76-c4a7a70c4bf7"
+
+[[d1_databases]]
+binding = "DB_TODAYPARTYROOM"
+database_name = "todaypartyroom"
+database_id = "16fb666d-88fc-41f8-9399-2fc21c92b545"
+
+[[d1_databases]]
+binding = "DB_MYWORKS"
+database_name = "myworks-db"
+database_id = "50158886-ab08-43ea-a7ca-dbb69be1323e"

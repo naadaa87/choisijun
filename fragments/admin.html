@@ -3,7 +3,7 @@
       <div class="container">
         <p class="eyebrow mono">ADMIN</p>
         <h1>관리자 <span class="accent">페이지</span></h1>
-        <p class="lede" id="admWho">운영하는 모든 사이트와 KPI, 방문 통계, 문의, 회원, 커뮤니티, 레퍼런스, 매일 글을 한곳에서 관리합니다.</p>
+        <p class="lede" id="admWho">운영하는 모든 사이트와 KPI, 전체 문의, 방문 통계, 문의, 회원, 커뮤니티, 레퍼런스, 매일 글을 한곳에서 관리합니다.</p>
       </div>
     </section>
 
@@ -36,6 +36,7 @@
             <button type="button" role="tab" class="adm-tab is-active" data-tab="dash" aria-selected="true">대시보드</button>
             <button type="button" role="tab" class="adm-tab" data-tab="sites" aria-selected="false">전체 사이트 <em class="adm-count is-quiet" id="cntSites"></em></button>
             <button type="button" role="tab" class="adm-tab" data-tab="skpi" aria-selected="false">전체 KPI</button>
+            <button type="button" role="tab" class="adm-tab" data-tab="leads" aria-selected="false">전체 문의 <em class="adm-count" id="cntLeads"></em></button>
             <button type="button" role="tab" class="adm-tab" data-tab="kpi" aria-selected="false">방문 통계 <small>choisijun.com</small></button>
             <button type="button" role="tab" class="adm-tab" data-tab="inquiries" aria-selected="false">문의 <em class="adm-count" id="cntInq"></em></button>
             <button type="button" role="tab" class="adm-tab" data-tab="members" aria-selected="false">회원 <em class="adm-count is-quiet" id="cntMem"></em></button>
@@ -116,6 +117,26 @@
               </div>
               <p class="kpi-period" id="skInfo"></p>
               <div class="kpi-body" id="skBody"><p class="acc-empty">불러오는 중…</p></div>
+            </section>
+
+            <!-- 전체 문의 -->
+            <section class="adm-panel" data-panel="leads" role="tabpanel" hidden>
+              <ul class="adm-kpis st-tiles ld-tiles" id="ldTiles"></ul>
+              <div class="adm-toolbar">
+                <div class="board-filters" id="ldFilter" role="group" aria-label="보기">
+                  <button class="f-chip is-active" type="button" data-f="">전체</button>
+                  <button class="f-chip" type="button" data-f="new">아직 처리 전</button>
+                  <button class="f-chip" type="button" data-f="7">최근 7일</button>
+                </div>
+                <div class="adm-search">
+                  <select id="ldSite" aria-label="사이트"><option value="">모든 사이트</option></select>
+                  <input type="search" id="ldSearch" placeholder="이름 · 연락처 · 내용 검색" aria-label="문의 검색" />
+                  <button type="button" class="btn btn-sm btn-line" id="ldCsv">CSV 내려받기</button>
+                </div>
+              </div>
+              <p class="kpi-period st-info" id="ldInfo"></p>
+              <div id="ldSources"></div>
+              <ul class="adm-rows" id="ldList"><li class="acc-empty">불러오는 중…</li></ul>
             </section>
 
             <!-- KPI · 방문 통계 -->
