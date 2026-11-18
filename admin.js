@@ -1,6 +1,6 @@
 /* =========================================================
    최시준 홈페이지 — 관리자 페이지 (/admin)
-   대시보드 · KPI(방문 통계) · 문의 · 회원 · 커뮤니티 · 레퍼런스 · 매일 글 · 설정
+   대시보드 · 전체 사이트 · 전체 KPI · 방문 통계 · 문의 · 회원 · 커뮤니티 · 레퍼런스 · 매일 글 · 설정
    서버: Cloudflare Pages Functions (/api/admin/*) + D1
    ========================================================= */
 (function adminApp() {
@@ -126,6 +126,8 @@
     qa('.adm-tab').forEach((b) => { const on = b.dataset.tab === tab; b.classList.toggle('is-active', on); b.setAttribute('aria-selected', String(on)); });
     qa('.adm-panel').forEach((p) => { p.hidden = p.dataset.panel !== tab; });
     try { history.replaceState(null, '', '#' + tab); } catch (_) { /* ignore */ }
+    if (tab === 'sites') loadSites();
+    if (tab === 'skpi') { if (SK.open) SK.scroll = true; loadSkpi(); }
     if (tab === 'kpi') loadKpi();
     if (tab === 'members') loadMembers();
     if (tab === 'inquiries') loadInquiries();
@@ -157,10 +159,13 @@
       q('#cntCom').textContent = (c.posts_pending + c.comments_pending) ? String(c.posts_pending + c.comments_pending) : '';
       q('#cntRef').textContent = c.refs ? String(c.refs) : '';
       const v = d.visits || {};
+      const st = d.sites || {};
+      q('#cntSites').textContent = st.total ? String(st.total) : '';
       q('#cntMem').textContent = c.members ? String(c.members) : '';
       const kpis = [
         ['inquiries', c.inq_new, '새 문의', '답을 기다리는 문의'],
         ['kpi', fmtN(v.today_v || 0), '오늘 방문자', `어제 ${fmtN(v.yday_v || 0)}명 · 지금 ${v.live || 0}명`],
+        ['sites', fmtN(st.total || 0), '운영 사이트', `주력 ${st.focus || 0}곳${st.down ? ' · 접속 문제 ' + st.down + '곳' : ''}`],
         ['kpi', fmtN(v.today_pv || 0), '오늘 페이지뷰', `어제 ${fmtN(v.yday_pv || 0)}회`],
         ['inquiries', c.inq_progress, '진행 중', '상담·답변 진행'],
         ['inquiries', c.inq_month, '이번 달 문의', '전체 ' + c.inq_total + '건'],
@@ -180,6 +185,7 @@
 
       const todo = [];
       if (c.inq_stale) todo.push(`<li class="is-late">2일 넘게 답하지 않은 문의가 <strong>${c.inq_stale}건</strong> 있습니다. <button class="link-btn" data-go="inquiries">문의 보기</button></li>`);
+      if (st.down) todo.push(`<li class="is-late">접속 점검에서 문제가 있던 사이트가 <strong>${st.down}곳</strong> 있습니다. <button class="link-btn" data-go="sites">전체 사이트 보기</button></li>`);
       if (c.inq_new) todo.push(`<li>새 문의 <strong>${c.inq_new}건</strong>에 답해 주세요.</li>`);
       if (c.posts_pending || c.comments_pending) todo.push(`<li>커뮤니티 글 ${c.posts_pending}건, 답글 ${c.comments_pending}건이 게시를 기다립니다. <button class="link-btn" data-go="community">확인하기</button></li>`);
       const s = state.setup;
@@ -1120,6 +1126,592 @@
     catch (_) { showMsg(text, 'info'); }
   });
 
+  /* =========================================================
+     전체 사이트 — 운영하는 홈페이지 · 플랫폼 · 프로젝트를 한 화면에서
+     ========================================================= */
+  const ST = { sites: [], tracking: {}, meta: null, self: '', filter: { tier: '주력', cluster: '', stage: '', q: '' }, open: null, edit: null, extra: null, checking: false, loaded: false };
+  const CF_DASH = 'https://dash.cloudflare.com/?to=/:account';
+  const cfLink = (s) => (!s.cf_project ? '' : s.cf_kind === 'Workers'
+    ? `${CF_DASH}/workers/services/view/${encodeURIComponent(s.cf_project)}/production`
+    : `${CF_DASH}/pages/view/${encodeURIComponent(s.cf_project)}`);
+  const hostText = (u) => String(u || '').replace(/^https?:\/\//, '').replace(/\/$/, '');
+  const chkState = (s) => (!s.url ? 'none' : !s.chk_at ? 'unknown' : (s.chk_code >= 200 && s.chk_code < 400) ? 'ok' : 'bad');
+  const chkText = (s) => {
+    const st = chkState(s);
+    if (st === 'none') return '주소 없음';
+    if (st === 'unknown') return '아직 점검하지 않음';
+    if (st === 'ok') return `정상${s.chk_ms ? ' · ' + (s.chk_ms / 1000).toFixed(1) + '초' : ''} · ${KST(s.chk_at).slice(5)}`;
+    return `문제 있음 — ${s.chk_note || (s.chk_code ? '응답 ' + s.chk_code : '연결하지 못함')} · ${KST(s.chk_at).slice(5)}`;
+  };
+  const stageClass = (st) => (st === '운영 중' ? 'is-ok' : st === '서비스 공개' ? '' : (st === '베타' || st === '준비 중') ? 'is-ad' : 'is-off');
+  const siteById = (id) => ST.sites.find((s) => s.id === id);
+
+  async function loadSites() {
+    try {
+      const d = await api('sites');
+      ST.sites = d.sites; ST.tracking = d.tracking || {}; ST.meta = d.meta; ST.self = d.self; ST.loaded = true;
+      fillSiteFilters();
+      renderSites();
+    } catch (err) {
+      showMsg(err.message, 'err');
+      if (!ST.loaded) q('#stList').innerHTML = `<p class="acc-empty">${esc(err.message)}</p>`;
+    }
+  }
+
+  function fillSiteFilters() {
+    const live = ST.sites.filter((s) => !s.archived);
+    const clusters = [];
+    live.forEach((s) => { if (s.cluster && !clusters.includes(s.cluster)) clusters.push(s.cluster); });
+    const cSel = q('#stCluster');
+    cSel.innerHTML = '<option value="">모든 사업군</option>' + clusters.map((c) => `<option${c === ST.filter.cluster ? ' selected' : ''}>${esc(c)}</option>`).join('');
+    const sSel = q('#stStage');
+    sSel.innerHTML = '<option value="">모든 단계</option>' + ST.meta.stages.map((c) => `<option${c === ST.filter.stage ? ' selected' : ''}>${esc(c)}</option>`).join('');
+    q('#cntSites').textContent = live.length ? String(live.length) : '';
+  }
+
+  function shownSites() {
+    const f = ST.filter;
+    const k = f.q.toLowerCase();
+    return ST.sites.filter((s) => {
+      if (f.tier === '숨김') { if (!s.archived) return false; }
+      else { if (s.archived) return false; if (f.tier && s.tier !== f.tier) return false; }
+      if (f.cluster && s.cluster !== f.cluster) return false;
+      if (f.stage && s.stage !== f.stage) return false;
+      if (k && ![s.name, s.url, s.domain, s.alt, s.repo, s.cf_project, s.storage, s.entity, s.summary, s.memo, s.cluster].join(' ').toLowerCase().includes(k)) return false;
+      return true;
+    });
+  }
+
+  qa('#stTier .f-chip').forEach((b) => b.addEventListener('click', () => {
+    qa('#stTier .f-chip').forEach((x) => x.classList.toggle('is-active', x === b));
+    ST.filter.tier = b.dataset.tier;
+    renderSites();
+  }));
+  q('#stCluster').addEventListener('change', (e) => { ST.filter.cluster = e.target.value; renderSites(); });
+  q('#stStage').addEventListener('change', (e) => { ST.filter.stage = e.target.value; renderSites(); });
+  let stTimer;
+  q('#stSearch').addEventListener('input', (e) => { clearTimeout(stTimer); stTimer = setTimeout(() => { ST.filter.q = e.target.value.trim(); renderSites(); }, 200); });
+
+  function renderSiteTiles() {
+    const live = ST.sites.filter((s) => !s.archived);
+    const focus = live.filter((s) => s.tier === '주력');
+    const withDomain = focus.filter((s) => s.domain);
+    const checked = live.filter((s) => s.url && s.chk_at);
+    const bad = checked.filter((s) => chkState(s) === 'bad');
+    const lastChk = checked.reduce((a, s) => (s.chk_at > a ? s.chk_at : a), '');
+    const tracked = live.filter((s) => ST.tracking[s.id]);
+    const tiles = [
+      [fmtN(live.length), '전체 사이트 · 프로젝트', `주력 ${focus.length}곳 · 그 외 ${live.length - focus.length}곳`],
+      [fmtN(withDomain.length), '자체 도메인 연결', `주력 ${focus.length}곳 중 · 미연결 ${focus.length - withDomain.length}곳`],
+      [checked.length ? `${fmtN(checked.length - bad.length)}<small>/${fmtN(checked.length)}</small>` : '-', '정상 접속', checked.length ? (bad.length ? `문제 ${bad.length}곳 · ` : '') + `${KST(lastChk).slice(5)} 점검` : '접속 점검을 누르면 확인합니다'],
+      [`${withDomain.filter((s) => s.naver).length}<small> · ${withDomain.filter((s) => s.google).length} · ${withDomain.filter((s) => s.bing).length}</small>`, '검색 등록', `네이버 · 구글 · Bing (도메인 ${withDomain.length}곳 중)`],
+      [fmtN(tracked.length), '방문 자동 수집', `주력 ${focus.length}곳 중 ${focus.filter((s) => ST.tracking[s.id]).length}곳`],
+      [fmtN(live.filter((s) => s.repo).length), 'GitHub 저장소', `Cloudflare 배포 ${live.filter((s) => s.cf_project).length}곳`]
+    ];
+    q('#stTiles').innerHTML = tiles.map(([n, label, foot]) => `<li><button type="button" tabindex="-1"><span class="adm-kpi-num">${n}</span><span class="adm-kpi-label">${esc(label)}</span><span class="adm-kpi-foot">${esc(foot)}</span></button></li>`).join('');
+  }
+
+  function siteRowHtml(s) {
+    const st = chkState(s);
+    const open = ST.open === s.id;
+    const none = (label) => `<span class="st-link is-none"><span class="mono">${label}</span>없음</span>`;
+    const se = (on, ch, name) => `<span class="st-se${on ? ' is-on' : ''}" title="${name} ${on ? '등록됨' : '등록 전'}">${ch}</span>`;
+    return `
+      <li class="st-row${open ? ' is-open' : ''}" data-id="${esc(s.id)}">
+        <div class="st-main">
+          <button type="button" class="st-name" data-open="${esc(s.id)}" aria-expanded="${open}">
+            <span class="st-dot is-${st}" title="${esc(chkText(s))}"></span><strong>${esc(s.name)}</strong>
+          </button>
+          <p class="st-tags"><span class="adm-tag ${stageClass(s.stage)}">${esc(s.stage)}</span>${s.url && !s.domain && s.tier === '주력' ? '<span class="adm-tag is-ad">도메인 연결 전</span>' : ''}${st === 'bad' ? '<span class="adm-tag is-bad">접속 문제</span>' : ''}${ST.tracking[s.id] ? '<span class="adm-tag is-mail">방문 수집 중</span>' : ''}</p>
+          <p class="st-sum">${esc(s.summary)}</p>
+        </div>
+        <div class="st-links">
+          ${s.url ? `<a class="st-link" href="${esc(s.url)}" target="_blank" rel="noopener"><span class="mono">주소</span><span class="st-v">${esc(hostText(s.url))}</span></a>` : none('주소')}
+          ${s.repo ? `<a class="st-link" href="https://github.com/${esc(s.repo)}" target="_blank" rel="noopener"><span class="mono">GitHub${s.priv ? ' · 비공개' : ''}</span><span class="st-v">${esc(s.repo)}</span></a>` : none('GitHub')}
+          ${s.cf_project ? `<a class="st-link" href="${esc(cfLink(s))}" target="_blank" rel="noopener"><span class="mono">Cloudflare ${esc(s.cf_kind)}</span><span class="st-v">${esc(s.cf_project)}</span>${s.storage ? `<small>${esc(s.storage)}</small>` : ''}</a>` : none('Cloudflare')}
+        </div>
+        <div class="st-marks" aria-label="검색 등록">${s.domain ? se(s.naver, 'N', '네이버') + se(s.google, 'G', '구글') + se(s.bing, 'B', 'Bing') : ''}<button type="button" class="st-toggle" data-open="${esc(s.id)}" aria-label="${open ? '접기' : '자세히'}">${open ? '접기' : '자세히'}</button></div>
+        ${open ? siteDetailHtml(s) : ''}
+      </li>`;
+  }
+
+  function siteDetailHtml(s) {
+    const tr = ST.tracking[s.id];
+    const a = (href, text) => `<a href="${esc(href)}" target="_blank" rel="noopener">${esc(text)}</a>`;
+    const facts = [
+      ['사업군', esc(s.cluster || '-')],
+      ['구분 · 단계', esc(`${s.tier} · ${s.stage}`)],
+      ['운영 법인', esc(s.entity || '-')],
+      ['대표 주소', s.url ? a(s.url, hostText(s.url)) : '아직 없음'],
+      ['도메인', s.domain ? esc(s.domain) : (s.url ? '연결 전 — 기본 주소로 운영' : '-')],
+      ['기본 주소', s.alt ? a(s.alt, hostText(s.alt)) : '-'],
+      ['GitHub 저장소', s.repo ? a('https://github.com/' + s.repo, s.repo) + (s.priv ? ' <small>비공개</small>' : '') : '-'],
+      ['마지막 수정', s.gh_pushed ? `${KST(s.gh_pushed)} <small>${ago(s.gh_pushed)}</small>` : '<small>GitHub 새로 확인을 누르면 보입니다</small>'],
+      ['Cloudflare', s.cf_project ? a(cfLink(s), `${s.cf_kind} · ${s.cf_project}`) : '-'],
+      ['데이터 저장소', esc(s.storage || '없음')],
+      ['검색 등록', s.domain ? `네이버 ${s.naver ? '등록' : '<em>전</em>'} · 구글 ${s.google ? '등록' : '<em>전</em>'} · Bing ${s.bing ? '등록' : '<em>전</em>'}` : '<small>도메인 연결 뒤 등록</small>'],
+      ['사이트맵 페이지', s.pages ? fmtN(s.pages) + '쪽' : '-'],
+      ['접속 점검', esc(chkText(s))],
+      ['방문 자동 수집', tr ? `수집 중 <small>최근 ${esc(String(tr.last).slice(5).replace('-', '.'))} · 30일 ${fmtN(tr.pv)}회</small>` : '아직 안 함']
+    ];
+    const d = s.domain;
+    const links = [];
+    if (s.url) links.push([s.url, '사이트 열기']);
+    if (s.repo) links.push(['https://github.com/' + s.repo, 'GitHub']);
+    if (s.cf_project) links.push([cfLink(s), 'Cloudflare']);
+    if (d) {
+      links.push([`https://search.google.com/search-console?resource_id=${encodeURIComponent('sc-domain:' + d)}`, '구글 서치 콘솔']);
+      links.push(['https://searchadvisor.naver.com/console/board', '네이버 서치어드바이저']);
+      links.push([`https://www.bing.com/webmasters/home?siteUrl=${encodeURIComponent('https://' + d + '/')}`, 'Bing 웹마스터']);
+    }
+    const isSelf = s.id === ST.self;
+    return `
+      <div class="st-detail">
+        <ul class="kpi-facts st-facts">${facts.map(([k, v]) => `<li><span>${k}</span><strong>${v}</strong></li>`).join('')}</ul>
+        ${s.model ? `<p class="st-model"><span class="mono">수익 구조</span>${esc(s.model)}</p>` : ''}
+        <div class="adm-btns st-go">${links.map(([href, t]) => `<a class="btn btn-sm btn-line" href="${esc(href)}" target="_blank" rel="noopener">${esc(t)} ↗</a>`).join('')}</div>
+        ${!tr && !isSelf && s.url ? `<details class="st-snippet"><summary>방문 자동 수집 넣는 법</summary>
+          <p class="acc-help">이 사이트 모든 페이지의 <code>&lt;/body&gt;</code> 바로 앞에 아래 한 줄을 넣으면, 방문자·페이지뷰·예약 이동·전화·카톡 클릭이 '전체 KPI'에 자동으로 쌓입니다. 이름·연락처·IP는 저장하지 않습니다.</p>
+          <div class="st-code"><code>${esc(ST.meta.snippet)}</code><button type="button" class="btn btn-sm btn-line" data-copy-snippet>복사</button></div></details>` : ''}
+        ${tr && !isSelf ? `<p class="acc-help">운영자 브라우저를 통계에서 빼려면 <a href="${esc(s.url)}?k_off=1" target="_blank" rel="noopener">이 주소</a>로 한 번 열어 두세요. (PC와 휴대폰 각각)</p>` : ''}
+        <label class="adm-memo"><span class="mono adm-label">메모 <small>(남은 할 일, 비밀값 설정 여부, 도메인 만료일 등 · 나만 봅니다)</small></span><textarea rows="3" maxlength="4000" data-memo placeholder="예: 관리자 비밀번호 설정 필요 · 도메인 2027.03 만료">${esc(s.memo || '')}</textarea></label>
+        <div class="adm-btns">
+          <button type="button" class="btn btn-sm btn-primary" data-memo-save>메모 저장</button>
+          <button type="button" class="btn btn-sm btn-line" data-edit-site>정보 수정</button>
+          <button type="button" class="btn btn-sm btn-line" data-kpi-site>KPI 보기</button>
+          ${isSelf ? '' : s.archived ? '<button type="button" class="btn btn-sm btn-line" data-restore-site>다시 보이기</button>' : `<button type="button" class="btn btn-sm btn-line" data-hide-site>${s.seeded ? '목록에서 숨기기' : '삭제'}</button>`}
+        </div>
+      </div>`;
+  }
+
+  function renderSites() {
+    if (!ST.loaded) return;
+    renderSiteTiles();
+    const rows = shownSites();
+    const total = ST.sites.filter((s) => !s.archived).length;
+    q('#stInfo').innerHTML = `<strong>${fmtN(rows.length)}곳</strong> 보는 중 · 전체 ${fmtN(total)}곳 · 이름을 누르면 자세한 정보와 메모가 열립니다`;
+    const groups = [];
+    rows.forEach((s) => {
+      const key = s.cluster || '분류 없음';
+      let g = groups.find((x) => x.key === key);
+      if (!g) { g = { key, rows: [] }; groups.push(g); }
+      g.rows.push(s);
+    });
+    const list = q('#stList');
+    list.innerHTML = groups.length ? groups.map((g) => `
+      <section class="st-group">
+        <h2 class="st-group-title">${esc(g.key)} <small>${g.rows.length}곳</small></h2>
+        <ul class="st-rows">${g.rows.map(siteRowHtml).join('')}</ul>
+      </section>`).join('') : '<p class="acc-empty">조건에 맞는 사이트가 없습니다.</p>';
+
+    qa('[data-open]', list).forEach((b) => b.addEventListener('click', () => {
+      ST.open = ST.open === b.dataset.open ? null : b.dataset.open;
+      renderSites();
+    }));
+    const box = q('.st-row.is-open', list);
+    if (!box) return;
+    const s = siteById(box.dataset.id);
+    const on = (sel, fn) => { const el = q(sel, box); if (el) el.addEventListener('click', fn); };
+    on('[data-memo-save]', async () => {
+      const memo = q('[data-memo]', box).value;
+      try { await api('sites/' + s.id, { method: 'PATCH', body: { memo } }); s.memo = memo; showMsg('메모를 저장했습니다.', 'ok'); }
+      catch (err) { showMsg(err.message, 'err'); }
+    });
+    on('[data-edit-site]', () => openSiteForm(s));
+    on('[data-kpi-site]', () => { SK.open = s.id; if (s.tier !== '주력') setSkTier(''); go('skpi'); });
+    on('[data-hide-site]', async () => {
+      if (!confirm(s.seeded ? `'${s.name}'을(를) 목록에서 숨길까요? '숨긴 것'에서 다시 보이게 할 수 있습니다.` : `'${s.name}'을(를) 목록에서 지울까요? 넣어 둔 KPI 숫자도 함께 지워집니다.`)) return;
+      try { await api('sites/' + s.id, { method: 'DELETE' }); ST.open = null; showMsg(s.seeded ? '숨겼습니다.' : '삭제했습니다.', 'ok'); loadSites(); }
+      catch (err) { showMsg(err.message, 'err'); }
+    });
+    on('[data-restore-site]', async () => {
+      try { await api('sites/' + s.id, { method: 'PATCH', body: { archived: false } }); showMsg('다시 목록에 보입니다.', 'ok'); loadSites(); }
+      catch (err) { showMsg(err.message, 'err'); }
+    });
+    on('[data-copy-snippet]', async () => {
+      try { await navigator.clipboard.writeText(ST.meta.snippet); showMsg('한 줄 코드를 복사했습니다.', 'ok'); } catch (_) { showMsg(ST.meta.snippet, 'info'); }
+    });
+  }
+
+  /* 추가 · 수정 양식 */
+  const stForm = q('#stForm');
+  function openSiteForm(s, preset) {
+    const v = s || { tier: '그 외', stage: '미분류', cf_kind: 'Pages', ...(preset || {}) };
+    ST.edit = s ? s.id : null;
+    const clusters = [];
+    ST.sites.forEach((x) => { if (x.cluster && !clusters.includes(x.cluster)) clusters.push(x.cluster); });
+    const opt = (list, cur) => list.map((o) => `<option${o === cur ? ' selected' : ''}>${esc(o)}</option>`).join('');
+    const val = (k) => esc(v[k] == null ? '' : v[k]);
+    stForm.innerHTML = `
+      <div class="acc-head"><h2>${s ? esc(s.name) + ' — 정보 수정' : '사이트 · 프로젝트 추가'}</h2><button type="button" class="btn btn-sm btn-line" data-cancel>닫기</button></div>
+      <div class="st-form-grid">
+        <label>이름<input type="text" name="name" maxlength="80" value="${val('name')}" required /></label>
+        <label>구분<select name="tier">${opt(ST.meta.tiers, v.tier)}</select></label>
+        <label>사업군<input type="text" name="cluster" maxlength="60" list="stClusterList" value="${val('cluster')}" placeholder="예: 02 공간 플랫폼" /></label>
+        <label>운영 단계<select name="stage">${opt(ST.meta.stages, v.stage)}</select></label>
+        <label>대표 주소<input type="text" name="url" maxlength="300" value="${val('url')}" placeholder="https://" /></label>
+        <label><span>도메인 <small>(연결한 경우만)</small></span><input type="text" name="domain" maxlength="120" value="${val('domain')}" placeholder="example.kr" /></label>
+        <label><span>기본 주소 <small>(pages.dev · workers.dev)</small></span><input type="text" name="alt" maxlength="300" value="${val('alt')}" /></label>
+        <label><span>GitHub 저장소 <small>(계정/저장소)</small></span><input type="text" name="repo" maxlength="120" value="${val('repo')}" placeholder="naadaa87/…" /></label>
+        <label>Cloudflare 종류<select name="cf_kind"><option value="">없음</option>${opt(['Pages', 'Workers'], v.cf_kind)}</select></label>
+        <label>Cloudflare 프로젝트 이름<input type="text" name="cf_project" maxlength="80" value="${val('cf_project')}" /></label>
+        <label><span>데이터 저장소 <small>(D1 · KV · R2)</small></span><input type="text" name="storage" maxlength="300" value="${val('storage')}" placeholder="D1 example-db" /></label>
+        <label>운영 법인<input type="text" name="entity" maxlength="80" value="${val('entity')}" /></label>
+        <label class="is-wide">한 줄 설명<input type="text" name="summary" maxlength="300" value="${val('summary')}" /></label>
+        <label class="is-wide">수익 구조<input type="text" name="model" maxlength="400" value="${val('model')}" /></label>
+        <label><span>정렬 순서 <small>(작을수록 위)</small></span><input type="number" name="sort" min="0" max="99999" value="${val('sort')}" /></label>
+        <div class="st-form-checks">
+          <label class="acc-check"><input type="checkbox" name="priv"${v.priv ? ' checked' : ''} /> 비공개 저장소</label>
+          <label class="acc-check"><input type="checkbox" name="naver"${v.naver ? ' checked' : ''} /> 네이버 등록</label>
+          <label class="acc-check"><input type="checkbox" name="google"${v.google ? ' checked' : ''} /> 구글 등록</label>
+          <label class="acc-check"><input type="checkbox" name="bing"${v.bing ? ' checked' : ''} /> Bing 등록</label>
+        </div>
+      </div>
+      <datalist id="stClusterList">${clusters.map((c) => `<option value="${esc(c)}"></option>`).join('')}</datalist>
+      <div class="adm-btns"><button class="btn btn-primary" type="submit">${s ? '저장' : '추가'}</button><button class="btn btn-line" type="button" data-cancel>취소</button></div>`;
+    stForm.hidden = false;
+    qa('[data-cancel]', stForm).forEach((b) => b.addEventListener('click', () => { stForm.hidden = true; ST.edit = null; }));
+    stForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const first = q('input[name="name"]', stForm);
+    if (first && !s) first.focus();
+  }
+  q('#stAdd').addEventListener('click', () => { if (ST.loaded) openSiteForm(null); });
+  stForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fd = new FormData(stForm);
+    const body = {};
+    ['name', 'tier', 'cluster', 'stage', 'url', 'domain', 'alt', 'repo', 'cf_kind', 'cf_project', 'storage', 'entity', 'summary', 'model'].forEach((k) => { body[k] = String(fd.get(k) || '').trim(); });
+    ['priv', 'naver', 'google', 'bing'].forEach((k) => { body[k] = fd.get(k) === 'on'; });
+    if (String(fd.get('sort') || '').trim() !== '') body.sort = Number(fd.get('sort'));
+    if (!body.name) { showMsg('이름을 적어 주세요.', 'err'); return; }
+    const btn = q('button[type="submit"]', stForm);
+    btn.disabled = true;
+    try {
+      if (ST.edit) { await api('sites/' + ST.edit, { method: 'PATCH', body }); ST.open = ST.edit; showMsg('저장했습니다.', 'ok'); }
+      else { const d = await api('sites', { method: 'POST', body }); ST.open = d.id; if (ST.filter.tier && ST.filter.tier !== body.tier) setStTier(''); showMsg('추가했습니다.', 'ok'); }
+      stForm.hidden = true; ST.edit = null;
+      await loadSites();
+      const row = q('.st-row.is-open');
+      if (row) row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } catch (err) { showMsg(err.message, 'err'); }
+    finally { btn.disabled = false; }
+  });
+  function setStTier(t) {
+    ST.filter.tier = t;
+    qa('#stTier .f-chip').forEach((x) => x.classList.toggle('is-active', x.dataset.tier === t));
+  }
+
+  /* 접속 점검 — 서버가 몇 곳씩 나눠 직접 열어 본다 */
+  q('#stCheck').addEventListener('click', async () => {
+    if (ST.checking || !ST.loaded) return;
+    const targets = shownSites().filter((s) => s.url);
+    if (!targets.length) { showMsg('점검할 사이트가 없습니다.', 'info'); return; }
+    const btn = q('#stCheck');
+    const size = ST.meta.checkBatch || 8;
+    ST.checking = true;
+    btn.disabled = true;
+    let done = 0;
+    let bad = 0;
+    try {
+      for (let i = 0; i < targets.length; i += size) {
+        btn.textContent = `점검 중 ${done}/${targets.length}`;
+        const d = await api('sites/check', { method: 'POST', body: { ids: targets.slice(i, i + size).map((s) => s.id) } });
+        d.results.forEach((r) => {
+          const s = siteById(r.id);
+          if (!s) return;
+          s.chk_at = d.at; s.chk_code = r.code; s.chk_ms = r.ms; s.chk_note = r.note;
+          if (r.pages) s.pages = r.pages;
+          if (chkState(s) === 'bad') bad++;
+        });
+        done += d.results.length;
+        renderSites();
+      }
+      showMsg(bad ? `${done}곳을 점검했습니다. 문제가 있는 곳이 ${bad}곳 있습니다. 빨간 점이 붙은 사이트를 확인해 주세요.` : `${done}곳 모두 정상으로 열립니다.`, bad ? 'err' : 'ok');
+    } catch (err) { showMsg(err.message, 'err'); }
+    finally { ST.checking = false; btn.disabled = false; btn.textContent = '접속 점검'; }
+  });
+
+  /* GitHub — 마지막 수정일과 목록에 없는 새 저장소 */
+  q('#stGithub').addEventListener('click', async () => {
+    if (!ST.loaded) return;
+    const btn = q('#stGithub');
+    btn.disabled = true; btn.textContent = '확인 중…';
+    try {
+      const d = await api('sites/github', { method: 'POST' });
+      ST.extra = d.extra || [];
+      await loadSites();
+      renderExtra();
+      showMsg(`GitHub 저장소 ${d.count}개를 확인했습니다.${ST.extra.length ? ` 목록에 없는 저장소가 ${ST.extra.length}개 있습니다.` : ' 목록에 없는 새 저장소는 없습니다.'}`, 'ok');
+    } catch (err) { showMsg(err.message, 'err'); }
+    finally { btn.disabled = false; btn.textContent = 'GitHub 새로 확인'; }
+  });
+  function renderExtra() {
+    const box = q('#stExtra');
+    const rows = ST.extra || [];
+    if (!rows.length) { box.innerHTML = ''; return; }
+    box.innerHTML = `
+      <article class="acc-card st-extra">
+        <div class="acc-head"><h2>목록에 없는 GitHub 저장소 <small>${rows.length}개</small></h2><button type="button" class="btn btn-sm btn-line" data-x-close>닫기</button></div>
+        <ul class="kpi-mini">${rows.map((r, i) => `<li><span class="mono">${esc(KST(r.pushed).slice(0, 10))}</span><span><a href="https://github.com/${esc(r.repo)}" target="_blank" rel="noopener">${esc(r.name)}</a> <small>${esc(r.description || '')}</small></span><button type="button" class="btn btn-sm btn-line" data-x-add="${i}">목록에 추가</button></li>`).join('')}</ul>
+        <p class="acc-help">공개 저장소만 보입니다. 비공개 저장소는 '사이트 추가'로 직접 넣어 주세요.</p>
+      </article>`;
+    q('[data-x-close]', box).addEventListener('click', () => { ST.extra = null; box.innerHTML = ''; });
+    qa('[data-x-add]', box).forEach((b) => b.addEventListener('click', () => {
+      const r = rows[Number(b.dataset.xAdd)];
+      openSiteForm(null, { name: r.name, repo: r.repo, url: r.homepage || '', summary: r.description || '', cf_project: r.name, tier: '그 외', stage: '미분류' });
+    }));
+  }
+
+  q('#stCsv').addEventListener('click', () => {
+    const rows = shownSites();
+    if (!rows.length) { showMsg('내려받을 사이트가 없습니다.', 'info'); return; }
+    downloadCsv(`전체사이트_${todayKST()}.csv`, [
+      ['구분', '사업군', '이름', '운영 단계', '대표 주소', '도메인', '기본 주소', 'GitHub 저장소', '저장소 공개', 'Cloudflare 종류', 'Cloudflare 프로젝트', '데이터 저장소', '운영 법인', '네이버', '구글', 'Bing', '사이트맵 페이지', '접속 점검', '응답(초)', '점검 시각', 'GitHub 마지막 수정', '방문 수집', '한 줄 설명', '수익 구조', '메모'],
+      ...rows.map((s) => [s.tier, s.cluster, s.name, s.stage, s.url, s.domain, s.alt, s.repo, s.repo ? (s.priv ? '비공개' : '공개') : '', s.cf_kind, s.cf_project, s.storage, s.entity,
+        s.naver ? '등록' : '', s.google ? '등록' : '', s.bing ? '등록' : '', s.pages || '', { ok: '정상', bad: '문제', unknown: '', none: '' }[chkState(s)], s.chk_ms ? (s.chk_ms / 1000).toFixed(1) : '', s.chk_at ? KST(s.chk_at) : '',
+        s.gh_pushed ? KST(s.gh_pushed) : '', ST.tracking[s.id] ? '수집 중' : '', s.summary, s.model, s.memo])
+    ]);
+  });
+
+  /* =========================================================
+     전체 KPI — 사이트별 월간 지표 (자동 집계 + 직접 입력 + 목표)
+     ========================================================= */
+  const SK = { month: '', tier: '주력', data: null, open: null };
+  const monthLabel = (m) => `${m.slice(0, 4)}년 ${Number(m.slice(5))}월`;
+  const monthShort = (m) => `${Number(m.slice(5))}월`;
+  const skMetric = (k) => (SK.data.metrics.find((m) => m.k === k) || { k, label: k, unit: '' });
+  const fmtKv = (v) => {
+    if (v == null) return '–';
+    const n = Number(v);
+    return (Math.abs(n) >= 100 || Number.isInteger(n) ? Math.round(n) : Math.round(n * 10) / 10).toLocaleString('ko-KR');
+  };
+  const skCellOf = (id, k) => ((SK.data.data[id] || {})[k]) || null;
+  const skVal = (id, k, back = 0) => { const c = skCellOf(id, k); return c ? c.v[SK.data.span - 1 - back] : null; };
+
+  function setSkTier(t) {
+    SK.tier = t;
+    qa('#skTier .f-chip').forEach((x) => x.classList.toggle('is-active', x.dataset.tier === t));
+  }
+  qa('#skTier .f-chip').forEach((b) => b.addEventListener('click', () => { setSkTier(b.dataset.tier); renderSkpi(); }));
+  const shiftMonth = (m, n) => { const d = new Date(Date.UTC(Number(m.slice(0, 4)), Number(m.slice(5)) - 1 + n, 1)); return d.toISOString().slice(0, 7); };
+  q('#skPrev').addEventListener('click', () => { if (SK.data) { SK.month = shiftMonth(SK.month, -1); loadSkpi(); } });
+  q('#skNext').addEventListener('click', () => { if (SK.data && SK.month < SK.data.nowMonth) { SK.month = shiftMonth(SK.month, 1); loadSkpi(); } });
+
+  async function loadSkpi() {
+    const body = q('#skBody');
+    body.classList.add('is-loading');
+    try {
+      const d = await api('skpi' + (SK.month ? '?month=' + encodeURIComponent(SK.month) : ''));
+      SK.data = d; SK.month = d.month;
+      renderSkpi();
+    } catch (err) {
+      if (!SK.data) body.innerHTML = `<p class="acc-empty">${esc(err.message)}</p>`;
+      showMsg(err.message, 'err');
+    } finally { body.classList.remove('is-loading'); }
+  }
+
+  /* 전달 대비 — 올라가면 좋은 숫자들이라 ▲ 초록, ▼ 빨강. 색과 화살표를 함께 쓴다 */
+  function skDelta(cur, prev) {
+    if (cur == null || prev == null) return '';
+    if (!prev) return cur ? '<span class="kpi-delta is-good">새로 생김</span>' : '';
+    const diff = (cur - prev) / prev * 100;
+    if (Math.abs(diff) < 0.5) return '<span class="kpi-delta is-flat">전달과 같음</span>';
+    const v = Math.abs(diff) >= 100 ? Math.round(Math.abs(diff)) : Math.round(Math.abs(diff) * 10) / 10;
+    return `<span class="kpi-delta ${diff > 0 ? 'is-good' : 'is-bad'}" title="전달 ${fmtKv(prev)}">${diff > 0 ? '▲' : '▼'} ${v}%</span>`;
+  }
+
+  function skCellHtml(site, k) {
+    const m = skMetric(k);
+    if (!site.kpis.includes(k)) return `<div class="sk-cell is-na" aria-hidden="true"></div>`;
+    const c = skCellOf(site.id, k);
+    const i = SK.data.span - 1;
+    const v = c ? c.v[i] : null;
+    const prev = c ? c.v[i - 1] : null;
+    const t = c ? c.t : null;
+    const auto = c && c.src[i] === 'auto';
+    const rate = t && v != null ? v / t : null;
+    return `
+      <div class="sk-cell${v == null ? ' is-empty' : ''}">
+        <span class="sk-label">${esc(m.label)}</span>
+        <strong class="sk-val">${fmtKv(v)}${v != null && m.unit === '만원' ? '<small>만</small>' : ''}${auto ? '<em class="sk-auto" title="자동으로 집계한 숫자">자동</em>' : ''}</strong>
+        ${m.stock ? '' : skDelta(v, prev)}
+        ${t ? `<span class="sk-goal" title="목표 ${fmtKv(t)}${esc(m.unit)}"><span class="sk-goal-bar"><i class="${rate != null && rate >= 1 ? 'is-done' : ''}" style="width:${rate == null ? 0 : Math.min(100, Math.round(rate * 100))}%"></i></span><em>${rate == null ? '목표 ' + fmtKv(t) : fmtPct(rate, 0) + (rate >= 1 ? ' 달성' : '')}</em></span>` : ''}
+      </div>`;
+  }
+
+  function skDetailHtml(site) {
+    const d = SK.data;
+    const i = d.span - 1;
+    const rowsHtml = site.kpis.map((k) => {
+      const m = skMetric(k);
+      const c = skCellOf(site.id, k) || { v: Array(d.span).fill(null), src: Array(d.span).fill(''), t: null, mv: null };
+      const auto = c.src[i] === 'auto';
+      const max = Math.max(1, ...c.v.map((x) => x || 0));
+      const bars = c.v.map((x, j) => `<span class="sk-bar${j === i ? ' is-now' : ''}" title="${monthLabel(d.months[j])} ${x == null ? '기록 없음' : fmtKv(x) + m.unit}"><i style="height:${x ? Math.max(6, Math.round(x / max * 100)) : 0}%"></i></span>`).join('');
+      return `
+        <div class="sk-edit-row">
+          <div class="sk-edit-name"><strong>${esc(m.label)}</strong><small>${esc(m.hint || '')}</small></div>
+          <label class="sk-in"><span>${monthShort(d.month)}${m.stock ? ' 말' : ''}</span>
+            ${auto ? `<output>${fmtKv(c.v[i])}<small>${esc(m.unit)} · 자동</small></output>`
+              : `<span class="sk-in-box"><input type="text" inputmode="decimal" data-v="${k}" value="${c.mv == null ? '' : c.mv}" placeholder="${m.auto ? '수집 전 · 직접 입력' : '입력'}" aria-label="${esc(m.label)} ${monthLabel(d.month)} 값" /><em>${esc(m.unit)}</em></span>`}
+          </label>
+          <label class="sk-in"><span>목표</span><span class="sk-in-box"><input type="text" inputmode="decimal" data-t="${k}" value="${c.t == null ? '' : c.t}" placeholder="-" aria-label="${esc(m.label)} 목표" /><em>${esc(m.unit)}</em></span></label>
+          <div class="sk-spark" aria-hidden="true">${bars}</div>
+        </div>`;
+    }).join('');
+    return `
+      <form class="sk-detail" data-site="${esc(site.id)}" novalidate>
+        <div class="sk-detail-head"><p><strong>${esc(site.name)}</strong> · ${monthLabel(d.month)} 숫자와 목표</p><p class="sk-spark-cap">막대: ${monthShort(d.months[0])} ~ ${monthShort(d.month)}</p></div>
+        ${site.kpis.length ? `<div class="sk-edit">${rowsHtml}</div>` : '<p class="acc-empty">아직 지표를 정하지 않았습니다. 아래에서 이 사이트에서 볼 지표를 골라 주세요.</p>'}
+        <details class="sk-pick"${site.kpis.length ? '' : ' open'}><summary>이 사이트에서 볼 지표 고르기</summary>
+          <div class="sk-pick-list">${d.metrics.map((m) => `<label class="acc-check" title="${esc(m.hint || '')}"><input type="checkbox" data-pick="${m.k}"${site.kpis.includes(m.k) ? ' checked' : ''} /> ${esc(m.label)}${m.auto ? ' <small>자동</small>' : ''}</label>`).join('')}</div>
+        </details>
+        ${site.tracked || site.id === d.self ? '' : '<p class="acc-help">방문자·페이지뷰·예약 이동은 이 사이트에 수집 코드 한 줄을 넣으면 자동으로 채워집니다 (전체 사이트 → 이 사이트 → 방문 자동 수집 넣는 법). 그 전에는 직접 입력한 숫자를 씁니다.</p>'}
+        <div class="adm-btns"><button type="submit" class="btn btn-sm btn-primary">저장</button>${site.url ? `<a class="btn btn-sm btn-line" href="${esc(site.url)}" target="_blank" rel="noopener">사이트 열기 ↗</a>` : ''}<button type="button" class="btn btn-sm btn-line" data-site-info>사이트 정보</button><button type="button" class="btn btn-sm btn-line" data-close>닫기</button></div>
+      </form>`;
+  }
+
+  function renderSkpi() {
+    const d = SK.data;
+    if (!d) return;
+    const i = d.span - 1;
+    const isNow = d.month === d.nowMonth;
+    q('#skMonth').textContent = monthLabel(d.month);
+    q('#skNext').disabled = isNow;
+    const sites = d.sites.filter((s) => !SK.tier || s.tier === SK.tier);
+    const withKpi = sites.filter((s) => s.kpis.length);
+    const noKpi = sites.filter((s) => !s.kpis.length);
+    q('#skInfo').innerHTML = `<strong>${monthLabel(d.month)}</strong>${isNow ? ' (오늘까지)' : ''} · 비교: ${monthShort(d.months[i - 1])} · ${SK.tier || '전체'} ${fmtN(sites.length)}곳 · 사이트 이름을 누르면 숫자와 목표를 넣을 수 있습니다`;
+
+    /* 합계 */
+    const sum = (k, back = 0) => {
+      let total = 0; let n = 0;
+      withKpi.forEach((s) => { if (!s.kpis.includes(k)) return; const v = skVal(s.id, k, back); if (v != null) { total += v; n++; } });
+      return { total, n };
+    };
+    const tile = (k, label, unitText, extra) => {
+      const a = sum(k); const b = sum(k, 1);
+      return [label, a.n ? fmtKv(a.total) + (unitText || '') : '–', a.n && b.n ? skDelta(a.total, b.total) : '', a.n ? `${a.n}곳 합계${extra ? ' · ' + extra : ''}` : '아직 숫자가 없습니다'];
+    };
+    let goals = 0; let hit = 0; let filled = 0;
+    withKpi.forEach((s) => {
+      let any = false;
+      s.kpis.forEach((k) => { const c = skCellOf(s.id, k); if (!c) return; const v = c.v[i]; if (v != null) any = true; if (c.t) { goals++; if (v != null && v >= c.t) hit++; } });
+      if (any) filled++;
+    });
+    const tracked = sites.filter((s) => s.tracked).length;
+    const bk = sum('book');
+    const tiles = [
+      tile('visitors', '방문자', ''),
+      tile('inquiries', '문의·상담', '건'),
+      tile('reservations', '예약', '건', bk.n ? `예약 이동 ${fmtKv(bk.total)}회` : ''),
+      tile('signups', '신규 가입', '명'),
+      tile('revenue', '매출', '만원'),
+      ['목표 달성', goals ? `${hit}/${goals}` : '–', '', goals ? '목표를 정한 지표 가운데' : '목표를 정하면 달성 여부가 보입니다'],
+      ['방문 자동 수집', `${tracked}/${sites.length}`, '', '수집 코드를 넣은 사이트'],
+      ['이번 달 숫자가 있는 곳', `${filled}/${withKpi.length}`, '', '자동 집계 또는 직접 입력']
+    ];
+
+    /* 사업군별 표 */
+    const groups = [];
+    withKpi.forEach((s) => {
+      const key = s.cluster || '분류 없음';
+      let g = groups.find((x) => x.key === key);
+      if (!g) { g = { key, rows: [], cols: [] }; groups.push(g); }
+      g.rows.push(s);
+      s.kpis.forEach((k) => { if (!g.cols.includes(k)) g.cols.push(k); });
+    });
+    const order = d.metrics.map((m) => m.k);
+    const vis = withKpi.map((s) => ({ s, v: skVal(s.id, 'visitors') })).filter((x) => x.v != null && x.v > 0).sort((a, b) => b.v - a.v).slice(0, 10);
+
+    const body = q('#skBody');
+    body.innerHTML = `
+      ${tracked <= 1 ? `<p class="auth-msg is-info">지금은 choisijun.com만 방문이 자동으로 집계됩니다. 다른 사이트는 수집 코드 한 줄을 넣은 곳부터 방문자·페이지뷰·예약 이동이 채워지고, 그 전에는 사이트 이름을 눌러 숫자를 직접 넣을 수 있습니다. 문의·예약·가입·매출과 목표는 언제든 직접 넣습니다.</p>` : ''}
+      <ul class="kpi-tiles">${tiles.map(([label, val, delta, foot], n) => `<li class="kpi-tile${n === 0 ? ' is-lead' : ''}"><p class="kpi-tile-label">${esc(label)}</p><p class="kpi-tile-val">${esc(val)}</p>${delta}<p class="kpi-tile-foot">${esc(foot)}</p></li>`).join('')}</ul>
+      ${groups.map((g) => {
+        g.cols.sort((a, b) => order.indexOf(a) - order.indexOf(b));
+        const cols = g.cols.slice(0, 7);
+        return `
+        <article class="acc-card sk-group">
+          <div class="acc-head"><h2>${esc(g.key)} <small>${g.rows.length}곳</small></h2></div>
+          <div class="sk-table" style="--n:${cols.length}">
+            <div class="sk-row sk-headrow"><span>사이트</span>${cols.map((k) => { const m = skMetric(k); return `<span title="${esc(m.hint || '')}">${esc(m.label)} <small>${esc(m.unit)}</small></span>`; }).join('')}</div>
+            ${g.rows.map((s) => `
+              <div class="sk-item${SK.open === s.id ? ' is-open' : ''}" data-id="${esc(s.id)}">
+                <div class="sk-row">
+                  <button type="button" class="sk-site" data-open="${esc(s.id)}" aria-expanded="${SK.open === s.id}"><strong>${esc(s.name)}</strong><span class="adm-tag ${stageClass(s.stage)}">${esc(s.stage)}</span></button>
+                  ${cols.map((k) => skCellHtml(s, k)).join('')}
+                </div>
+                ${SK.open === s.id ? skDetailHtml(s) : ''}
+              </div>`).join('')}
+          </div>
+        </article>`;
+      }).join('')}
+      ${vis.length > 1 ? `<article class="acc-card kpi-card"><h2>방문자가 많은 사이트 <small>${monthLabel(d.month)}</small></h2>${barList(vis, (x) => ({ name: x.s.name, value: fmtKv(x.v) + '명', n: x.v, sub: x.s.cluster }), '-')}</article>` : ''}
+      ${noKpi.length ? `<article class="acc-card sk-group"><div class="acc-head"><h2>지표를 정하지 않은 곳 <small>${noKpi.length}곳 · 내부 도구, 보관한 사이트 등</small></h2></div>
+        <div class="sk-table sk-nokpi">${noKpi.map((s) => `
+          <div class="sk-item${SK.open === s.id ? ' is-open' : ''}" data-id="${esc(s.id)}">
+            <div class="sk-row"><button type="button" class="sk-site" data-open="${esc(s.id)}" aria-expanded="${SK.open === s.id}"><strong>${esc(s.name)}</strong><span class="adm-tag ${stageClass(s.stage)}">${esc(s.stage)}</span><small>${esc(s.cluster)}</small></button></div>
+            ${SK.open === s.id ? skDetailHtml(s) : ''}
+          </div>`).join('')}</div></article>` : ''}
+      <article class="acc-card kpi-note">
+        <h2>숫자 읽는 법</h2>
+        <ul class="acc-help kpi-howto">
+          <li><strong>자동</strong> 표시가 붙은 숫자는 방문 기록에서 바로 센 값입니다. 표시가 없는 숫자는 직접 넣은 값입니다.</li>
+          <li><strong>방문자</strong>는 브라우저 기준으로 그 달에 들어온 사람 수, <strong>예약 이동</strong>은 예약 버튼·네이버 예약 링크를 누른 횟수입니다. 실제 예약 건수는 '예약'에 직접 넣습니다.</li>
+          <li><strong>누적 회원 · 입점 · 유료 구독 · 콘텐츠 페이지</strong>는 그 달 말 기준 숫자입니다. 콘텐츠 페이지는 '전체 사이트 → 접속 점검' 때 사이트맵을 세어 채웁니다.</li>
+          <li>이번 달 숫자는 오늘까지의 값이라, 전달 대비는 달이 끝나야 정확합니다.</li>
+        </ul>
+      </article>`;
+
+    qa('[data-open]', body).forEach((b) => b.addEventListener('click', () => { SK.open = SK.open === b.dataset.open ? null : b.dataset.open; renderSkpi(); }));
+    const form = q('.sk-detail', body);
+    if (!form) return;
+    const site = d.sites.find((s) => s.id === form.dataset.site);
+    q('[data-close]', form).addEventListener('click', () => { SK.open = null; renderSkpi(); });
+    q('[data-site-info]', form).addEventListener('click', () => { ST.open = site.id; setStTier(''); ST.filter.cluster = ''; ST.filter.stage = ''; ST.filter.q = ''; q('#stSearch').value = ''; go('sites'); });
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const values = {};
+      const read = (el) => { const t = String(el.value || '').replace(/[,\s]/g, ''); return t === '' ? null : Number(t); };
+      let badInput = false;
+      site.kpis.forEach((k) => {
+        const vi = q(`[data-v="${k}"]`, form); const ti = q(`[data-t="${k}"]`, form);
+        const c = skCellOf(site.id, k);
+        const v = vi ? read(vi) : (c ? c.mv : null);
+        const t = ti ? read(ti) : null;
+        if ((v != null && !(v >= 0)) || (t != null && !(t >= 0))) badInput = true;
+        values[k] = { v, t };
+      });
+      if (badInput) { showMsg('숫자만 넣어 주세요. 예: 1200', 'err'); return; }
+      const picked = qa('[data-pick]', form).filter((x) => x.checked).map((x) => x.dataset.pick);
+      const kpis = site.kpis.filter((k) => picked.includes(k)).concat(picked.filter((k) => !site.kpis.includes(k)));
+      const btn = q('button[type="submit"]', form);
+      btn.disabled = true;
+      try {
+        await api('skpi/' + site.id, { method: 'PUT', body: { month: d.month, values, kpis } });
+        showMsg(`${site.name} — ${monthLabel(d.month)} 숫자를 저장했습니다.`, 'ok');
+        await loadSkpi();
+      } catch (err) { showMsg(err.message, 'err'); btn.disabled = false; }
+    });
+    if (SK.scroll) { SK.scroll = false; form.parentElement.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+  }
+
+  q('#skCsv').addEventListener('click', () => {
+    const d = SK.data;
+    if (!d) { showMsg('먼저 KPI를 불러와 주세요.', 'info'); return; }
+    const sites = d.sites.filter((s) => (!SK.tier || s.tier === SK.tier) && s.kpis.length);
+    const i = d.span - 1;
+    const rows = [['사업군', '사이트', '지표', '단위', ...d.months, '목표', '달성률(%)', '집계']];
+    sites.forEach((s) => s.kpis.forEach((k) => {
+      const m = skMetric(k);
+      const c = skCellOf(s.id, k) || { v: Array(d.span).fill(null), src: [], t: null };
+      const v = c.v[i];
+      rows.push([s.cluster, s.name, m.label, m.unit, ...c.v.map((x) => (x == null ? '' : x)), c.t == null ? '' : c.t, c.t && v != null ? Math.round(v / c.t * 1000) / 10 : '', c.src[i] === 'auto' ? '자동' : v != null ? '직접 입력' : '']);
+    }));
+    downloadCsv(`전체KPI_${d.month}.csv`, rows);
+  });
+
   /* ---------------- 설정 · 바로가기 ---------------- */
   function renderSystem() {
     const s = state.setup || {};
@@ -1175,7 +1767,7 @@
     const start = (location.hash || '').replace('#', '');
     /* 관리자가 쓰는 브라우저는 방문 통계에서 뺀다 (KPI 화면에서 바꿀 수 있음) */
     try { if (localStorage.getItem('csj_no_stats') === null) localStorage.setItem('csj_no_stats', 'true'); } catch (_) { /* ignore */ }
-    go(['kpi', 'inquiries', 'members', 'community', 'refs', 'content', 'system'].includes(start) ? start : 'dash');
+    go(['sites', 'skpi', 'kpi', 'inquiries', 'members', 'community', 'refs', 'content', 'system'].includes(start) ? start : 'dash');
   }
 
   boot();

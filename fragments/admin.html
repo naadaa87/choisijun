@@ -3,7 +3,7 @@
       <div class="container">
         <p class="eyebrow mono">ADMIN</p>
         <h1>관리자 <span class="accent">페이지</span></h1>
-        <p class="lede" id="admWho">방문 통계, 문의, 회원, 커뮤니티, 레퍼런스, 매일 글을 한곳에서 관리합니다.</p>
+        <p class="lede" id="admWho">운영하는 모든 사이트와 KPI, 방문 통계, 문의, 회원, 커뮤니티, 레퍼런스, 매일 글을 한곳에서 관리합니다.</p>
       </div>
     </section>
 
@@ -34,7 +34,9 @@
         <div class="adm" id="admApp" hidden>
           <nav class="adm-nav" role="tablist" aria-label="관리 메뉴">
             <button type="button" role="tab" class="adm-tab is-active" data-tab="dash" aria-selected="true">대시보드</button>
-            <button type="button" role="tab" class="adm-tab" data-tab="kpi" aria-selected="false">KPI · 방문 통계</button>
+            <button type="button" role="tab" class="adm-tab" data-tab="sites" aria-selected="false">전체 사이트 <em class="adm-count is-quiet" id="cntSites"></em></button>
+            <button type="button" role="tab" class="adm-tab" data-tab="skpi" aria-selected="false">전체 KPI</button>
+            <button type="button" role="tab" class="adm-tab" data-tab="kpi" aria-selected="false">방문 통계 <small>choisijun.com</small></button>
             <button type="button" role="tab" class="adm-tab" data-tab="inquiries" aria-selected="false">문의 <em class="adm-count" id="cntInq"></em></button>
             <button type="button" role="tab" class="adm-tab" data-tab="members" aria-selected="false">회원 <em class="adm-count is-quiet" id="cntMem"></em></button>
             <button type="button" role="tab" class="adm-tab" data-tab="community" aria-selected="false">커뮤니티 <em class="adm-count" id="cntCom"></em></button>
@@ -64,6 +66,56 @@
                 <div class="acc-head"><h2>매일 글</h2><button type="button" class="btn btn-sm btn-line" data-go="content">자세히</button></div>
                 <div id="admDaily"><p class="acc-empty">불러오는 중…</p></div>
               </article>
+            </section>
+
+            <!-- 전체 사이트 -->
+            <section class="adm-panel" data-panel="sites" role="tabpanel" hidden>
+              <ul class="adm-kpis st-tiles" id="stTiles"></ul>
+              <div class="adm-toolbar">
+                <div class="board-filters" id="stTier" role="group" aria-label="구분">
+                  <button class="f-chip is-active" type="button" data-tier="주력">주력</button>
+                  <button class="f-chip" type="button" data-tier="">전체</button>
+                  <button class="f-chip" type="button" data-tier="그 외">그 외</button>
+                  <button class="f-chip" type="button" data-tier="숨김">숨긴 것</button>
+                </div>
+                <div class="adm-search">
+                  <select id="stCluster" aria-label="사업군"><option value="">모든 사업군</option></select>
+                  <select id="stStage" aria-label="운영 단계"><option value="">모든 단계</option></select>
+                  <input type="search" id="stSearch" placeholder="이름 · 주소 · 저장소 · 메모 검색" aria-label="사이트 검색" />
+                </div>
+              </div>
+              <div class="adm-toolbar">
+                <p class="kpi-period st-info" id="stInfo"></p>
+                <div class="adm-actions">
+                  <button type="button" class="btn btn-sm btn-line" id="stCheck">접속 점검</button>
+                  <button type="button" class="btn btn-sm btn-line" id="stGithub">GitHub 새로 확인</button>
+                  <button type="button" class="btn btn-sm btn-line" id="stCsv">CSV 내려받기</button>
+                  <button type="button" class="btn btn-sm btn-primary" id="stAdd">사이트 추가</button>
+                </div>
+              </div>
+              <div id="stExtra"></div>
+              <form class="acc-card auth-form st-form" id="stForm" hidden novalidate></form>
+              <div class="st-groups" id="stList"><p class="acc-empty">불러오는 중…</p></div>
+            </section>
+
+            <!-- 전체 KPI -->
+            <section class="adm-panel" data-panel="skpi" role="tabpanel" hidden>
+              <div class="adm-toolbar">
+                <div class="sk-month" role="group" aria-label="달 고르기">
+                  <button type="button" class="btn btn-sm btn-line" id="skPrev" aria-label="이전 달">‹</button>
+                  <strong id="skMonth"></strong>
+                  <button type="button" class="btn btn-sm btn-line" id="skNext" aria-label="다음 달">›</button>
+                </div>
+                <div class="board-filters" id="skTier" role="group" aria-label="구분">
+                  <button class="f-chip is-active" type="button" data-tier="주력">주력</button>
+                  <button class="f-chip" type="button" data-tier="">전체</button>
+                </div>
+                <div class="adm-actions">
+                  <button type="button" class="btn btn-sm btn-line" id="skCsv">CSV 내려받기</button>
+                </div>
+              </div>
+              <p class="kpi-period" id="skInfo"></p>
+              <div class="kpi-body" id="skBody"><p class="acc-empty">불러오는 중…</p></div>
             </section>
 
             <!-- KPI · 방문 통계 -->

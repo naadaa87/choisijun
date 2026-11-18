@@ -6,7 +6,7 @@
    ========================================================= */
 import { db, isAdmin, kst, clean, hasMemberCookie } from '../_lib/core.js';
 
-const BOT = /\bbot\b|bot\/|bytespider|crawl|spider|slurp|bingpreview|facebookexternalhit|meta-externalagent|headless|phantom|lighthouse|pagespeed|gtmetrix|pingdom|uptime|monitor|curl\/|wget\/|python|axios|node-fetch|go-http|java\/|okhttp|yeti\/|daumoa|kakaotalk-scrap|whatsapp\/|telegrambot|discordbot|slackbot|preview|scrap/i;
+export const BOT = /\bbot\b|bot\/|bytespider|crawl|spider|slurp|bingpreview|facebookexternalhit|meta-externalagent|headless|phantom|lighthouse|pagespeed|gtmetrix|pingdom|uptime|monitor|curl\/|wget\/|python|axios|node-fetch|go-http|java\/|okhttp|yeti\/|daumoa|kakaotalk-scrap|whatsapp\/|telegrambot|discordbot|slackbot|preview|scrap/i;
 
 const SEARCH = [
   [/(^|\.)search\.naver\.com$|^m\.search\.naver\.com$|^naver\.com$|^www\.naver\.com$|^m\.naver\.com$/, '네이버'],
@@ -67,7 +67,7 @@ const INAPP = [
 
 const match = (list, host) => { for (const [re, name] of list) if (re.test(host)) return name; return ''; };
 
-function source(refUrl, selfHost, ua, utm) {
+export function source(refUrl, selfHost, ua, utm) {
   let host = '';
   try { host = refUrl ? new URL(refUrl).hostname.toLowerCase() : ''; } catch (_) { host = ''; }
   if (host && (host === selfHost || host === 'www.' + selfHost || 'www.' + host === selfHost)) return { src: '내부 이동', srcd: '', ref: '' };
@@ -89,7 +89,7 @@ function source(refUrl, selfHost, ua, utm) {
   return { src: '직접 방문', srcd: '', ref: '' };
 }
 
-function device(ua) {
+export function device(ua) {
   const dev = /iPad|Tablet|SM-T|Android(?!.*Mobile)/i.test(ua) ? '태블릿' : /Mobi|iPhone|iPod|Android/i.test(ua) ? '모바일' : 'PC';
   const os = /iPhone|iPad|iPod/i.test(ua) ? 'iOS' : /Android/i.test(ua) ? 'Android' : /Windows/i.test(ua) ? 'Windows' : /Mac OS X|Macintosh/i.test(ua) ? 'macOS' : /Linux/i.test(ua) ? 'Linux' : '기타';
   const br = /KAKAOTALK/i.test(ua) ? '카카오톡 앱'
@@ -106,14 +106,14 @@ function device(ua) {
 }
 
 /** 주소 정리: /about.html → /about, 끝의 / 제거, 검색어(?…) 제거 */
-function normPath(p) {
+export function normPath(p) {
   let s = clean(p, 200).split('?')[0].split('#')[0] || '/';
   if (!s.startsWith('/')) s = '/' + s;
   s = s.replace(/\/index(\.html)?$/, '/').replace(/\.html$/, '');
   if (s.length > 1) s = s.replace(/\/+$/, '');
   return s || '/';
 }
-const ID = /^[a-z0-9]{8,40}$/i;
+export const ID = /^[a-z0-9]{8,40}$/i;
 
 export async function onRequestPost({ request, env, waitUntil }) {
   const ok = () => new Response(null, { status: 204, headers: { 'Cache-Control': 'no-store' } });

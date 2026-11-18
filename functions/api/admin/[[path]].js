@@ -1,6 +1,6 @@
 /* =========================================================
    /api/admin/* — 관리자 기능 (로그인한 관리자만)
-   로그인 · 대시보드 · KPI · 문의 · 회원 · 커뮤니티 · 레퍼런스 · 매일 글
+   로그인 · 대시보드 · 전체 사이트 · 전체 KPI · 방문 통계 · 문의 · 회원 · 커뮤니티 · 레퍼런스 · 매일 글
    ========================================================= */
 import {
   db, json, fail, notReady, readJson, clean, nowIso, sha256, safeEqual, rateLimit, visitorHash,
@@ -8,6 +8,7 @@ import {
   INQUIRY_STATUS, POST_CATEGORIES, REF_CATEGORIES
 } from '../../_lib/core.js';
 import { kpi } from '../../_lib/kpi.js';
+import { sitesRoute, sitesSummary } from '../../_lib/sites.js';
 
 const REPO_DEFAULT = 'naadaa87/choisijun';
 const BACKLOG_PATH = 'content/plan/backlog.md';
@@ -54,6 +55,7 @@ export async function onRequest(context) {
     if (!DB) return notReady();
     if (route === 'overview' && method === 'GET') return overview(DB, env);
     if (route === 'kpi' && method === 'GET') return kpi(DB, request);
+    if (parts[0] === 'sites' || parts[0] === 'skpi') return sitesRoute(DB, env, request, parts, method);
 
     if (parts[0] === 'members') {
       if (method === 'GET' && parts.length === 1) return membersList(DB, request);
@@ -172,8 +174,10 @@ async function overview(DB, env) {
     q('SELECT COUNT(*) AS n FROM members'),
     q('SELECT COUNT(*) AS n FROM members WHERE created_at >= ?', new Date(monthStart).toISOString())
   ]);
+  const sites = await sitesSummary(DB).catch(() => ({ total: 0, focus: 0, down: 0, chk_at: null }));
   return json({
     ok: true,
+    sites,
     counts: {
       inq_new: n1.n, inq_progress: n2.n, inq_month: n3.n, inq_total: n4.n,
       posts_pending: p1.n, comments_pending: c1.n, refs: r1.n, inq_stale: stale.n,

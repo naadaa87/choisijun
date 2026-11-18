@@ -123,7 +123,83 @@ const SCHEMA = [
      memo TEXT NOT NULL DEFAULT '',
      updated_at TEXT
    )`,
-  `CREATE INDEX IF NOT EXISTS idx_members_created ON members(created_at)`
+  `CREATE INDEX IF NOT EXISTS idx_members_created ON members(created_at)`,
+  /* 전체 사이트 — 운영하는 홈페이지·플랫폼·프로젝트 목록 (관리자 '전체 사이트') */
+  `CREATE TABLE IF NOT EXISTS sites (
+     id TEXT PRIMARY KEY,
+     sort INTEGER NOT NULL DEFAULT 5000,
+     tier TEXT NOT NULL DEFAULT '그 외',
+     cluster TEXT NOT NULL DEFAULT '',
+     name TEXT NOT NULL DEFAULT '',
+     url TEXT NOT NULL DEFAULT '',
+     domain TEXT NOT NULL DEFAULT '',
+     alt TEXT NOT NULL DEFAULT '',
+     repo TEXT NOT NULL DEFAULT '',
+     priv INTEGER NOT NULL DEFAULT 0,
+     cf_kind TEXT NOT NULL DEFAULT '',
+     cf_project TEXT NOT NULL DEFAULT '',
+     storage TEXT NOT NULL DEFAULT '',
+     entity TEXT NOT NULL DEFAULT '',
+     stage TEXT NOT NULL DEFAULT '미분류',
+     summary TEXT NOT NULL DEFAULT '',
+     model TEXT NOT NULL DEFAULT '',
+     memo TEXT NOT NULL DEFAULT '',
+     naver INTEGER NOT NULL DEFAULT 0,
+     google INTEGER NOT NULL DEFAULT 0,
+     bing INTEGER NOT NULL DEFAULT 0,
+     pages INTEGER NOT NULL DEFAULT 0,
+     kpis TEXT NOT NULL DEFAULT '[]',
+     chk_at TEXT,
+     chk_code INTEGER,
+     chk_ms INTEGER,
+     chk_note TEXT,
+     gh_pushed TEXT,
+     archived INTEGER NOT NULL DEFAULT 0,
+     seeded INTEGER NOT NULL DEFAULT 0,
+     created_at TEXT,
+     updated_at TEXT
+   )`,
+  /* 사이트별 월간 KPI — v: 직접 넣은 값, t: 목표 */
+  `CREATE TABLE IF NOT EXISTS site_kpi (
+     site TEXT NOT NULL,
+     month TEXT NOT NULL,
+     k TEXT NOT NULL,
+     v REAL,
+     t REAL,
+     updated_at TEXT,
+     PRIMARY KEY (site, month, k)
+   )`,
+  /* 다른 사이트의 방문 기록 (/api/c). IP·쿠키는 저장하지 않는다 */
+  `CREATE TABLE IF NOT EXISTS xpv (
+     id INTEGER PRIMARY KEY AUTOINCREMENT,
+     site TEXT NOT NULL,
+     pid TEXT NOT NULL,
+     ts INTEGER NOT NULL,
+     day TEXT NOT NULL,
+     path TEXT NOT NULL DEFAULT '/',
+     src TEXT NOT NULL DEFAULT '',
+     srcd TEXT NOT NULL DEFAULT '',
+     dev TEXT NOT NULL DEFAULT '',
+     vid TEXT NOT NULL DEFAULT '',
+     sid TEXT NOT NULL DEFAULT '',
+     new_v INTEGER NOT NULL DEFAULT 0,
+     new_s INTEGER NOT NULL DEFAULT 0,
+     dur INTEGER NOT NULL DEFAULT 0
+   )`,
+  `CREATE INDEX IF NOT EXISTS idx_xpv_site_day ON xpv(site, day)`,
+  `CREATE INDEX IF NOT EXISTS idx_xpv_pid ON xpv(pid)`,
+  `CREATE TABLE IF NOT EXISTS xev (
+     id INTEGER PRIMARY KEY AUTOINCREMENT,
+     site TEXT NOT NULL,
+     ts INTEGER NOT NULL,
+     day TEXT NOT NULL,
+     path TEXT NOT NULL DEFAULT '/',
+     kind TEXT NOT NULL DEFAULT '',
+     label TEXT NOT NULL DEFAULT '',
+     target TEXT NOT NULL DEFAULT '',
+     vid TEXT NOT NULL DEFAULT ''
+   )`,
+  `CREATE INDEX IF NOT EXISTS idx_xev_site_day ON xev(site, day)`
 ];
 
 /** 예전에 만든 표에 새 칸 더하기 (이미 있으면 건너뜀) */
