@@ -6,7 +6,7 @@
     <atom:link href="https://choisijun.com/rss.xml" rel="self" type="application/rss+xml" />
     <description>최시준 공식 홈페이지의 새 소식 — 공간 포트폴리오, 공실개발 사례, 브랜드, 강의·미디어.</description>
     <language>ko</language>
-    <lastBuildDate>Wed, 18 Nov 2026 06:51:09 +0900</lastBuildDate>
+    <lastBuildDate>Wed, 18 Nov 2026 21:21:18 +0900</lastBuildDate>
     <item>
       <title>무인 매장이 늘어나는 이유 — 인건비만이 아닙니다 | 최시준</title>
       <link>https://choisijun.com/insights/unmanned-store-trend</link>
@@ -34,6 +34,13 @@
       <link>https://choisijun.com/insights</link>
       <guid isPermaLink="true">https://choisijun.com/insights</guid>
       <description>340개+ 공간을 만들며 굳어진 판단기준을 글로 정리합니다. 상가 공실 해결, 지하·고층 공실 활용, 파티룸·공간대여 창업, 무인공간 운영, 건물 단위 기획.</description>
+      <pubDate>Wed, 18 Nov 2026 09:00:00 +0900</pubDate>
+    </item>
+    <item>
+      <title>개인정보처리방침 | 최시준 · ㈜블랭크</title>
+      <link>https://choisijun.com/privacy</link>
+      <guid isPermaLink="true">https://choisijun.com/privacy</guid>
+      <description>최시준 홈페이지(choisijun.com)를 운영하는 ㈜블랭크의 개인정보처리방침입니다. 수집 항목, 이용 목적, 보관 기간, 처리 위탁, 이용자 권리를 안내합니다.</description>
       <pubDate>Wed, 18 Nov 2026 09:00:00 +0900</pubDate>
     </item>
     <item>
@@ -225,13 +232,6 @@
       <link>https://choisijun.com/contact</link>
       <guid isPermaLink="true">https://choisijun.com/contact</guid>
       <description>공실개발 상담, 공간수익화 진단, 강의·인터뷰, 제휴 제안. 60초 자가진단으로 내 공간의 가능성을 확인하고 문의를 남겨주세요.</description>
-      <pubDate>Mon, 26 Oct 2026 09:00:00 +0900</pubDate>
-    </item>
-    <item>
-      <title>개인정보처리방침 | 최시준 · ㈜블랭크</title>
-      <link>https://choisijun.com/privacy</link>
-      <guid isPermaLink="true">https://choisijun.com/privacy</guid>
-      <description>최시준 홈페이지(choisijun.com)를 운영하는 ㈜블랭크의 개인정보처리방침입니다. 수집 항목, 이용 목적, 보관 기간, 처리 위탁, 이용자 권리를 안내합니다.</description>
       <pubDate>Mon, 26 Oct 2026 09:00:00 +0900</pubDate>
     </item>
     <item>

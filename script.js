@@ -2,10 +2,10 @@
    최시준 개인 브랜딩 홈페이지 — 공통 스크립트 (멀티페이지)
    순수 Vanilla JS · 프레임워크/빌드 불필요
    ---------------------------------------------------------
-   문의 · 커뮤니티 · 레퍼런스는 Cloudflare 서버 기능(/api, D1)으로 저장되고
+   문의 · 회원 · 방문 통계 · 커뮤니티 · 레퍼런스는 Cloudflare 서버 기능(/api, D1)으로 저장되고
    관리자 페이지(/admin)에서 관리합니다. 설정 순서: 관리자-설정-가이드.md
    - 서버 기능이 아직 켜지지 않았으면: 문의는 메일 앱으로, 게시판은 미리보기 모드
-   - 회원가입·로그인(Supabase)은 선택 기능입니다: 기능활성화-가이드.md
+   - site-config.js 에 Supabase 키를 넣으면 회원 기능은 Supabase 방식으로 바뀝니다 (기능활성화-가이드.md)
    ========================================================= */
 const SITE_CFG = window.SITE_CONFIG || {};
 const COMMUNITY_BACKEND = {
@@ -199,12 +199,13 @@ const AUTH_ERRORS = [
   [/failed to fetch|network/i, '서버에 연결하지 못했습니다. 인터넷 연결을 확인해 주세요.']
 ];
 function authMessage(err) {
+  if (err && err.friendly) return err.friendly;
   const raw = String((err && (err.message || err.msg || err.error_description || err.error)) || err || '');
   for (const [re, msg] of AUTH_ERRORS) if (re.test(raw) || re.test(String(err && err.code || ''))) return msg;
   return '처리하지 못했습니다. 잠시 후 다시 시도해 주세요.';
 }
 
-const Auth = (function authCore() {
+const SbAuth = (function authCore() {
   const listeners = [];
   let session = null;      // { access_token, refresh_token, expires_at, user }
   let profile = null;
@@ -368,11 +369,246 @@ const Auth = (function authCore() {
   };
 })();
 
+/* =========================================================
+   회원 인증 (Cloudflare D1) — Supabase 를 쓰지 않을 때의 기본 회원 기능
+   - 로그인 상태는 서버의 HttpOnly 쿠키로 유지 (스크립트는 비밀 값을 다루지 않음)
+   - csj_mi=1 쿠키가 있는 브라우저만 회원 정보를 물어본다 (다른 방문자는 요청 없음)
+   ========================================================= */
+const CfAuth = (function cfAuthCore() {
+  const listeners = [];
+  let member = null;
+  let enabled = false;
+  let lastEvent = '';
+  const emit = () => listeners.forEach((fn) => { try { fn(member); } catch (_) { /* ignore */ } });
+  async function call(path, method = 'GET', body) {
+    let res;
+    try {
+      res = await fetch('/api/member/' + path, {
+        method, credentials: 'same-origin', cache: 'no-store',
+        headers: body ? { 'Content-Type': 'application/json' } : {},
+        body: body ? JSON.stringify(body) : undefined
+      });
+    } catch (_) { throw Object.assign(new Error('network'), { code: 'network' }); }
+    let data = {};
+    try { data = await res.json(); } catch (_) { data = {}; }
+    if (!res.ok || data.ok === false) throw Object.assign(new Error(data.error || ('HTTP ' + res.status)), { code: data.code || '', status: res.status, friendly: data.error || '' });
+    return data;
+  }
+  const hinted = () => /(?:^|;\s*)csj_mi=1/.test(document.cookie || '');
+  const needsCheck = () => hinted() || /^\/(login|account|contact)(\.html)?\/?$/.test(location.pathname);
+  const ready = (IS_REMOTE || !needsCheck()) ? Promise.resolve() : call('me')
+    .then((d) => { enabled = Boolean(d.enabled); member = d.member || null; })
+    .catch(() => { enabled = false; member = null; });
+  const toUser = (m) => m && ({ id: m.id, email: m.email, user_metadata: { name: m.name, member_type: m.type } });
+  const toProfile = (m) => m && ({ name: m.name, member_type: m.type, phone: m.phone, marketing: m.marketing, role: null, created_at: m.created_at });
+  function set(m, ev) { member = m || null; if (ev) lastEvent = ev; emit(); }
+
+  return {
+    ready,
+    cf: true,
+    get enabled() { return enabled; },
+    get user() { return toUser(member); },
+    get event() { return lastEvent; },
+    get hashError() { return ''; },
+    async token() { return null; },
+    onChange(fn) { listeners.push(fn); },
+    displayName() { return member ? (member.name || (member.email || '').split('@')[0] || '회원') : ''; },
+    async signUp(email, password, meta) {
+      const d = await call('signup', 'POST', {
+        email, password, name: meta.name, type: meta.member_type, phone: meta.phone, marketing: meta.marketing,
+        agree: true, hp: meta.hp || '', t: PAGE_LOADED_AT, turnstile: meta.turnstile || ''
+      });
+      set(d.member, 'signup');
+      return { session: true };
+    },
+    async signIn(email, password) { const d = await call('login', 'POST', { email, password }); set(d.member); return d.member; },
+    async resend() { /* 메일 인증을 쓰지 않음 */ },
+    async recover(email, extra = {}) { await call('reset-request', 'POST', { email, hp: extra.hp || '', t: PAGE_LOADED_AT, turnstile: extra.turnstile || '' }); },
+    async updatePassword(password, current) { await call('password', 'POST', { password, current }); },
+    async signOut() { try { await call('logout', 'POST'); } catch (_) { /* ignore */ } set(null); },
+    oauthUrl() { return '/login'; },
+    async getProfile() { return toProfile(member); },
+    async updateProfile(patch) {
+      const d = await call('me', 'PATCH', { name: patch.name, type: patch.member_type || '', phone: patch.phone || '', marketing: Boolean(patch.marketing) });
+      set(d.member);
+      return toProfile(member);
+    },
+    async isAdmin() { return false; },
+    async deleteAccount(password) { await call('me', 'DELETE', { password }); set(null); },
+    async myInquiries() { return (await call('inquiries')).inquiries || []; }
+  };
+})();
+
+const Auth = IS_REMOTE ? SbAuth : CfAuth;
+
+/* =========================================================
+   방문 통계 — 관리자 페이지 KPI용 (우리 서버 /api/t 에만 보냄)
+   - 보내는 것: 본 페이지 주소·제목, 들어온 사이트의 도메인, 머문 시간, 스크롤 깊이, 누른 링크·버튼 이름
+   - 브라우저 저장소에 임의 번호 두 개(방문자 · 방문 회차)를 둔다. 이름·연락처·IP는 보내지 않는다
+   - 관리자 페이지와, 관리자가 '통계에서 빼기'를 켠 브라우저는 세지 않는다
+   ========================================================= */
+const Track = (function trackModule() {
+  const noop = { event() {} };
+  try {
+    if (/^\/admin/.test(location.pathname) || !/^https?:$/.test(location.protocol) || navigator.webdriver) return noop;
+  } catch (_) { return noop; }
+  let ls = null;
+  try { ls = window.localStorage; } catch (_) { ls = null; }
+  const get = (k) => { try { return ls ? JSON.parse(ls.getItem(k) || 'null') : null; } catch (_) { return null; } };
+  const put = (k, v) => { try { if (ls) ls.setItem(k, JSON.stringify(v)); } catch (_) { /* 저장 불가 */ } };
+  if (get('csj_no_stats')) return noop;
+
+  const rid = () => {
+    try {
+      const a = new Uint8Array(10);
+      window.crypto.getRandomValues(a);
+      return Array.from(a, (b) => b.toString(36).padStart(2, '0')).join('').slice(0, 16);
+    } catch (_) { return (Math.random().toString(36).slice(2) + Date.now().toString(36)).slice(0, 16).padEnd(12, '0'); }
+  };
+  const GAP = 30 * 60 * 1000;
+  let refOrigin = '';
+  let external = false;
+  try {
+    if (document.referrer) {
+      const r = new URL(document.referrer);
+      refOrigin = r.origin;
+      external = r.host !== location.host;
+    }
+  } catch (_) { refOrigin = ''; }
+  let utm = '';
+  try {
+    const q = new URLSearchParams(location.search);
+    if (q.get('utm_source')) utm = [q.get('utm_source'), q.get('utm_medium') || '', q.get('utm_campaign') || ''].join('|').slice(0, 120);
+  } catch (_) { utm = ''; }
+
+  let visitor = get('csj_v');
+  let isNewVisitor = !visitor || !visitor.id;
+  if (isNewVisitor) { visitor = { id: rid(), since: Date.now() }; put('csj_v', visitor); }
+  let sess = null;
+  let isNewSession = false;
+  function touchSession(forceNew) {
+    sess = get('csj_s');
+    const now = Date.now();
+    if (forceNew || !sess || !sess.id || now - (sess.last || 0) > GAP) { sess = { id: rid(), last: now }; isNewSession = true; }
+    else sess.last = now;
+    put('csj_s', sess);
+  }
+  touchSession(external || Boolean(utm));
+
+  function send(data) {
+    const body = JSON.stringify(data);
+    try { if (navigator.sendBeacon && navigator.sendBeacon('/api/t', body)) return; } catch (_) { /* 아래로 */ }
+    try { fetch('/api/t', { method: 'POST', body, keepalive: true, credentials: 'same-origin', headers: { 'Content-Type': 'text/plain' } }).catch(() => {}); } catch (_) { /* ignore */ }
+  }
+
+  /* 머문 시간: 화면이 보이고, 2분 안에 움직임이 있었던 시간만 */
+  let pid = '';
+  let active = 0;
+  let segStart = 0;
+  let lastInput = performance.now();
+  let maxScroll = 0;
+  let sent = '';
+  const visible = () => document.visibilityState === 'visible';
+  const pause = () => { if (segStart) { active += performance.now() - segStart; segStart = 0; } };
+  const resume = () => { if (!segStart && visible()) segStart = performance.now(); };
+  function scrollPct() {
+    const doc = document.documentElement;
+    const h = Math.max(doc.scrollHeight, document.body ? document.body.scrollHeight : 0);
+    if (!h || h <= window.innerHeight) return 100;
+    return Math.min(100, Math.round(((window.scrollY || doc.scrollTop) + window.innerHeight) / h * 100));
+  }
+  function flush() {
+    if (!pid) return;
+    const d = Math.round(active + (segStart ? performance.now() - segStart : 0));
+    const key = Math.round(d / 1000) + ':' + maxScroll;
+    if (key === sent) return;
+    sent = key;
+    send({ e: 'end', id: pid, d, sc: maxScroll });
+    if (sess) { sess.last = Date.now(); put('csj_s', sess); }
+  }
+  function start() {
+    pid = rid(); active = 0; segStart = 0; sent = ''; lastInput = performance.now();
+    maxScroll = scrollPct();
+    resume();
+    send({
+      e: 'pv', id: pid, v: visitor.id, s: sess.id, nv: isNewVisitor, ns: isNewSession,
+      p: location.pathname, t: document.title, r: refOrigin, u: utm
+    });
+    isNewVisitor = false; isNewSession = false;
+  }
+  const onInput = () => { lastInput = performance.now(); resume(); };
+  ['pointerdown', 'keydown', 'touchstart', 'wheel'].forEach((ev) => window.addEventListener(ev, onInput, { passive: true }));
+  let moveT = 0;
+  window.addEventListener('mousemove', () => { const n = performance.now(); if (n - moveT > 2000) { moveT = n; onInput(); } }, { passive: true });
+  let raf = 0;
+  window.addEventListener('scroll', () => {
+    if (raf) return;
+    raf = requestAnimationFrame(() => { raf = 0; onInput(); const p = scrollPct(); if (p > maxScroll) maxScroll = p; });
+  }, { passive: true });
+  setInterval(() => { if (segStart && performance.now() - lastInput > 120000) pause(); }, 15000);
+  document.addEventListener('visibilitychange', () => { if (visible()) resume(); else { pause(); flush(); } });
+  window.addEventListener('pagehide', () => { pause(); flush(); });
+  window.addEventListener('pageshow', (e) => { if (e.persisted) { touchSession(false); start(); } });
+
+  /* 클릭: 링크·버튼의 종류와 이름 */
+  const FAMILY = /(^|\.)(socialfactory\.co\.kr|ssople\.com|playtion\.kr|megaspot\.kr|hellomingle\.kr|vacancy\.co\.kr|orbis-estate\.com|coremood\.kr|tgrzspace\.pages\.dev)$/i;
+  const SNS = /(^|\.)(instagram\.com|threads\.(net|com)|youtube\.com|youtu\.be|facebook\.com|linkedin\.com|blog\.naver\.com|brunch\.co\.kr|x\.com|twitter\.com)$/i;
+  const labelOf = (el) => (el.getAttribute('data-track') || el.getAttribute('aria-label') || el.textContent || el.getAttribute('title') || '')
+    .replace(/\s+/g, ' ').trim().slice(0, 60);
+  function classify(el) {
+    if (el.tagName === 'A') {
+      const raw = el.getAttribute('href') || '';
+      if (!raw || raw === '#') return null;
+      let u;
+      try { u = new URL(el.href, location.href); } catch (_) { return null; }
+      if (u.protocol === 'tel:') return ['tel', raw.replace(/^tel:/, '')];
+      if (u.protocol === 'mailto:') return ['mail', raw.replace(/^mailto:/, '').split('?')[0]];
+      if (u.protocol === 'sms:') return ['tel', raw.replace(/^sms:/, '')];
+      if (!/^https?:$/.test(u.protocol)) return null;
+      const target = u.host === location.host ? (u.pathname.replace(/\.html$/, '').replace(/\/index$/, '/') + (u.hash || '')) : (u.host + u.pathname).replace(/\/$/, '');
+      if (u.host !== location.host) {
+        if (/(^|\.)kakao\.com$/i.test(u.hostname)) return ['kakao', target];
+        if (FAMILY.test(u.hostname)) return ['family', target];
+        if (SNS.test(u.hostname)) return ['sns', target];
+        return ['out', target];
+      }
+      if (/\.(pdf|zip|pptx?|docx?|hwp|xlsx?)$/i.test(u.pathname)) return ['file', target];
+      if (el.closest('[data-cta], .btn, .hero-cta, .float-cta, #floatCta')) return ['cta', target];
+      if (el.closest('header, nav, footer, .mobile-menu, .crumbs, .breadcrumb')) return ['nav', target];
+      return ['link', target];
+    }
+    if (el.closest('.acc-grid, .auth-card')) return null;   // 로그인·마이페이지 안의 버튼은 세지 않음
+    if (el.matches('[data-track], .btn:not([type="submit"])')) return ['cta', ''];
+    return null;
+  }
+  document.addEventListener('click', (e) => {
+    try {
+      const el = e.target && e.target.closest ? e.target.closest('a, button') : null;
+      if (!el || !pid) return;
+      const c = classify(el);
+      if (!c) return;
+      send({ e: 'ck', id: pid, v: visitor.id, s: sess.id, p: location.pathname, k: c[0], l: labelOf(el), h: c[1] });
+    } catch (_) { /* 통계는 조용히 */ }
+  }, { capture: true, passive: true });
+
+  if (document.prerendering) document.addEventListener('prerenderingchange', start, { once: true });
+  else start();
+
+  return {
+    /** 전환(문의 접수·회원가입 등)이나 특별한 클릭을 따로 기록 */
+    event(kind, label, target) {
+      if (!pid) return;
+      send({ e: 'ck', id: pid, v: visitor.id, s: sess.id, p: location.pathname, k: kind, l: String(label || '').slice(0, 80), h: String(target || '').slice(0, 200) });
+    }
+  };
+})();
+
 /* 헤더의 로그인 / 마이페이지 버튼 */
 (function navAccountModule() {
   const links = $$('[data-account-link]');
-  if (!links.length || !Auth.enabled) return;   // 회원 기능을 켜기 전에는 기본 주소(/login) 그대로
+  if (!links.length) return;   // 회원 기능을 켜기 전에는 기본 주소(/login) 그대로
   function paint() {
+    if (!Auth.enabled) return;
     const on = Boolean(Auth.user);
     links.forEach((a) => {
       const label = on ? '마이페이지' : '로그인';
@@ -391,7 +627,7 @@ const Auth = (function authCore() {
 /* 읽지 않은 알림 수 — 헤더 아이콘에 점으로 표시 (3분 동안은 저장해 둔 값을 씀) */
 async function refreshUnread(force) {
   const links = $$('[data-account-link]');
-  if (!links.length || !Auth.enabled) return;
+  if (!links.length || !Auth.enabled || !IS_REMOTE) return;   // 알림함은 Supabase 회원 기능에서만
   const show = (n) => links.forEach((a) => {
     let dot = $('.na-badge', a);
     if (!n) { if (dot) dot.remove(); return; }
@@ -815,6 +1051,7 @@ const INQUIRY_MAP = {
 
     if (btn) { btn.disabled = false; btn.textContent = original; }
     if (saved || mailed) {
+      Track.event('conv', '문의 접수 · ' + type);
       form.reset();
       if (Auth.user) paintMember();
       const extra = (saved && Auth.user) ? ' 진행 상황은 <a href="/account#my-inquiries">마이페이지</a>에서 볼 수 있습니다.' : '';
@@ -1078,6 +1315,7 @@ async function fetchRemotePosts() {
       formEl.hidden = true;
       if (writeBtn) writeBtn.setAttribute('aria-expanded', 'false');
       notice('글이 접수되었습니다. 운영자가 확인한 뒤 게시됩니다. 감사합니다.');
+      Track.event('conv', '커뮤니티 글 등록');
       return;
     }
 
@@ -1121,6 +1359,7 @@ async function fetchRemotePosts() {
         addHoneypot(formEl);
         setMode('LIVE — 누구나 읽고 쓸 수 있습니다. 새 글과 답글은 운영자가 확인한 뒤 게시됩니다.');
         render();
+        Auth.ready.then(() => { const a = $('#bfAuthor'); if (a && Auth.user && !a.value) a.value = Auth.displayName(); });
         if (formEl) mountTurnstile(formEl).then((c) => { captcha = c; });
         return;
       } catch (_) { cf = false; }
@@ -1803,20 +2042,37 @@ function setBusy(form, busy, label) {
   if (['signup', 'reset', 'login'].includes(startPane)) show(startPane);
 
   /* 회원 기능이 아직 연결되지 않은 경우 */
-  if (!Auth.enabled) {
-    say('회원 기능을 준비하고 있습니다. 문의는 <a href="/contact">문의하기</a>에서 바로 남기실 수 있습니다.', 'info');
-    $$('.auth-form button[type="submit"]').forEach((b) => { b.disabled = true; });
-    return;
-  }
-
+  const submits = $$('.auth-form button[type="submit"]');
+  submits.forEach((b) => { b.disabled = true; });
+  const CF = Boolean(Auth.cf);
+  let captchas = {};
   Auth.ready.then(() => {
+    if (!Auth.enabled) {
+      say('회원 기능을 준비하고 있습니다. 문의는 <a href="/contact">문의하기</a>에서 바로 남기실 수 있습니다.', 'info');
+      return;
+    }
+    submits.forEach((b) => { b.disabled = false; });
     if (Auth.hashError) say(escapeHtml(Auth.hashError), 'err');
     else if (Auth.user) say(`이미 <strong>${escapeHtml(Auth.displayName())}</strong>님으로 로그인되어 있습니다. <a href="/account">마이페이지로 가기</a>`, 'ok');
+    if (CF) {
+      /* 메일 인증 대신: 비밀번호 찾기는 운영자에게 요청 → 임시 비밀번호 안내 */
+      const help = $('#pane-reset .auth-help');
+      if (help) help.textContent = '가입한 이메일을 남겨 주시면 운영자가 확인한 뒤 임시 비밀번호를 그 이메일로 보내드립니다. 로그인한 다음 마이페이지에서 새 비밀번호로 바꿔 주세요.';
+      const rb = $('#resetForm button[type="submit"]');
+      if (rb) rb.textContent = '임시 비밀번호 요청';
+      ['#signupForm', '#resetForm'].forEach((sel) => {
+        const f = $(sel);
+        if (!f) return;
+        addHoneypot(f);
+        mountTurnstile(f).then((c) => { captchas[sel] = c; });
+      });
+    }
   });
+  const cap = (sel) => captchas[sel] || { token: () => '', reset: () => {} };
 
-  /* 간편 로그인 버튼 (site-config.js 의 socialLogin) */
+  /* 간편 로그인 버튼 (site-config.js 의 socialLogin) — Supabase 회원 기능에서만 */
   const SOCIAL_LABEL = { kakao: '카카오로 시작하기', google: 'Google로 시작하기', naver: '네이버로 시작하기' };
-  const supported = SOCIAL_LOGIN.filter((p) => SOCIAL_LABEL[p] && p !== 'naver');
+  const supported = CF ? [] : SOCIAL_LOGIN.filter((p) => SOCIAL_LABEL[p] && p !== 'naver');
   if (supported.length) {
     $('#socialBox').hidden = false;
     $('#socialBtns').innerHTML = supported.map((p) =>
@@ -1878,15 +2134,17 @@ function setBusy(form, busy, label) {
     try {
       const r = await Auth.signUp(email, pass, {
         name, member_type: type, phone, marketing: $('#agMarketing').checked,
-        agreed_terms: true, agreed_privacy: true, agreed_at: new Date().toISOString()
+        agreed_terms: true, agreed_privacy: true, agreed_at: new Date().toISOString(),
+        hp: honeypotValue(signupForm), turnstile: cap('#signupForm').token()
       });
-      if (r.session) { location.href = '/account?welcome=1'; return; }
+      if (r.session) { Track.event('conv', '회원가입'); location.href = '/account?welcome=1'; return; }
       signupForm.reset();
       say(r.existing
         ? '이미 가입된 이메일일 수 있습니다. 로그인하거나 비밀번호 찾기를 이용해 주세요.'
         : `<strong>${escapeHtml(email)}</strong>로 인증 메일을 보냈습니다. 메일의 <strong>가입 확인</strong> 링크를 누르면 가입이 끝납니다. 메일이 보이지 않으면 스팸함도 확인해 주세요.`,
         r.existing ? 'err' : 'ok');
     } catch (err) {
+      cap('#signupForm').reset();
       say(escapeHtml(authMessage(err)), 'err');
     } finally { setBusy(signupForm, false); }
   });
@@ -1899,10 +2157,14 @@ function setBusy(form, busy, label) {
     if (!EMAIL_RULE.test(email)) { say('이메일 주소를 다시 확인해 주세요.', 'err'); return; }
     setBusy(resetForm, true, '보내는 중…');
     try {
-      await Auth.recover(email);
-      say('가입된 이메일이라면 비밀번호 재설정 링크가 도착합니다. 메일의 링크를 누르면 새 비밀번호를 정할 수 있습니다.', 'ok');
+      await Auth.recover(email, { hp: honeypotValue(resetForm), turnstile: cap('#resetForm').token() });
+      say(CF
+        ? '요청을 받았습니다. 가입된 이메일이면 운영자가 확인한 뒤 임시 비밀번호를 보내드립니다. (보통 영업일 1일 안)'
+        : '가입된 이메일이라면 비밀번호 재설정 링크가 도착합니다. 메일의 링크를 누르면 새 비밀번호를 정할 수 있습니다.', 'ok');
       resetForm.reset();
+      cap('#resetForm').reset();
     } catch (err) {
+      cap('#resetForm').reset();
       say(escapeHtml(authMessage(err)), 'err');
     } finally { setBusy(resetForm, false); }
   });
@@ -1928,17 +2190,15 @@ const INQUIRY_STATUS = ['접수', '진행중', '완료'];
   }
   const statusBadge = (st) => `<span class="st-badge st-${INQUIRY_STATUS.indexOf(st)}">${escapeHtml(st || '접수')}</span>`;
 
-  if (!Auth.enabled) {
-    guest.hidden = false;
-    guest.querySelector('p').textContent = '회원 기능을 준비하고 있습니다. 문의는 문의하기에서 바로 남기실 수 있습니다.';
-    return;
-  }
+  const CF = Boolean(Auth.cf);
 
   async function loadInquiries() {
     const box = $('#myInquiries');
     try {
-      const rows = await sbSelect(COMMUNITY_BACKEND.inquiriesTable,
-        `user_id=eq.${Auth.user.id}&select=id,created_at,inquiry_type,message,status,reply&order=created_at.desc&limit=50`, await Auth.token());
+      const rows = CF
+        ? (await Auth.myInquiries()).map((r) => ({ ...r, inquiry_type: r.type }))
+        : await sbSelect(COMMUNITY_BACKEND.inquiriesTable,
+          `user_id=eq.${Auth.user.id}&select=id,created_at,inquiry_type,message,status,reply&order=created_at.desc&limit=50`, await Auth.token());
       box.innerHTML = rows.length ? rows.map((r) => `
         <li class="acc-item">
           <div class="acc-item-head">${statusBadge(r.status)}<span class="mono">${escapeHtml(r.inquiry_type || '문의')}</span><span class="acc-date mono">${formatDate(r.created_at)}</span></div>
@@ -1997,6 +2257,11 @@ const INQUIRY_STATUS = ['접수', '진행중', '완료'];
 
   async function paint() {
     await Auth.ready;
+    if (!Auth.enabled) {
+      guest.hidden = false;
+      guest.querySelector('p').textContent = '회원 기능을 준비하고 있습니다. 문의는 문의하기에서 바로 남기실 수 있습니다.';
+      return;
+    }
     if (Auth.hashError) say(escapeHtml(Auth.hashError), 'err');
     if (!Auth.user) {
       main.hidden = true;
@@ -2024,6 +2289,14 @@ const INQUIRY_STATUS = ['접수', '진행중', '완료'];
     }
     if (params.get('welcome') || params.get('reset')) history.replaceState(null, '', location.pathname + location.hash);
 
+    if (CF) {
+      /* Cloudflare 회원 기능: 알림함·내 글 대신 문의 진행 상황 중심 */
+      ['#my-notices', '#my-posts'].forEach((sel) => { const el = $(sel); if (el) el.hidden = true; });
+      const cur = $('#cpCurrentWrap');
+      if (cur) { cur.hidden = false; $('#cpCurrent').required = true; }
+      loadInquiries();
+      return;
+    }
     loadNotices();
     loadInquiries();
     loadPosts();
@@ -2052,8 +2325,10 @@ const INQUIRY_STATUS = ['접수', '진행중', '완료'];
     const p1 = $(a).value; const p2 = $(b).value;
     if (!PASSWORD_RULE.test(p1)) { say('비밀번호는 영문과 숫자를 섞어 8자 이상으로 정해 주세요.', 'err'); return false; }
     if (p1 !== p2) { say('비밀번호 확인이 일치하지 않습니다.', 'err'); return false; }
+    const current = $('#cpCurrent') ? $('#cpCurrent').value : '';
+    if (CF && form.id === 'passForm' && !current) { say('지금 쓰는 비밀번호를 입력해 주세요.', 'err'); return false; }
     setBusy(form, true, '저장 중…');
-    try { await Auth.updatePassword(p1); form.reset(); say('새 비밀번호를 저장했습니다. 다음 로그인부터 새 비밀번호를 사용해 주세요.', 'ok'); return true; }
+    try { await Auth.updatePassword(p1, current); form.reset(); say('새 비밀번호를 저장했습니다. 다음 로그인부터 새 비밀번호를 사용해 주세요.', 'ok'); return true; }
     catch (err) { say(escapeHtml(authMessage(err)), 'err'); return false; }
     finally { setBusy(form, false); }
   }
@@ -2072,11 +2347,16 @@ const INQUIRY_STATUS = ['접수', '진행중', '완료'];
     const typed = prompt('탈퇴하면 되돌릴 수 없습니다. 계속하려면 "탈퇴"라고 입력해 주세요.');
     if (typed === null) return;
     if (typed.trim() !== '탈퇴') { alert('"탈퇴"를 정확히 입력해 주세요.'); return; }
+    let pw = '';
+    if (CF) {
+      pw = prompt('본인 확인을 위해 비밀번호를 입력해 주세요.');
+      if (pw === null) return;
+    }
     try {
-      await Auth.deleteAccount();
+      await Auth.deleteAccount(pw);
       alert('탈퇴 처리되었습니다. 그동안 함께해 주셔서 감사합니다.');
       location.href = '/';
-    } catch (_) { say('탈퇴를 처리하지 못했습니다. 문의하기로 요청해 주시면 바로 처리해 드리겠습니다.', 'err'); }
+    } catch (err) { say(err && err.friendly ? escapeHtml(err.friendly) : '탈퇴를 처리하지 못했습니다. 문의하기로 요청해 주시면 바로 처리해 드리겠습니다.', 'err'); }
   });
 
   paint();

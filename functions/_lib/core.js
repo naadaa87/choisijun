@@ -62,7 +62,73 @@ const SCHEMA = [
      visible INTEGER NOT NULL DEFAULT 1
    )`,
   `CREATE TABLE IF NOT EXISTS hits (k TEXT NOT NULL, t INTEGER NOT NULL)`,
-  `CREATE INDEX IF NOT EXISTS idx_hits ON hits(k, t)`
+  `CREATE INDEX IF NOT EXISTS idx_hits ON hits(k, t)`,
+  /* 방문 통계 — 페이지 조회 1건 = 1줄. IP·쿠키는 저장하지 않는다 */
+  `CREATE TABLE IF NOT EXISTS pv (
+     id INTEGER PRIMARY KEY AUTOINCREMENT,
+     pid TEXT NOT NULL,
+     ts INTEGER NOT NULL,
+     day TEXT NOT NULL,
+     hour INTEGER NOT NULL DEFAULT 0,
+     path TEXT NOT NULL DEFAULT '/',
+     title TEXT NOT NULL DEFAULT '',
+     ref TEXT NOT NULL DEFAULT '',
+     src TEXT NOT NULL DEFAULT '',
+     srcd TEXT NOT NULL DEFAULT '',
+     utm TEXT NOT NULL DEFAULT '',
+     dev TEXT NOT NULL DEFAULT '',
+     br TEXT NOT NULL DEFAULT '',
+     os TEXT NOT NULL DEFAULT '',
+     country TEXT NOT NULL DEFAULT '',
+     region TEXT NOT NULL DEFAULT '',
+     vid TEXT NOT NULL DEFAULT '',
+     sid TEXT NOT NULL DEFAULT '',
+     new_v INTEGER NOT NULL DEFAULT 0,
+     new_s INTEGER NOT NULL DEFAULT 0,
+     member INTEGER NOT NULL DEFAULT 0,
+     dur INTEGER NOT NULL DEFAULT 0,
+     scroll INTEGER NOT NULL DEFAULT 0
+   )`,
+  `CREATE INDEX IF NOT EXISTS idx_pv_day ON pv(day)`,
+  `CREATE INDEX IF NOT EXISTS idx_pv_pid ON pv(pid)`,
+  `CREATE INDEX IF NOT EXISTS idx_pv_ts ON pv(ts)`,
+  /* 클릭·전환 이벤트 */
+  `CREATE TABLE IF NOT EXISTS ev (
+     id INTEGER PRIMARY KEY AUTOINCREMENT,
+     ts INTEGER NOT NULL,
+     day TEXT NOT NULL,
+     path TEXT NOT NULL DEFAULT '/',
+     kind TEXT NOT NULL DEFAULT '',
+     label TEXT NOT NULL DEFAULT '',
+     target TEXT NOT NULL DEFAULT '',
+     vid TEXT NOT NULL DEFAULT '',
+     sid TEXT NOT NULL DEFAULT ''
+   )`,
+  `CREATE INDEX IF NOT EXISTS idx_ev_day ON ev(day)`,
+  /* 회원 — 비밀번호는 PBKDF2 해시로만 저장 */
+  `CREATE TABLE IF NOT EXISTS members (
+     id INTEGER PRIMARY KEY AUTOINCREMENT,
+     created_at TEXT NOT NULL,
+     email TEXT NOT NULL UNIQUE,
+     name TEXT NOT NULL DEFAULT '',
+     type TEXT NOT NULL DEFAULT '',
+     phone TEXT NOT NULL DEFAULT '',
+     marketing INTEGER NOT NULL DEFAULT 0,
+     pw_hash TEXT NOT NULL,
+     pw_salt TEXT NOT NULL,
+     pw_iter INTEGER NOT NULL DEFAULT 100000,
+     last_login TEXT,
+     login_count INTEGER NOT NULL DEFAULT 0,
+     status TEXT NOT NULL DEFAULT 'active',
+     memo TEXT NOT NULL DEFAULT '',
+     updated_at TEXT
+   )`,
+  `CREATE INDEX IF NOT EXISTS idx_members_created ON members(created_at)`
+];
+
+/** 예전에 만든 표에 새 칸 더하기 (이미 있으면 건너뜀) */
+const MIGRATIONS = [
+  ['inquiries', 'member_id', 'ALTER TABLE inquiries ADD COLUMN member_id INTEGER']
 ];
 
 const SEED_POSTS = [
@@ -80,6 +146,12 @@ export async function db(env) {
   if (!schemaReady) {
     schemaReady = (async () => {
       await env.DB.batch(SCHEMA.map((s) => env.DB.prepare(s)));
+      for (const [table, col, sql] of MIGRATIONS) {
+        try {
+          const cols = (await env.DB.prepare(`PRAGMA table_info(${table})`).all()).results || [];
+          if (!cols.some((c) => c.name === col)) await env.DB.prepare(sql).run();
+        } catch (_) { /* 다음 요청에서 다시 시도 */ }
+      }
       const row = await env.DB.prepare('SELECT COUNT(*) AS n FROM posts').first();
       if (row && row.n === 0) {
         await env.DB.batch(SEED_POSTS.map((p) => env.DB.prepare(
@@ -209,6 +281,83 @@ export async function isAdmin(request, env) {
   if (!exp || exp < Date.now()) return false;
   const expect = await hmac(await sessionSecret(env), `admin.${exp}`);
   return safeEqual(expect, m[2]);
+}
+
+/* ---------------- 회원 세션 ----------------
+   csj_member = 회원번호.만료시각.서명 (HttpOnly) — 비밀번호를 바꾸면 기존 로그인은 모두 풀린다
+   csj_mi = 1 (화면용 표시, 비밀 값 아님) — 로그인한 브라우저인지 스크립트가 알 수 있게 */
+const M_COOKIE = 'csj_member';
+const M_HINT = 'csj_mi';
+const MEMBER_DAYS = 30;
+const PBKDF2_ITER = 100000;      // Cloudflare Workers 최대값
+
+export const membersEnabled = (env) => Boolean(env && env.DB && (env.ADMIN_PASSWORD || env.SESSION_SECRET));
+
+async function memberSecret(env) {
+  return sha256(`member|${env.SESSION_SECRET || ''}|${env.ADMIN_PASSWORD || ''}`);
+}
+
+const b64 = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf)));
+
+export function randomToken(bytes = 16) {
+  const a = new Uint8Array(bytes);
+  crypto.getRandomValues(a);
+  return [...a].map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+export async function hashPassword(password, salt = randomToken(16), iter = PBKDF2_ITER) {
+  const key = await crypto.subtle.importKey('raw', enc.encode(String(password)), 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt: enc.encode(salt), iterations: iter }, key, 256);
+  return { hash: b64(bits), salt, iter };
+}
+
+export async function checkPassword(password, row) {
+  if (!row || !row.pw_hash) return false;
+  const { hash } = await hashPassword(password, row.pw_salt, Number(row.pw_iter) || PBKDF2_ITER);
+  return safeEqual(hash, row.pw_hash);
+}
+
+export async function memberCookies(env, row) {
+  const exp = Date.now() + MEMBER_DAYS * 86400 * 1000;
+  const sig = await hmac(await memberSecret(env), `m.${row.id}.${exp}.${String(row.pw_hash).slice(0, 16)}`);
+  const age = MEMBER_DAYS * 86400;
+  return [
+    `${M_COOKIE}=${row.id}.${exp}.${sig}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${age}`,
+    `${M_HINT}=1; Path=/; Secure; SameSite=Lax; Max-Age=${age}`
+  ];
+}
+export const clearMemberCookies = () => [
+  `${M_COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`,
+  `${M_HINT}=; Path=/; Secure; SameSite=Lax; Max-Age=0`
+];
+
+/** 로그인한 회원 (없으면 null) */
+export async function currentMember(request, env, DB) {
+  if (!membersEnabled(env)) return null;
+  const cookie = request.headers.get('Cookie') || '';
+  const m = cookie.match(new RegExp(`(?:^|;\\s*)${M_COOKIE}=([0-9]+)\\.([0-9]+)\\.([0-9a-f]{64})`));
+  if (!m) return null;
+  const id = Number(m[1]);
+  const exp = Number(m[2]);
+  if (!id || !exp || exp < Date.now()) return null;
+  const row = await DB.prepare("SELECT * FROM members WHERE id = ? AND status = 'active'").bind(id).first();
+  if (!row) return null;
+  const expect = await hmac(await memberSecret(env), `m.${row.id}.${exp}.${String(row.pw_hash).slice(0, 16)}`);
+  return safeEqual(expect, m[3]) ? row : null;
+}
+
+export const hasMemberCookie = (request) => /(?:^|;\s*)csj_member=\d/.test(request.headers.get('Cookie') || '');
+
+/** 회원 정보 중 화면에 보내도 되는 것만 */
+export const publicMember = (r) => r && ({
+  id: r.id, email: r.email, name: r.name, type: r.type, phone: r.phone,
+  marketing: Boolean(r.marketing), created_at: r.created_at
+});
+
+/** 한국 시간 기준 날짜(YYYY-MM-DD)와 시(0~23) */
+export function kst(ms = Date.now()) {
+  const d = new Date(ms + 9 * 3600 * 1000);
+  return { day: d.toISOString().slice(0, 10), hour: d.getUTCHours() };
 }
 
 /** 다른 사이트에서 보낸 요청 막기 (상태를 바꾸는 요청) */

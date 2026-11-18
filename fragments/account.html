@@ -60,6 +60,7 @@
           <article class="acc-card" id="my-password">
             <h2>비밀번호 변경</h2>
             <form class="auth-form" id="passForm" novalidate>
+              <label id="cpCurrentWrap" hidden>지금 쓰는 비밀번호<input type="password" id="cpCurrent" autocomplete="current-password" /></label>
               <label>새 비밀번호<input type="password" id="cpPass" autocomplete="new-password" minlength="8" required placeholder="영문·숫자 포함 8자 이상" /></label>
               <label>새 비밀번호 확인<input type="password" id="cpPass2" autocomplete="new-password" minlength="8" required placeholder="한 번 더 입력" /></label>
               <button class="btn btn-line" type="submit">비밀번호 변경</button>

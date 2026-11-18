@@ -30,7 +30,7 @@
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" media="print" onload="this.media='all'" />
   <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" /></noscript>
-  <link rel="stylesheet" href="/styles.css?v=8aa03b700f" />
+  <link rel="stylesheet" href="/styles.css?v=a7bd0073d5" />
 </head>
 <body data-page="account">
   <a class="skip-link" href="#main">본문 바로가기</a>
@@ -125,6 +125,7 @@
           <article class="acc-card" id="my-password">
             <h2>비밀번호 변경</h2>
             <form class="auth-form" id="passForm" novalidate>
+              <label id="cpCurrentWrap" hidden>지금 쓰는 비밀번호<input type="password" id="cpCurrent" autocomplete="current-password" /></label>
               <label>새 비밀번호<input type="password" id="cpPass" autocomplete="new-password" minlength="8" required placeholder="영문·숫자 포함 8자 이상" /></label>
               <label>새 비밀번호 확인<input type="password" id="cpPass2" autocomplete="new-password" minlength="8" required placeholder="한 번 더 입력" /></label>
               <button class="btn btn-line" type="submit">비밀번호 변경</button>
@@ -231,7 +232,7 @@
   <a class="float-cta" id="floatCta" href="/contact">공실개발 상담하기</a>
   <button class="to-top" id="toTop" aria-label="맨 위로">↑</button>
 
-  <script src="/site-config.js?v=8aa03b700f" defer></script>
-  <script src="/script.js?v=8aa03b700f" defer></script>
+  <script src="/site-config.js?v=a7bd0073d5" defer></script>
+  <script src="/script.js?v=a7bd0073d5" defer></script>
 </body>
 </html>

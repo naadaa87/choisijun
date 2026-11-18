@@ -1,12 +1,13 @@
 /* =========================================================
    /api/admin/* — 관리자 기능 (로그인한 관리자만)
-   로그인 · 대시보드 · 문의 · 커뮤니티 · 레퍼런스 · 매일 글
+   로그인 · 대시보드 · KPI · 문의 · 회원 · 커뮤니티 · 레퍼런스 · 매일 글
    ========================================================= */
 import {
   db, json, fail, notReady, readJson, clean, nowIso, sha256, safeEqual, rateLimit, visitorHash,
-  makeSession, clearSession, isAdmin, sameOrigin,
+  makeSession, clearSession, isAdmin, sameOrigin, hashPassword, kst, membersEnabled,
   INQUIRY_STATUS, POST_CATEGORIES, REF_CATEGORIES
 } from '../../_lib/core.js';
+import { kpi } from '../../_lib/kpi.js';
 
 const REPO_DEFAULT = 'naadaa87/choisijun';
 const BACKLOG_PATH = 'content/plan/backlog.md';
@@ -20,7 +21,8 @@ function setupFlags(env) {
     password: Boolean(env.ADMIN_PASSWORD),
     mail: Boolean(env.RESEND_API_KEY && env.NOTIFY_EMAIL),
     turnstile: Boolean(env.TURNSTILE_SECRET),
-    github: Boolean(env.GITHUB_TOKEN)
+    github: Boolean(env.GITHUB_TOKEN),
+    members: membersEnabled(env)
   };
 }
 
@@ -51,6 +53,26 @@ export async function onRequest(context) {
     }
     if (!DB) return notReady();
     if (route === 'overview' && method === 'GET') return overview(DB, env);
+    if (route === 'kpi' && method === 'GET') return kpi(DB, request);
+
+    if (parts[0] === 'members') {
+      if (method === 'GET' && parts.length === 1) return membersList(DB, request);
+      const id = Number(parts[1]);
+      if (!id) return fail('잘못된 번호입니다.');
+      if (method === 'POST' && parts[2] === 'reset') return memberReset(DB, id);
+      if (method === 'PATCH') {
+        const body = await readJson(request, 10_000);
+        await DB.prepare('UPDATE members SET memo = ?, updated_at = ? WHERE id = ?').bind(clean(body.memo, 2000), nowIso(), id).run();
+        return json({ ok: true });
+      }
+      if (method === 'DELETE') {
+        await DB.batch([
+          DB.prepare('UPDATE inquiries SET member_id = NULL WHERE member_id = ?').bind(id),
+          DB.prepare('DELETE FROM members WHERE id = ?').bind(id)
+        ]);
+        return json({ ok: true });
+      }
+    }
 
     if (parts[0] === 'inquiries') {
       if (method === 'GET' && parts.length === 1) return inquiriesList(DB, request);
@@ -139,15 +161,25 @@ async function overview(DB, env) {
     q("SELECT COUNT(*) AS n FROM comments WHERE status = 'pending'"),
     q('SELECT COUNT(*) AS n FROM refs')
   ]);
-  const recent = (await DB.prepare('SELECT id, created_at, type, name, status FROM inquiries ORDER BY created_at DESC LIMIT 6').all()).results || [];
+  const recent = (await DB.prepare('SELECT id, created_at, type, name, status, member_id FROM inquiries ORDER BY created_at DESC LIMIT 6').all()).results || [];
   const stale = (await DB.prepare("SELECT COUNT(*) AS n FROM inquiries WHERE status = '접수' AND created_at < ?")
     .bind(new Date(Date.now() - 2 * 86400 * 1000).toISOString()).first()) || { n: 0 };
+  const today = kst().day;
+  const [vt, vy, live, mt, mn] = await Promise.all([
+    q('SELECT COUNT(*) AS pv, COUNT(DISTINCT vid) AS v FROM pv WHERE day = ?', today),
+    q('SELECT COUNT(*) AS pv, COUNT(DISTINCT vid) AS v FROM pv WHERE day = ?', kst(Date.now() - 86400 * 1000).day),
+    q('SELECT COUNT(DISTINCT sid) AS n FROM pv WHERE ts > ?', Date.now() - 5 * 60 * 1000),
+    q('SELECT COUNT(*) AS n FROM members'),
+    q('SELECT COUNT(*) AS n FROM members WHERE created_at >= ?', new Date(monthStart).toISOString())
+  ]);
   return json({
     ok: true,
     counts: {
       inq_new: n1.n, inq_progress: n2.n, inq_month: n3.n, inq_total: n4.n,
-      posts_pending: p1.n, comments_pending: c1.n, refs: r1.n, inq_stale: stale.n
+      posts_pending: p1.n, comments_pending: c1.n, refs: r1.n, inq_stale: stale.n,
+      members: mt.n, members_month: mn.n
     },
+    visits: { today_v: vt.v, today_pv: vt.pv, yday_v: vy.v, yday_pv: vy.pv, live: live.n },
     recent,
     setup: setupFlags(env)
   });
@@ -165,7 +197,7 @@ async function inquiriesList(DB, request) {
   if (type) { where.push('type = ?'); args.push(type); }
   const q = (u.get('q') || '').trim();
   if (q) { where.push('(name LIKE ? OR contact LIKE ? OR message LIKE ? OR memo LIKE ?)'); const k = `%${q}%`; args.push(k, k, k, k); }
-  const sql = `SELECT id, created_at, type, name, contact, message, page, status, memo, updated_at FROM inquiries ${where.length ? 'WHERE ' + where.join(' AND ') : ''} ORDER BY created_at DESC LIMIT 500`;
+  const sql = `SELECT id, created_at, type, name, contact, message, page, status, memo, updated_at, member_id FROM inquiries ${where.length ? 'WHERE ' + where.join(' AND ') : ''} ORDER BY created_at DESC LIMIT 500`;
   const rows = (await DB.prepare(sql).bind(...args).all()).results || [];
   return json({ ok: true, inquiries: rows });
 }
@@ -183,6 +215,41 @@ async function inquiryUpdate(DB, request, id) {
   sets.push('updated_at = ?'); args.push(nowIso());
   await DB.prepare(`UPDATE inquiries SET ${sets.join(', ')} WHERE id = ?`).bind(...args, id).run();
   return json({ ok: true });
+}
+
+/* ---------------- 회원 ---------------- */
+async function membersList(DB, request) {
+  const u = new URL(request.url).searchParams;
+  const where = [];
+  const args = [];
+  const type = u.get('type');
+  if (type) { where.push('m.type = ?'); args.push(type); }
+  if (u.get('mk') === '1') where.push('m.marketing = 1');
+  const k = (u.get('q') || '').trim();
+  if (k) { where.push('(m.name LIKE ? OR m.email LIKE ? OR m.phone LIKE ? OR m.memo LIKE ?)'); const w = `%${k}%`; args.push(w, w, w, w); }
+  const rows = (await DB.prepare(
+    `SELECT m.id, m.created_at, m.email, m.name, m.type, m.phone, m.marketing, m.last_login, m.login_count, m.status, m.memo,
+       (SELECT COUNT(*) FROM inquiries i WHERE i.member_id = m.id) AS inquiries
+     FROM members m ${where.length ? 'WHERE ' + where.join(' AND ') : ''} ORDER BY m.created_at DESC LIMIT 3000`
+  ).bind(...args).all()).results || [];
+  const total = await DB.prepare('SELECT COUNT(*) AS n, COALESCE(SUM(marketing), 0) AS mk FROM members').first();
+  return json({ ok: true, members: rows, total: total.n, marketing: total.mk });
+}
+
+/** 임시 비밀번호 발급 — 화면에 한 번만 보여 주고, 저장은 해시로만 */
+async function memberReset(DB, id) {
+  const row = await DB.prepare('SELECT id, email, name FROM members WHERE id = ?').bind(id).first();
+  if (!row) return fail('회원을 찾지 못했습니다.', 404);
+  const chars = 'abcdefghjkmnpqrstuvwxyz23456789';
+  const a = new Uint8Array(10);
+  crypto.getRandomValues(a);
+  let temp = [...a].map((b) => chars[b % chars.length]).join('');
+  if (!/\d/.test(temp)) temp = temp.slice(0, 9) + '7';
+  if (!/[a-z]/.test(temp)) temp = 'k' + temp.slice(1);
+  const h = await hashPassword(temp);
+  await DB.prepare('UPDATE members SET pw_hash = ?, pw_salt = ?, pw_iter = ?, updated_at = ? WHERE id = ?')
+    .bind(h.hash, h.salt, h.iter, nowIso(), id).run();
+  return json({ ok: true, temp, email: row.email, name: row.name });
 }
 
 /* ---------------- 커뮤니티 ---------------- */

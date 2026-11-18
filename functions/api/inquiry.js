@@ -1,5 +1,5 @@
 /* POST /api/inquiry — 문의하기·상담 신청 접수 */
-import { db, json, fail, notReady, readJson, clean, nowIso, guardPublicForm, visitorHash, notifyMail, INQUIRY_TYPES } from '../_lib/core.js';
+import { db, json, fail, notReady, readJson, clean, nowIso, guardPublicForm, visitorHash, notifyMail, currentMember, INQUIRY_TYPES } from '../_lib/core.js';
 
 export async function onRequestPost({ request, env, waitUntil }) {
   const DB = await db(env).catch(() => null);
@@ -19,12 +19,13 @@ export async function onRequestPost({ request, env, waitUntil }) {
   if (body.agree === false) return fail('개인정보 수집·이용에 동의해 주셔야 접수할 수 있습니다.');
 
   const created = nowIso();
+  const member = await currentMember(request, env, DB).catch(() => null);
   const res = await DB.prepare(
-    'INSERT INTO inquiries (created_at, type, name, contact, message, page, status, ip_hash) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
-  ).bind(created, type, name, contact, message, page, '접수', await visitorHash(request, env)).run();
+    'INSERT INTO inquiries (created_at, type, name, contact, message, page, status, ip_hash, member_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+  ).bind(created, type, name, contact, message, page, '접수', await visitorHash(request, env), member ? member.id : null).run();
   const id = res.meta && res.meta.last_row_id;
 
-  const text = `새 문의가 접수되었습니다.\n\n유형: ${type}\n성함/소속: ${name}\n연락처: ${contact}\n\n${message}\n\n— 관리자 페이지: ${new URL('/admin', request.url).href}`;
+  const text = `새 문의가 접수되었습니다.\n\n유형: ${type}\n성함/소속: ${name}\n연락처: ${contact}${member ? `\n회원: ${member.email}` : ''}\n\n${message}\n\n— 관리자 페이지: ${new URL('/admin', request.url).href}`;
   const job = notifyMail(env, `[홈페이지 문의] ${type} · ${name}`, text);
   if (waitUntil) waitUntil(job); else await job;
 
