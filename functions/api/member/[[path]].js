@@ -1,6 +1,6 @@
 /* =========================================================
    /api/member/* — 회원가입 · 로그인 · 마이페이지 (Cloudflare D1)
-   - 비밀번호는 PBKDF2(SHA-256, 10만 회)로 해시해 저장하고 원문은 어디에도 남기지 않는다
+   - 비밀번호는 PBKDF2(SHA-256)와 회원별 salt로 해시해 저장하고 원문은 어디에도 남기지 않는다
    - 로그인 유지: HttpOnly 쿠키 30일
    ========================================================= */
 import {
@@ -60,7 +60,7 @@ export async function onRequest(context) {
       if (!(await checkPassword(String(b.current || ''), me))) return fail('지금 쓰는 비밀번호가 맞지 않습니다.', 401);
       const pw = String(b.password || '');
       if (!PASSWORD.test(pw)) return fail('비밀번호는 영문과 숫자를 섞어 8자 이상으로 정해 주세요.');
-      if (await checkPassword(pw, me)) return fail('지금 쓰는 비밀번호와 다른 비밀번호를 입력해 주세요.');
+      if (pw === String(b.current || '')) return fail('지금 쓰는 비밀번호와 다른 비밀번호를 입력해 주세요.');
       const h = await hashPassword(pw);
       await DB.prepare('UPDATE members SET pw_hash = ?, pw_salt = ?, pw_iter = ?, updated_at = ? WHERE id = ?')
         .bind(h.hash, h.salt, h.iter, nowIso(), me.id).run();

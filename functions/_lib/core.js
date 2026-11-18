@@ -289,7 +289,9 @@ export async function isAdmin(request, env) {
 const M_COOKIE = 'csj_member';
 const M_HINT = 'csj_mi';
 const MEMBER_DAYS = 30;
-const PBKDF2_ITER = 100000;      // Cloudflare Workers 최대값
+/* 반복 횟수: Cloudflare 무료 요금제의 요청당 CPU 시간(10ms) 안에 끝나도록 정한 값.
+   회원마다 무작위 salt를 쓰고, 로그인 시도는 15분당 횟수를 제한한다. 값은 회원별로 저장(pw_iter)하므로 나중에 올려도 기존 회원은 그대로 로그인된다 */
+const PBKDF2_ITER = 40000;
 
 export const membersEnabled = (env) => Boolean(env && env.DB && (env.ADMIN_PASSWORD || env.SESSION_SECRET));
 
