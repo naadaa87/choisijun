@@ -1,7 +1,9 @@
 /* =========================================================
    k.js — 사이트별 KPI용 방문 수집 (최시준 관리자 '전체 KPI')
-   각 사이트의 </body> 앞에 한 줄만 넣습니다:
-     <script defer src="https://choisijun.com/k.js"></script>
+   각 사이트의 </body> 앞에 한 줄만 넣습니다 (관리자 → 전체 사이트 → 방문 자동 수집 넣는 법에서 복사):
+     <script defer src="https://choisijun.com/k1.js" integrity="sha384-…" crossorigin="anonymous"></script>
+   ※ k1.js 는 각 사이트가 내용 확인값(integrity)으로 고정해 불러옵니다. 이 파일을 고치면 이미 넣어 둔 사이트에서는
+     실행되지 않으니, 고칠 때는 k2.js 처럼 새 이름으로 만들고 각 사이트의 한 줄을 바꿔야 합니다.
    - 보내는 것: 본 페이지 주소, 들어온 사이트의 도메인, 머문 시간, 예약·전화·카카오톡 링크 클릭, 신청서 제출
    - 이름·연락처·입력한 내용·IP 주소·쿠키는 보내지도 저장하지도 않습니다
    - 방문자 구분은 이 브라우저에 만든 임의 번호로만 합니다 (다른 사이트와 이어지지 않습니다)
@@ -13,6 +15,8 @@
   try {
     var script = document.currentScript;
     if (!script || !/^https?:$/.test(location.protocol) || navigator.webdriver) return;
+    if (window.__kpiLoaded) return;          // 같은 페이지에 두 번 들어가도 한 번만 센다
+    window.__kpiLoaded = true;
     var API = new URL(script.src).origin + '/api/c';
     var ls = null;
     try { ls = window.localStorage; } catch (_) { ls = null; }

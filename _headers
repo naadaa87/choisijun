@@ -46,8 +46,9 @@
   Cache-Control: public, max-age=0, must-revalidate
 
 # 다른 사이트에 넣는 방문 수집 스크립트 (관리자 '전체 KPI'용)
-/k.js
-  Cache-Control: public, max-age=3600
+/k1.js
+  Cache-Control: public, max-age=86400
+  Access-Control-Allow-Origin: *
   X-Robots-Tag: noindex
 
 # 이미지·영상은 장기 캐시

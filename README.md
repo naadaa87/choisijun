@@ -286,7 +286,7 @@ related: vacancy-development-guide, basement-upper-floor-vacancy
 
 - 관리자 페이지에 **전체 사이트** 메뉴: 운영하는 홈페이지·플랫폼·프로젝트(주력 38곳 + 그 외)를 사업군별로 정리 — 주소·도메인, GitHub 저장소, Cloudflare 프로젝트·데이터 저장소, 검색 등록, 운영 단계, 메모. 접속 점검, GitHub 마지막 수정일·새 저장소 확인, 추가·수정·숨기기, CSV
 - 관리자 페이지에 **전체 KPI** 메뉴: 사이트별 월간 지표와 목표·전달 대비, 사업군별 표, 숫자·목표 입력, 지표 고르기, CSV
-- 다른 사이트의 방문을 모으는 `k.js` + `functions/api/c.js` (등록된 주소만, IP·쿠키 저장 없음). 기본 목록은 `functions/_lib/sites-seed.js`, 서버 기능은 `functions/_lib/sites.js`
+- 다른 사이트의 방문을 모으는 `k1.js` + `functions/api/c.js` (등록된 주소만, IP·쿠키 저장 없음). 기본 목록은 `functions/_lib/sites-seed.js`, 서버 기능은 `functions/_lib/sites.js`
 - 기존 'KPI · 방문 통계' 메뉴 이름을 '방문 통계 (choisijun.com)'로 바꿈
 
 **2026.11.18 — 관리자 KPI · 방문 통계, 회원 기능을 Cloudflare로**

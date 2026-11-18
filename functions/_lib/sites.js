@@ -14,6 +14,8 @@ const METRIC_KEYS = METRICS.map((m) => m.k);
 const TIERS = ['주력', '그 외'];
 const CHECK_BATCH = 8;          // 한 번에 점검하는 사이트 수 (Cloudflare 요청당 외부 호출 한도 안에서)
 const UA = 'choisijun-admin/1.0 (+https://choisijun.com)';
+/* k1.js 의 내용 확인값 — k1.js 를 고치지 않는 한 그대로 둔다 */
+const K1_SRI = 'sha384-aQJRBDzpD9p2aCpJyVf/aws5uOsSUcfMVfUdZVYHk1lk4fcAY5JSfjLVTCzDSEhG';
 
 let seedDone = false;
 
@@ -75,7 +77,7 @@ async function list(DB, request) {
   const origin = /^(localhost|127\.0\.0\.1)$/.test(here.hostname) ? here.origin : 'https://choisijun.com';
   return json({
     ok: true, sites, tracking, self: SELF_ID,
-    meta: { metrics: METRICS, stages: STAGES, tiers: TIERS, checkBatch: CHECK_BATCH, snippet: `<script defer src="${origin}/k.js"></script>` }
+    meta: { metrics: METRICS, stages: STAGES, tiers: TIERS, checkBatch: CHECK_BATCH, snippet: `<script defer src="${origin}/k1.js" integrity="${K1_SRI}" crossorigin="anonymous"></script>` }
   });
 }
 
