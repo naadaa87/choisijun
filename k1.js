@@ -1,10 +1,10 @@
 /* =========================================================
-   k.js — 사이트별 KPI용 방문 수집 (최시준 관리자 '전체 KPI')
+   k1.js — 사이트별 KPI용 방문 수집 (최시준 관리자 '전체 KPI')
    각 사이트의 </body> 앞에 한 줄만 넣습니다 (관리자 → 전체 사이트 → 방문 자동 수집 넣는 법에서 복사):
      <script defer src="https://choisijun.com/k1.js" integrity="sha384-…" crossorigin="anonymous"></script>
    ※ k1.js 는 각 사이트가 내용 확인값(integrity)으로 고정해 불러옵니다. 이 파일을 고치면 이미 넣어 둔 사이트에서는
      실행되지 않으니, 고칠 때는 k2.js 처럼 새 이름으로 만들고 각 사이트의 한 줄을 바꿔야 합니다.
-   - 보내는 것: 본 페이지 주소, 들어온 사이트의 도메인, 머문 시간, 예약·전화·카카오톡 링크 클릭, 신청서 제출
+   - 보내는 것: 본 페이지 주소(번호·열쇠 값은 가림), 들어온 사이트의 도메인, 머문 시간, 예약·전화·카카오톡 링크를 누른 횟수, 신청서 제출 횟수
    - 이름·연락처·입력한 내용·IP 주소·쿠키는 보내지도 저장하지도 않습니다
    - 방문자 구분은 이 브라우저에 만든 임의 번호로만 합니다 (다른 사이트와 이어지지 않습니다)
    - 운영자 브라우저 빼기: 사이트 주소 뒤에 ?k_off=1 을 붙여 한 번 열면 그 브라우저는 세지 않습니다 (?k_off=0 으로 되돌림)
@@ -26,7 +26,14 @@
     var qs = new URLSearchParams(location.search);
     if (qs.get('k_off') === '1') put('k_off', true);
     if (qs.get('k_off') === '0') put('k_off', false);
-    if (get('k_off') || /^\/admin(\/|$)/.test(location.pathname)) return;
+    /* 관리자·호스트·내 정보처럼 로그인해서 쓰는 화면은 세지 않는다 */
+    if (get('k_off') || /^\/(admin|host|hosts|hostcenter|manage|manager|console|dashboard|app|my|mypage|account|portal|staff|owner)(\/|\.|$)/i.test(location.pathname)) return;
+    /* 주소에 들어 있는 예약번호·접수번호·열쇠 값은 보내지 않는다: 숫자가 섞인 긴 마디는 ':id' 로 바꾼다 */
+    var mask = function (p) {
+      return String(p || '/').split('/').map(function (seg) {
+        return (seg.length >= 24 || (seg.length >= 8 && /\d/.test(seg))) && !/\.html?$/i.test(seg) ? ':id' : seg;
+      }).join('/').slice(0, 160);
+    };
 
     var rid = function () {
       try {
@@ -76,7 +83,7 @@
       sess.last = Date.now(); put('k_s', sess);
     };
     var start = function () {
-      var p = location.pathname + (/^#\/./.test(location.hash) ? location.hash : '');
+      var p = mask(location.pathname) + (/^#\/./.test(location.hash) ? '#/' + location.hash.slice(2).split(/[/?]/)[0] : '');
       if (p === lastPath) return;
       if (pid) { pause(); flush(); }
       lastPath = p;
@@ -103,7 +110,10 @@
     var labelOf = function (el) {
       return (el.getAttribute('data-kpi') || el.getAttribute('aria-label') || el.textContent || el.getAttribute('title') || '').replace(/\s+/g, ' ').trim().slice(0, 60);
     };
-    var ck = function (kind, label, target) { send({ e: 'ck', k: kind, l: label, h: String(target || '').slice(0, 200), v: visitor.id, p: location.pathname }); };
+    /* 버튼 이름은 예약·신청 버튼만 보낸다 (전화·카톡·메일 링크의 글자는 보내지 않는다) */
+    var ck = function (kind, label, target) {
+      send({ e: 'ck', k: kind, l: kind === 'book' || kind === 'conv' || kind === 'form' ? label : '', h: mask(target), v: visitor.id, p: mask(location.pathname) });
+    };
     document.addEventListener('click', function (ev) {
       var el = ev.target && ev.target.closest ? ev.target.closest('a[href], button, [data-kpi]') : null;
       if (!el) return;
@@ -119,7 +129,6 @@
         var target = u.host === location.host ? u.pathname : (u.host + u.pathname).replace(/\/$/, '');
         if (BOOK.test(u.host) || /booking|reserv/i.test(u.pathname) || /예약/.test(label)) { ck('book', label, target); return; }
         if (KAKAO.test(u.host)) { ck('kakao', label, target); return; }
-        if (u.host !== location.host) ck('out', label, target);
         return;
       }
       if (/예약/.test(label)) ck('book', label, '');

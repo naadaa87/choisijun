@@ -10,7 +10,9 @@ import { SELF_ID } from '../_lib/sites-seed.js';
 import { BOT, ID, source, device, normPath } from './t.js';
 
 const CORS = { 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store' };
-const KINDS = ['book', 'tel', 'kakao', 'mail', 'form', 'out', 'conv'];
+const KINDS = ['book', 'tel', 'kakao', 'mail', 'form', 'conv'];
+/* 주소에 들어 있는 예약번호·접수번호·열쇠 값은 저장하지 않는다 (k1.js 도 같은 처리를 하지만 한 번 더) */
+const mask = (p) => String(p || '/').split('/').map((seg) => ((seg.length >= 24 || (seg.length >= 8 && /\d/.test(seg))) && !/\.html?$/i.test(seg) && !/^#/.test(seg) ? ':id' : seg)).join('/').slice(0, 160);
 
 let hostMap = null;
 let hostAt = 0;
@@ -53,7 +55,8 @@ export async function onRequestPost({ request, env, waitUntil }) {
     const now = Date.now();
     const { day } = kst(now);
     const vid = ID.test(b.v || '') ? b.v : '';
-    const path = normPath(b.p || '/');
+    const hashAt = String(b.p || '').indexOf('#/');
+    const path = mask(normPath(b.p || '/')) + (hashAt >= 0 ? clean(String(b.p).slice(hashAt).split(/[/?]/).slice(0, 2).join('/'), 40) : '');
     const jobs = [];
     if (b.e === 'pv') {
       const pid = ID.test(b.id || '') ? b.id : '';
@@ -76,7 +79,7 @@ export async function onRequestPost({ request, env, waitUntil }) {
       const kind = KINDS.includes(b.k) ? b.k : '';
       if (!kind || !vid) return ok();
       jobs.push(DB.prepare('INSERT INTO xev (site, ts, day, path, kind, label, target, vid) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
-        .bind(site, now, day, path, kind, clean(b.l, 80), clean(b.h, 200), vid).run());
+        .bind(site, now, day, path, kind, ['book', 'conv', 'form'].includes(kind) ? clean(b.l, 60) : '', mask(clean(b.h, 200)), vid).run());
     }
     const all = Promise.all(jobs).catch(() => null);
     if (waitUntil) waitUntil(all); else await all;
