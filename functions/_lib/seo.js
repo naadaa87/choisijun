@@ -207,7 +207,8 @@ async function check(DB, request) {
     } catch (_) { meta.robots = { status: 0 }; }
     const custom = !/\.(pages|workers)\.dev$/.test(host) && !host.startsWith('www.');
     if (custom) meta.www = await probe(`https://www.${host}/`);
-    meta.http = await probe(`http://${host}/`);
+    // 이 관리자가 올라가 있는 도메인 자신은 Cloudflare 안쪽에서 열려 'HTTPS 항상 사용' 이동이 보이지 않는다 → 점검에서 뺀다
+    meta.http = host === new URL(request.url).hostname ? { st: 0, to: '', self: true } : await probe(`http://${host}/`);
   } else {
     const prev = await DB.prepare('SELECT meta, rows FROM site_seo WHERE site = ?').bind(id).first();
     try { meta = JSON.parse(prev.meta); rows = JSON.parse(prev.rows); } catch (_) { return fail('처음부터 다시 점검해 주세요.'); }
