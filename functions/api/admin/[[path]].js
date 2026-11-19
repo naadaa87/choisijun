@@ -11,6 +11,7 @@ import { kpi } from '../../_lib/kpi.js';
 import { sitesRoute, sitesSummary, ensureSeed } from '../../_lib/sites.js';
 import { leads, markLead } from '../../_lib/leads.js';
 import { opsRoute } from '../../_lib/ops.js';
+import { seoRoute } from '../../_lib/seo.js';
 
 const REPO_DEFAULT = 'naadaa87/choisijun';
 const BACKLOG_PATH = 'content/plan/backlog.md';
@@ -58,6 +59,7 @@ export async function onRequest(context) {
     if (route === 'overview' && method === 'GET') return overview(DB, env);
     if (route === 'kpi' && method === 'GET') return kpi(DB, request);
     if (parts[0] === 'ops') return opsRoute(DB, env, request, parts, method);
+    if (parts[0] === 'seo') return seoRoute(DB, env, request, parts, method);
     if (parts[0] === 'sites' || parts[0] === 'skpi') return sitesRoute(DB, env, request, parts, method);
     if (route === 'leads' && method === 'GET') { await ensureSeed(DB); return leads(DB, env, request); }
     if (route === 'leads/mark' && method === 'POST') return markLead(DB, await readJson(request, 10_000));

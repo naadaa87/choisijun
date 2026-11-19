@@ -687,7 +687,7 @@ def footer():
             <a href="insights.html">인사이트</a>
             <a href="faq.html">자주 묻는 질문</a>
             <a href="glossary.html">공간사업 용어 사전</a>
-            <a href="rss.xml">RSS 구독</a>
+            <a href="/rss.xml">RSS 구독</a>
           </div>
           <div>
             <p class="mono">PERSONAL</p>

@@ -1717,7 +1717,7 @@
   /* =========================================================
      운영 현황 — 홈페이지 관리목록 · 현황 · 단계 · 운영 상태 · 특이사항 · 할 일
      ========================================================= */
-  const OP = { data: null, leads: null, filter: { f: '', tier: '주력', cluster: '', state: '', q: '' }, tf: { owner: '', status: 'open' }, open: null };
+  const OP = { data: null, leads: null, seo: {}, filter: { f: '', tier: '주력', cluster: '', state: '', q: '' }, tf: { owner: '', status: 'open' }, open: null };
   const OP_STATE_CLS = { '정상 운영': 'is-on', '점검 필요': 'is-bad', '개발·준비 중': 'is-ad', '보류': 'is-off', '종료 검토': 'is-off' };
   const opDone = (t) => t.status === '완료';
   const opOk = (s) => s.chk_code >= 200 && s.chk_code < 400;
@@ -1730,7 +1730,8 @@
     try {
       const [d] = await Promise.all([
         api('ops'),
-        (LD.data ? Promise.resolve(LD.data) : api('leads').then((x) => { LD.data = x; return x; })).then((x) => { OP.leads = x; }).catch(() => { OP.leads = null; })
+        (LD.data ? Promise.resolve(LD.data) : api('leads').then((x) => { LD.data = x; return x; })).then((x) => { OP.leads = x; }).catch(() => { OP.leads = null; }),
+        api('seo').then((x) => { OP.seo = x.seo || {}; }).catch(() => { OP.seo = OP.seo || {}; })
       ]);
       OP.data = d;
       opFillFilters();
@@ -1765,6 +1766,8 @@
     const issues = [];
     if (s.ops === '점검 필요') issues.push('운영 점검');
     if (s.chk_at && !opOk(s)) issues.push('접속 오류');
+    const seo = (OP.seo || {})[s.id];
+    if (seo && seo.flags && seo.flags.length) issues.push('검색 문제');
     if (!internal && s.id !== d.self && !(tr && tr.last)) issues.push('방문 기록 없음');
     return { tasks, open, tr, inq, fresh, issues, mine: open.filter((t) => t.owner === '대표님' || t.owner === '함께').length, claude: open.filter((t) => t.owner === 'Claude').length };
   }
@@ -1832,7 +1835,7 @@
           <td class="op-stage"><span class="adm-tag is-off">${esc(s.stage)}</span>${s.ops ? `<span class="adm-tag ${OP_STATE_CLS[s.ops] || ''}">${esc(s.ops)}</span>` : '<small>운영 미정</small>'}</td>
           <td class="op-chk"><span>${chk}</span><span class="op-visit">방문 ${visit}</span></td>
           <td class="op-inq"><span>${esc(s.inquiry_via || '—')}</span>${x.fresh ? `<span class="adm-tag is-ad">회신 전 ${x.fresh}</span>` : ''}</td>
-          <td class="op-ses">${se}</td>
+          <td class="op-ses">${se}${opSeoTag(s)}</td>
           <td class="op-todo">${x.open.length ? `${x.mine ? `<span class="adm-tag is-ad" title="대표님·함께">대표님 ${x.mine}</span>` : ''}${x.claude ? `<span class="adm-tag" title="Claude">Claude ${x.claude}</span>` : ''}` : '<small>없음</small>'}</td>
           <td class="op-note">${esc(s.note || '')}</td>
         </tr>`;
@@ -1870,6 +1873,42 @@
     opBindDetail();
   }
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && OP.open && !q('#opDrawer').hidden) { OP.open = null; renderOps(); } });
+
+  /* ---- 검색 점검: 사이트맵 주소를 서버가 직접 열어 색인을 막는 문제를 찾는다 ---- */
+  function opSeoTag(s) {
+    const x = (OP.seo || {})[s.id];
+    if (!x) return '';
+    return x.flags.length ? `<span class="adm-tag is-bad op-seo-tag" title="${esc(x.flags.join('\n'))}">검색 문제 ${x.flags.length}</span>` : '<span class="adm-tag is-on op-seo-tag">검색 점검 통과</span>';
+  }
+  function opSeoBox(s) {
+    if (s.stage === '내부용' || !s.url) return '';
+    const x = (OP.seo || {})[s.id];
+    const ex = (list, f) => (list && list.length ? `<small>${list.slice(0, 4).map((i) => esc(f(i))).join(' · ')}${list.length > 4 ? ' …' : ''}</small>` : '');
+    let body = '<p class="acc-help">아직 점검하지 않았습니다. 사이트맵에 적힌 주소를 직접 열어 404·리디렉션·색인 제외·대표 주소 불일치를 찾습니다.</p>';
+    if (x) {
+      const detail = {
+        '열리지 않는': ex(x.bad, (i) => `${i.p} (${i.st || '응답 없음'})`),
+        '넘어감': ex(x.redirect, (i) => `${i.p} → ${i.to}`),
+        'noindex': ex(x.noindex, (i) => i),
+        '대표 주소': ex(x.canon, (i) => `${i.p} → ${i.c}`)
+      };
+      const flags = x.flags.map((f) => `<li class="is-bad">${esc(f)}${Object.entries(detail).filter(([k]) => f.includes(k)).map(([, v]) => v).join('')}</li>`).join('');
+      const minor = (x.minor || []).map((f) => `<li>${esc(f)}${f.startsWith('설명') ? ex(x.nodesc, (i) => i) : f.startsWith('큰제목') ? ex(x.noh1, (i) => i) : f.startsWith('본문') ? ex(x.thin, (i) => `${i.p} (${i.n}자)`) : f.startsWith('같은 제목') ? ex(x.dupTitle, (i) => `${i.t} ×${i.n}`) : ''}</li>`).join('');
+      body = `<p class="acc-help">${esc(KST(x.at))} 점검 · 사이트맵 ${fmtN(x.total)}쪽 중 ${fmtN(x.checked)}쪽 확인${x.www ? ` · www ${x.www.st === 200 ? '따로 열림' : x.www.st >= 300 && x.www.st < 400 ? '대표 주소로 이동' : '없음'}` : ''}</p>
+        <ul class="op-seo-list">${flags || '<li class="is-ok">색인을 막는 문제는 없습니다.</li>'}${minor}</ul>`;
+    }
+    return `<div class="op-seo"><h4>검색 점검 <button type="button" class="btn btn-sm btn-line" data-op-seo="${esc(s.id)}">${x ? '다시 점검' : '지금 점검'}</button></h4>${body}</div>`;
+  }
+  async function opSeoRun(id, onStep) {
+    let offset = 0;
+    for (let i = 0; i < 12 && offset != null; i++) {
+      const r = await api('seo/check', { method: 'POST', body: { id, offset } });
+      if (onStep) onStep(Math.min((r.offset || 0) + 10, r.sampled), r.sampled);
+      if (r.summary) { OP.seo[id] = { at: r.at, ...r.summary }; return r.summary; }
+      offset = r.next;
+    }
+    return null;
+  }
 
   function opTaskRow(t, withSite, same) {
     const d = OP.data;
@@ -1922,6 +1961,7 @@
           <button type="submit" class="btn btn-sm">저장</button>
         </form>
       </div>
+      ${opSeoBox(s)}
       <div class="op-detail-tasks">
         <h4>할 일 <small>${x.open.length ? `남은 ${x.open.length}건` : '남은 일 없음'}${x.tasks.length - x.open.length ? ` · 완료 ${x.tasks.length - x.open.length}건` : ''}</small></h4>
         <ul class="op-tasks">${x.tasks.map((t) => opTaskRow(t, false)).join('') || '<li class="acc-empty">등록된 할 일이 없습니다.</li>'}</ul>
@@ -1993,6 +2033,15 @@
     if (add) add.addEventListener('submit', async (e) => {
       e.preventDefault();
       await opCreateTask({ site: add.dataset.opAdd, kind: add.kind.value, title: add.title.value.trim(), owner: add.owner.value });
+    });
+    const sb = q('[data-op-seo]', box);
+    if (sb) sb.addEventListener('click', async () => {
+      sb.disabled = true;
+      try {
+        const r = await opSeoRun(sb.dataset.opSeo, (n, t) => { sb.textContent = `점검 중 ${n}/${t}`; });
+        showMsg(r && r.flags.length ? `검색 점검을 마쳤습니다. 확인할 문제가 ${r.flags.length}가지 있습니다.` : '검색 점검을 마쳤습니다. 색인을 막는 문제는 없습니다.', r && r.flags.length ? 'err' : 'ok');
+      } catch (err) { showMsg(err.message, 'err'); }
+      renderOps();
     });
     const lb = q('[data-op-leads]', box);
     if (lb) lb.addEventListener('click', () => {
@@ -2071,6 +2120,22 @@
       showMsg(bad ? `접속 점검을 마쳤습니다. ${bad}곳에 문제가 있습니다.` : '접속 점검을 마쳤습니다. 모두 정상입니다.', bad ? 'err' : 'ok');
     } catch (err) { showMsg(err.message, 'err'); }
     btn.disabled = false; btn.textContent = '접속 점검';
+  });
+
+  q('#opSeo').addEventListener('click', async () => {
+    if (!OP.data) return;
+    const btn = q('#opSeo');
+    const targets = opShownSites().filter((s) => s.url && s.stage !== '내부용');
+    if (!targets.length) { showMsg('점검할 사이트가 없습니다.', 'info'); return; }
+    btn.disabled = true;
+    let bad = 0; let failed = 0;
+    for (let i = 0; i < targets.length; i++) {
+      btn.textContent = `검색 점검 ${i + 1}/${targets.length}`;
+      try { const r = await opSeoRun(targets[i].id); if (r && r.flags.length) bad++; } catch (_) { failed++; }
+      renderOps();
+    }
+    btn.disabled = false; btn.textContent = '검색 점검';
+    showMsg(`검색 점검을 마쳤습니다. 문제가 있는 곳 ${bad}곳${failed ? ` · 점검하지 못한 곳 ${failed}곳` : ''}.`, bad || failed ? 'err' : 'ok');
   });
 
   q('#opCsv').addEventListener('click', () => {

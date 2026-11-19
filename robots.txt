@@ -8,6 +8,7 @@ Disallow: /tools/
 Disallow: /admin
 Disallow: /*.md$
 Disallow: /search-verification.txt
+Disallow: /cdn-cgi/
 
 Sitemap: https://choisijun.com/sitemap.xml
 Sitemap: https://choisijun.com/rss.xml

@@ -2838,3 +2838,14 @@ a.st-link:hover { border-color: var(--signal); color: #C2380C; }
 }
 
 .op-task-site.is-same { visibility: hidden; }
+
+/* 운영 현황 — 검색 점검 */
+.op-seo-tag { display: table; margin-top: 5px; }
+.op-seo { margin-top: 18px; padding: 14px; background: #fff; border: 1px solid var(--line); border-radius: 10px; }
+.op-seo h4 { display: flex; align-items: center; justify-content: space-between; margin: 0 0 6px; font-size: 0.9rem; }
+.op-seo-list { list-style: none; margin: 8px 0 0; padding: 0; font-size: 0.84rem; }
+.op-seo-list li { padding: 6px 0 6px 16px; border-top: 1px solid #F0EEE8; position: relative; line-height: 1.5; }
+.op-seo-list li::before { content: ''; position: absolute; left: 2px; top: 13px; width: 7px; height: 7px; border-radius: 50%; background: #C9C7C0; }
+.op-seo-list li.is-bad::before { background: #D93025; }
+.op-seo-list li.is-ok::before { background: #2C9A4B; }
+.op-seo-list small { display: block; color: var(--concrete); font-size: 0.76rem; overflow-wrap: anywhere; }
