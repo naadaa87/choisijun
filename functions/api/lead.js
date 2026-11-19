@@ -8,7 +8,7 @@
 import { db, json, clean, nowIso, guardPublicForm, visitorHash, notifyMail } from '../_lib/core.js';
 import { siteOf } from './c.js';
 
-const NAME_KEYS = ['name', 'contact_name', 'company', 'org', 'host_name', 'nickname', '이름', '성함', '담당자', '회사명', '상호', '소속'];
+const NAME_KEYS = ['name', 'contact_name', 'company', 'org', 'host_name', 'nickname', '이름', '성함', '담당자', '담당자 이름', '회사명', '업체명', '상호', '소속'];
 const PHONE_KEYS = ['phone', 'tel', 'mobile', 'contact_phone', 'hp_no', '연락처', '휴대폰', '전화', '전화번호', '휴대폰 번호'];
 const MAIL_KEYS = ['email', 'mail', 'contact_email', '이메일', '메일'];
 const TEXT_KEYS = ['message', 'msg', 'text', 'body', 'content', 'memo', 'note', 'question', 'detail', 'desc', '내용', '문의내용', '문의 내용', '상담내용', '상담 내용', '진단내용', '세부상황', '추가설명', '질문', '요청사항', '메시지'];
