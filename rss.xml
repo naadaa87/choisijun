@@ -6,34 +6,42 @@
     <atom:link href="https://choisijun.com/rss.xml" rel="self" type="application/rss+xml" />
     <description>최시준 공식 홈페이지의 새 소식 — 공간 포트폴리오, 공실개발 사례, 브랜드, 강의·미디어.</description>
     <language>ko</language>
-    <lastBuildDate>Thu, 19 Nov 2026 06:48:27 +0900</lastBuildDate>
+    <lastBuildDate>Fri, 20 Nov 2026 06:49:14 +0900</lastBuildDate>
     <item>
-      <title>공간대여 리뷰가 다음 예약을 만듭니다 — 리뷰가 쌓이는 구조와 답글 원칙 | 최시준</title>
-      <link>https://choisijun.com/insights/reviews-make-bookings</link>
-      <guid isPermaLink="true">https://choisijun.com/insights/reviews-make-bookings</guid>
-      <description>공간대여에서 리뷰는 손님이 결제 전에 보는 거의 유일한 증거입니다. 입실 안내와 퇴실 안내로 리뷰가 쌓이는 구조를 만들고, 불편을 적은 리뷰에 답하는 원칙을 정리했습니다.</description>
-      <category>무인 운영</category>
-      <pubDate>Thu, 19 Nov 2026 09:00:00 +0900</pubDate>
+      <title>공간 사업 강의는 이렇게 구성합니다 — 듣는 사람이 순서를 정합니다 | 최시준</title>
+      <link>https://choisijun.com/insights/space-business-curriculum</link>
+      <guid isPermaLink="true">https://choisijun.com/insights/space-business-curriculum</guid>
+      <description>같은 공간 사업 강의라도 건물주, 예비창업자, 기업, 대학생 앞에서는 첫 장부터 달라집니다. 대상별로 무엇을 먼저 말하고 어떻게 끝내는지, 강의를 짜는 기준을 적었습니다.</description>
+      <category>강연 · 교육</category>
+      <pubDate>Fri, 20 Nov 2026 09:00:00 +0900</pubDate>
     </item>
     <item>
       <title>최시준 | 공실개발·공간수익화 전문가, 쏘플파티룸 대표</title>
       <link>https://choisijun.com/</link>
       <guid isPermaLink="true">https://choisijun.com/</guid>
       <description>비어 있는 공간을 수익공간으로 바꾸는 최시준. 10년+ 340개+ 공간을 직접 기획·오픈·운영했고, 전국 15개 시·도의 파티룸·모임공간·게임파티룸 기록과 공실개발 상담, 강의, 전자책을 한곳에 모았습니다.</description>
-      <pubDate>Thu, 19 Nov 2026 09:00:00 +0900</pubDate>
+      <pubDate>Fri, 20 Nov 2026 09:00:00 +0900</pubDate>
     </item>
     <item>
       <title>미디어 — 쇼릴·언론 보도·방송 출연 | 최시준</title>
       <link>https://choisijun.com/media</link>
       <guid isPermaLink="true">https://choisijun.com/media</guid>
       <description>15초 쇼릴 2026, KBS·JTBC·CCTV 등 언론 보도와 방송 출연, 공식 채널, 그리고 공간사업 판단기준을 담은 최시준의 최근 글.</description>
-      <pubDate>Thu, 19 Nov 2026 09:00:00 +0900</pubDate>
+      <pubDate>Fri, 20 Nov 2026 09:00:00 +0900</pubDate>
     </item>
     <item>
       <title>인사이트 — 공실개발·파티룸 창업·무인공간 운영의 판단기준 | 최시준</title>
       <link>https://choisijun.com/insights</link>
       <guid isPermaLink="true">https://choisijun.com/insights</guid>
       <description>340개+ 공간을 만들며 굳어진 판단기준을 글로 정리합니다. 상가 공실 해결, 지하·고층 공실 활용, 파티룸·공간대여 창업, 무인공간 운영, 건물 단위 기획.</description>
+      <pubDate>Fri, 20 Nov 2026 09:00:00 +0900</pubDate>
+    </item>
+    <item>
+      <title>공간대여 리뷰가 다음 예약을 만듭니다 — 리뷰가 쌓이는 구조와 답글 원칙 | 최시준</title>
+      <link>https://choisijun.com/insights/reviews-make-bookings</link>
+      <guid isPermaLink="true">https://choisijun.com/insights/reviews-make-bookings</guid>
+      <description>공간대여에서 리뷰는 손님이 결제 전에 보는 거의 유일한 증거입니다. 입실 안내와 퇴실 안내로 리뷰가 쌓이는 구조를 만들고, 불편을 적은 리뷰에 답하는 원칙을 정리했습니다.</description>
+      <category>무인 운영</category>
       <pubDate>Thu, 19 Nov 2026 09:00:00 +0900</pubDate>
     </item>
     <item>
@@ -307,14 +315,6 @@
       <guid isPermaLink="true">https://choisijun.com/insights/vacancy-development-guide</guid>
       <description>공실개발은 비어 있는 공간의 &#x27;용도&#x27;를 다시 설계해 운영수익이 나는 공간으로 바꾸는 일입니다. 일반 임대·리모델링과 무엇이 다른지, 공실 진단부터 운영까지 6단계가 어떻게 진행되는지 정리했습니다.</description>
       <category>공실개발</category>
-      <pubDate>Sun, 11 Oct 2026 09:00:00 +0900</pubDate>
-    </item>
-    <item>
-      <title>무인 공간은 네 가지 프로세스로 돌아간다 — 예약·출입·정산·관리 | 최시준</title>
-      <link>https://choisijun.com/insights/unmanned-operations-four-processes</link>
-      <guid isPermaLink="true">https://choisijun.com/insights/unmanned-operations-four-processes</guid>
-      <description>전국 120여 개 공간을 최소 인력으로 운영하는 방법은 사람을 빼는 것이 아니라 일을 네 가지 프로세스로 옮기는 것입니다. 무인 파티룸·무인카페 운영의 예약·출입·정산·관리를 단계별로 설명합니다.</description>
-      <category>무인 운영</category>
       <pubDate>Sun, 11 Oct 2026 09:00:00 +0900</pubDate>
     </item>
   </channel>
