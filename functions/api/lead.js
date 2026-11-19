@@ -26,7 +26,7 @@ function cors(request) {
   };
 }
 
-const pick = (o, keys) => { for (const k of keys) if (o[k] != null && String(o[k]).trim()) return String(o[k]).trim(); return ''; };
+const pickFrom = (o, keys, used) => { for (const k of keys) if (o[k] != null && typeof o[k] !== 'object' && String(o[k]).trim()) { used.add(k); return String(o[k]).trim(); } return ''; };
 
 export function onRequestOptions({ request }) {
   return new Response(null, { status: 204, headers: cors(request) });
@@ -54,17 +54,18 @@ export async function onRequestPost({ request, env, waitUntil }) {
   const blocked = await guardPublicForm(DB, request, env, { hp: '', t: 0 }, `lead:${site}`, 6, { skipTurnstile: true });
   if (blocked) return reply({ ok: false, error: blocked }, 429);
 
-  const name = clean(pick(b, NAME_KEYS), 80);
-  const phone = clean(pick(b, PHONE_KEYS), 40);
-  const email = clean(pick(b, MAIL_KEYS), 120);
+  const used = new Set(['contact', 'kind', 'type', 'form']);
+  const pick = (keys) => pickFrom(b, keys, used);
+  const name = clean(pick(NAME_KEYS), 80);
+  const phone = clean(pick(PHONE_KEYS), 40);
+  const email = clean(pick(MAIL_KEYS), 120);
   const contact = clean(b.contact && !phone && !email ? b.contact : [phone, email].filter(Boolean).join(' · '), 160);
-  const message = clean(pick(b, TEXT_KEYS), 4000);
+  const message = clean(pick(TEXT_KEYS), 4000);
   const kind = clean(b.kind || b._form || b.type || b.form || '문의', 40);
   const page = clean(b.page || b._page || '', 160);
   if (!contact && !message && !name) return reply({ ok: false, error: '연락처나 문의 내용을 적어 주세요.' }, 400);
 
   /* 나머지 항목(지역·면적·관심사 등)은 그대로 묶어 둔다 */
-  const used = new Set([...NAME_KEYS, ...PHONE_KEYS, ...MAIL_KEYS, ...TEXT_KEYS, 'contact', 'kind', 'type', 'form']);
   const rest = {};
   for (const [k, v] of Object.entries(b)) {
     if (used.has(k) || SKIP.test(k) || k.length > 40 || v == null || v === '' || v === false) continue;
