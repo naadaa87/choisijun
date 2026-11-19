@@ -105,12 +105,12 @@ export function toMs(v, tz) {
   return Number.isNaN(t) ? 0 : t;
 }
 
-const NEW = /^(new|open|pending|received|접수|문의 접수|신규|대기|미확인|unread|submitted)$/i;
-const STATUS_KO = { new: '새 문의', open: '새 문의', pending: '대기', received: '접수', submitted: '접수', done: '완료', closed: '완료', resolved: '완료', replied: '답변함', answered: '답변함',
+export const NEW = /^(new|open|pending|received|접수|문의 접수|신규|대기|미확인|unread|submitted)$/i;
+export const STATUS_KO = { new: '새 문의', open: '새 문의', pending: '대기', received: '접수', submitted: '접수', done: '완료', closed: '완료', resolved: '완료', replied: '답변함', answered: '답변함',
   contacted: '연락함', in_progress: '진행 중', progress: '진행 중', working: '진행 중', approved: '승인', rejected: '반려', hold: '보류', spam: '스팸', archived: '보관', skip: '넘김', won: '계약', lost: '종료' };
 
 /** JSON 으로 저장된 신청서에서 읽을 만한 내용만 뽑는다 (이름·연락처·동의·내부 값은 뺀다) */
-function extraText(raw) {
+export function extraText(raw) {
   if (!raw) return '';
   let o;
   try { o = JSON.parse(raw); } catch (_) { return ''; }
@@ -129,7 +129,7 @@ function extraText(raw) {
   return out.join('\n').slice(0, 1200);
 }
 
-async function readSource(env, src, limit, onlySite) {
+export async function readSource(env, src, limit, onlySite) {
   const DB = env[src.bind];
   if (!DB) return { src, ok: false, error: '연결 전', rows: [] };
   try {
@@ -154,7 +154,7 @@ const KV_TEXT = ['message', 'memo', 'note', 'request', 'desc_ko', 'content', 'te
 const KV_USED = new Set(['id', 'ref', 'receivedAt', 'created', 'at', 'status', 'type', 'kind', 'category', 'address', 'photos', ...KV_NAME, ...KV_PHONE, ...KV_MAIL, ...KV_TEXT]);
 const kvPick = (o, keys) => { for (const k of keys) if (o && o[k] != null && String(o[k]).trim()) return String(o[k]).trim(); return ''; };
 
-async function readKv(env, src, limit) {
+export async function readKv(env, src, limit) {
   const KV = env[src.bind];
   if (!KV) return { src, ok: false, error: '연결 전', rows: [] };
   try {
@@ -244,7 +244,9 @@ export async function leads(DB, env, request) {
     sources.push({ site: src.site, siteName: site.name, url: site.url, label: src.label, ok, error: error || '', detail: detail || '', count: c.count, fresh: c.fresh, full: rows.length >= per, soft: Boolean(src.soft) });
   });
   items.sort((a, b) => b.at - a.at);
-  return json({ ok: true, now: Date.now(), per, states: MARK_STATES, items: items.slice(0, only ? 400 : 800), sources });
+  let notify = null;
+  try { const n = await DB.prepare("SELECT v FROM admin_flags WHERE k = 'notify_last'").first(); if (n) notify = JSON.parse(n.v); } catch (_) { notify = null; }
+  return json({ ok: true, now: Date.now(), per, states: MARK_STATES, items: items.slice(0, only ? 400 : 800), sources, notify });
 }
 
 /** 전체 문의에서 확인·회신 표시와 메모 남기기: POST /api/admin/leads/mark { key, state, memo } — state 가 '' 면 표시를 지운다 */

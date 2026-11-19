@@ -2190,7 +2190,9 @@
     q('#ldTiles').innerHTML = tiles.map(([n, label, foot]) => `<li><button type="button" tabindex="-1"><span class="adm-kpi-num">${n}</span><span class="adm-kpi-label">${esc(label)}</span><span class="adm-kpi-foot">${esc(foot)}</span></button></li>`).join('');
 
     const rows = shownLeads();
-    q('#ldInfo').innerHTML = `<strong>${fmtN(rows.length)}건</strong> 보는 중 · 사이트마다 최근 ${d.per}건까지 불러옵니다 · 문의를 열면 '확인함'으로 표시되고, 연락한 뒤 '회신함'을 누르면 회신 전 목록에서 빠집니다`;
+    const nt = d.notify;
+    const notifyLine = nt ? ` · 메일 알림: 매시간 확인, 마지막 ${esc(KST(nt.at).slice(5))}${nt.baseline ? ' (첫 확인)' : ` · 새 문의 ${fmtN(nt.sent)}통 보냄`}${nt.failed && nt.failed.length ? ` · <span class="op-warn">보내지 못함 ${nt.failed.length}건</span>` : ''}` : ' · 메일 알림: 아직 확인 전';
+    q('#ldInfo').innerHTML = `<strong>${fmtN(rows.length)}건</strong> 보는 중 · 사이트마다 최근 ${d.per}건까지 불러옵니다 · 문의를 열면 '확인함', 연락한 뒤 '회신함'을 누르면 회신 전 목록에서 빠집니다${notifyLine}`;
 
     /* 사이트별 현황 */
     const bySite = [];

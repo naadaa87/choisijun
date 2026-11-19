@@ -1,0 +1,142 @@
+# 새 문의 메일 알림 Worker — choisijun-notify
+# · 매시간 7분에 주력 사이트들의 문의 저장소(각 사이트 D1·KV·최시준 대신 접수)를 확인하고
+#   새 문의가 있으면 한 건마다 메일 한 통을 naadaa87@gmail.com 으로 보냅니다.
+# · 보내는 주소는 alert@choisijun.com (Cloudflare Email Routing). 받는 주소는 Email Routing 에서 '확인된 주소'여야 합니다.
+# · 데이터베이스 연결은 홈페이지(../wrangler.toml)와 같습니다. 사이트를 새로 연결하면 두 파일 모두 고쳐 주세요.
+# · 비밀 값은 쓰지 않습니다.
+name = "choisijun-notify"
+main = "src/index.js"
+compatibility_date = "2026-07-24"
+workers_dev = true
+
+[triggers]
+crons = ["7 * * * *"]
+
+[vars]
+NOTIFY_TO = "naadaa87@gmail.com"
+NOTIFY_FROM = "alert@choisijun.com"
+ADMIN_URL = "https://choisijun.com/admin#leads"
+
+[[send_email]]
+name = "MAIL"
+destination_address = "naadaa87@gmail.com"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "choisijun-db"
+database_id = "60c174d3-440c-4468-a57f-90060df35789"
+
+# ---- 아래는 '전체 문의'용 (읽기만 함) ----
+[[d1_databases]]
+binding = "DB_SSOPLE"
+database_name = "ssople-web"
+database_id = "da797810-a703-49b5-ac96-231d7b7c7b26"
+
+[[d1_databases]]
+binding = "DB_RESTEL"
+database_name = "restel-db"
+database_id = "d13afed0-2b54-49da-ba49-56d9971089e9"
+
+[[d1_databases]]
+binding = "DB_MEGASPOT"
+database_name = "megaspot-db"
+database_id = "3f0aa07f-5d18-42f5-a45d-c89bbab99f28"
+
+[[d1_databases]]
+binding = "DB_MEZZANINE"
+database_name = "mezzanine-db"
+database_id = "b1401fea-ad2a-4111-89df-f736bba2e0c1"
+
+[[d1_databases]]
+binding = "DB_SOCIALFACTORY"
+database_name = "socialfactory-db"
+database_id = "7eae7e21-900b-409a-99a0-a739086f8624"
+
+[[d1_databases]]
+binding = "DB_VACANCY"
+database_name = "gongbaek-db"
+database_id = "f5e2b42e-278d-48d6-95ae-02b8af982c8f"
+
+[[d1_databases]]
+binding = "DB_SEUSEURO"
+database_name = "seuseuro-db"
+database_id = "b7c4e48a-9e8e-4b20-8e4f-b1d3c91e5aab"
+
+[[d1_databases]]
+binding = "DB_ORBIS"
+database_name = "orbis-leads"
+database_id = "2b3c6d13-dc47-4421-ad8d-0b31700be936"
+
+[[d1_databases]]
+binding = "DB_WONSANGTAERO"
+database_name = "wonsangtaero-db"
+database_id = "83efdb8b-5618-4985-b403-37c092aabce9"
+
+[[d1_databases]]
+binding = "DB_COREMOOD"
+database_name = "coremood-db"
+database_id = "df58fe1f-cbfd-4727-909c-4e076c8b225f"
+
+[[d1_databases]]
+binding = "DB_RULERULE"
+database_name = "rulerule-db"
+database_id = "c1e64cda-b2b8-4c27-bd02-a2ddc4377b67"
+
+[[d1_databases]]
+binding = "DB_MYCHALLENGE"
+database_name = "machal-db"
+database_id = "2edb236d-958b-42f3-b550-f8615defcbb7"
+
+[[d1_databases]]
+binding = "DB_BAREUNBP"
+database_name = "bareunbp"
+database_id = "7705ab09-ad97-421d-8b91-8bfe4d4b4b12"
+
+[[d1_databases]]
+binding = "DB_BAGSTOP"
+database_name = "bagstop-db"
+database_id = "a7ef944e-eae2-4bf2-a7e4-4c30152b4d67"
+
+[[d1_databases]]
+binding = "DB_YEODEOL"
+database_name = "yeodeol-db"
+database_id = "d178c467-1adc-4392-bf58-358ea556b0e0"
+
+[[d1_databases]]
+binding = "DB_PASSIONSTORE"
+database_name = "passionstore"
+database_id = "32b3a7a1-c946-4cc2-9f68-2d42807b93ae"
+
+[[d1_databases]]
+binding = "DB_WRITERCHOI"
+database_name = "total-db"
+database_id = "5bcf38aa-f078-4adb-a3d2-1de3e5793722"
+
+[[d1_databases]]
+binding = "DB_HONPLACE"
+database_name = "honplace-db"
+database_id = "f87e607c-b1ba-4890-ab76-c4a7a70c4bf7"
+
+[[d1_databases]]
+binding = "DB_TODAYPARTYROOM"
+database_name = "todaypartyroom"
+database_id = "16fb666d-88fc-41f8-9399-2fc21c92b545"
+
+[[d1_databases]]
+binding = "DB_MYWORKS"
+database_name = "myworks-db"
+database_id = "50158886-ab08-43ea-a7ca-dbb69be1323e"
+
+[[d1_databases]]
+binding = "DB_GUSPACE"
+database_name = "guspacedev-db"
+database_id = "f8c5afb3-87b7-46ef-987c-c910ae92df92"
+
+# KV 에 문의를 저장하는 사이트 (읽기만 함)
+[[kv_namespaces]]
+binding = "KV_PVIT"
+id = "e5c8b55ab564445db29feb2ba8029454"
+
+[[kv_namespaces]]
+binding = "KV_HANTANG"
+id = "5c8abc388c9c4fa48c68fc281139bb7e"
