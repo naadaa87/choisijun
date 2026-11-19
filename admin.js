@@ -126,6 +126,7 @@
     qa('.adm-tab').forEach((b) => { const on = b.dataset.tab === tab; b.classList.toggle('is-active', on); b.setAttribute('aria-selected', String(on)); });
     qa('.adm-panel').forEach((p) => { p.hidden = p.dataset.panel !== tab; });
     try { history.replaceState(null, '', '#' + tab); } catch (_) { /* ignore */ }
+    if (tab === 'ops') loadOps();
     if (tab === 'sites') loadSites();
     if (tab === 'skpi') { if (SK.open) SK.scroll = true; loadSkpi(); }
     if (tab === 'leads') loadLeads();
@@ -1714,6 +1715,377 @@
   });
 
   /* =========================================================
+     운영 현황 — 홈페이지 관리목록 · 현황 · 단계 · 운영 상태 · 특이사항 · 할 일
+     ========================================================= */
+  const OP = { data: null, leads: null, filter: { f: '', tier: '주력', cluster: '', state: '', q: '' }, tf: { owner: '', status: 'open' }, open: null };
+  const OP_STATE_CLS = { '정상 운영': 'is-on', '점검 필요': 'is-bad', '개발·준비 중': 'is-ad', '보류': 'is-off', '종료 검토': 'is-off' };
+  const opDone = (t) => t.status === '완료';
+  const opOk = (s) => s.chk_code >= 200 && s.chk_code < 400;
+  const opHost = (u) => { try { return new URL(u).host; } catch (_) { return u || ''; } };
+  const opCf = (s) => (s.cf_project ? (s.cf_kind === 'Workers'
+    ? `https://dash.cloudflare.com/?to=/:account/workers/services/view/${encodeURIComponent(s.cf_project)}/production`
+    : `https://dash.cloudflare.com/?to=/:account/pages/view/${encodeURIComponent(s.cf_project)}`) : '');
+
+  async function loadOps() {
+    try {
+      const [d] = await Promise.all([
+        api('ops'),
+        (LD.data ? Promise.resolve(LD.data) : api('leads').then((x) => { LD.data = x; return x; })).then((x) => { OP.leads = x; }).catch(() => { OP.leads = null; })
+      ]);
+      OP.data = d;
+      opFillFilters();
+      renderOps();
+    } catch (err) {
+      showMsg(err.message, 'err');
+      if (!OP.data) q('#opTable').innerHTML = `<tbody><tr><td class="acc-empty">${esc(err.message)}</td></tr></tbody>`;
+    }
+  }
+
+  function opFillFilters() {
+    const d = OP.data;
+    const clusters = [];
+    d.sites.forEach((s) => { if (s.cluster && !clusters.includes(s.cluster)) clusters.push(s.cluster); });
+    q('#opCluster').innerHTML = '<option value="">모든 사업군</option>' + clusters.map((c) => `<option${c === OP.filter.cluster ? ' selected' : ''}>${esc(c)}</option>`).join('');
+    q('#opState').innerHTML = '<option value="">모든 운영 현황</option>' + d.meta.opsStates.map((c) => `<option${c === OP.filter.state ? ' selected' : ''}>${esc(c)}</option>`).join('');
+    const f = q('#opAdd');
+    f.site.innerHTML = '<option value="">사이트 선택</option><option value="*">전체 공통</option>' + d.sites.filter((s) => s.tier === '주력').map((s) => `<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('');
+    f.kind.innerHTML = d.meta.kinds.map((k) => `<option>${esc(k)}</option>`).join('');
+    f.owner.innerHTML = d.meta.owners.map((k) => `<option>${esc(k)}</option>`).join('');
+  }
+
+  /** 사이트 하나의 상태 묶음 */
+  function opSite(s) {
+    const d = OP.data;
+    const tasks = d.tasks.filter((t) => t.site === s.id);
+    const open = tasks.filter((t) => !opDone(t));
+    const tr = d.tracking[s.id] || null;
+    const inq = OP.leads ? OP.leads.items.filter((r) => r.site === s.id && !r.soft) : [];
+    const fresh = inq.filter((r) => r.isNew).length;
+    const internal = s.stage === '내부용';
+    const issues = [];
+    if (s.ops === '점검 필요') issues.push('운영 점검');
+    if (s.chk_at && !opOk(s)) issues.push('접속 오류');
+    if (!internal && s.id !== d.self && !(tr && tr.last)) issues.push('방문 기록 없음');
+    return { tasks, open, tr, inq, fresh, issues, mine: open.filter((t) => t.owner === '대표님' || t.owner === '함께').length, claude: open.filter((t) => t.owner === 'Claude').length };
+  }
+
+  function opShownSites() {
+    const d = OP.data;
+    const f = OP.filter;
+    const k = f.q.toLowerCase();
+    return d.sites.filter((s) => {
+      if (f.tier && s.tier !== f.tier) return false;
+      if (f.cluster && s.cluster !== f.cluster) return false;
+      if (f.state && s.ops !== f.state) return false;
+      const x = opSite(s);
+      if (f.f === 'check' && !x.issues.length) return false;
+      if (f.f === 'todo' && !x.open.length) return false;
+      if (f.f === 'lead' && !x.fresh) return false;
+      if (k && ![s.name, s.id, s.url, s.cluster, s.stage, s.ops, s.note, s.memo, s.inquiry_via, s.summary, ...x.tasks.map((t) => t.title)].join(' ').toLowerCase().includes(k)) return false;
+      return true;
+    });
+  }
+
+  function renderOps() {
+    const d = OP.data;
+    if (!d) return;
+    const focus = d.sites.filter((s) => s.tier === '주력');
+    const xs = focus.map((s) => ({ s, x: opSite(s) }));
+    const allOpen = d.tasks.filter((t) => !opDone(t));
+    const byState = {};
+    focus.forEach((s) => { byState[s.ops || '미정'] = (byState[s.ops || '미정'] || 0) + 1; });
+    const pv7 = focus.reduce((a, s) => a + ((d.tracking[s.id] || {}).pv7 || 0), 0);
+    const fresh = OP.leads ? OP.leads.items.filter((r) => r.isNew && !r.soft).length : null;
+    const needCheck = xs.filter((o) => o.x.issues.length).length;
+    q('#cntOps').textContent = needCheck ? String(needCheck) : '';
+    const tiles = [
+      [`${focus.length}<small>곳</small>`, '주력 사이트', `정상 운영 ${byState['정상 운영'] || 0} · 준비 ${byState['개발·준비 중'] || 0} · 보류·종료 ${(byState['보류'] || 0) + (byState['종료 검토'] || 0)}`, ''],
+      [fmtN(needCheck), '점검이 필요한 곳', `운영 점검 ${byState['점검 필요'] || 0} · 접속 오류 ${focus.filter((s) => s.chk_at && !opOk(s)).length} · 방문 기록 없음 ${xs.filter((o) => o.x.issues.includes('방문 기록 없음')).length}`, 'check'],
+      [fresh == null ? '–' : fmtN(fresh), '회신 전 문의', '전체 문의에서 확인·회신', 'lead'],
+      [fmtN(allOpen.length), '남은 할 일', `대표님 ${allOpen.filter((t) => t.owner === '대표님').length} · Claude ${allOpen.filter((t) => t.owner === 'Claude').length} · 함께 ${allOpen.filter((t) => t.owner === '함께').length}`, 'todo'],
+      [fmtN(pv7), '최근 7일 페이지뷰', `주력 ${focus.filter((s) => (d.tracking[s.id] || {}).last >= d.meta.d7).length}곳에서 기록`, '']
+    ];
+    q('#opTiles').innerHTML = tiles.map(([n, label, foot, f]) => `<li><button type="button"${f ? ` data-op-tile="${f}"` : ' tabindex="-1"'}><span class="adm-kpi-num">${n}</span><span class="adm-kpi-label">${esc(label)}</span><span class="adm-kpi-foot">${esc(foot)}</span></button></li>`).join('');
+    qa('[data-op-tile]').forEach((b) => b.addEventListener('click', () => {
+      OP.filter.f = b.dataset.opTile;
+      qa('#opFilter .f-chip').forEach((x) => x.classList.toggle('is-active', x.dataset.f === OP.filter.f));
+      renderOps();
+    }));
+
+    const rows = opShownSites();
+    q('#opInfo').innerHTML = `<strong>${fmtN(rows.length)}곳</strong> 보는 중 · 방문은 최근 7일, 클릭은 최근 30일 기준 · 사이트 이름을 누르면 상세·특이사항·할 일을 고칠 수 있습니다`;
+
+    let html = '<thead><tr><th>사이트</th><th>단계 · 운영</th><th>접속 · 방문 7일</th><th>문의</th><th>검색</th><th>할 일</th><th>특이사항</th></tr></thead><tbody>';
+    let group = null;
+    rows.forEach((s) => {
+      if (s.cluster !== group) { group = s.cluster; html += `<tr class="op-group"><td colspan="7">${esc(group || '사업군 없음')}</td></tr>`; }
+      const x = opSite(s);
+      const open = OP.open === s.id;
+      const chk = !s.chk_at ? '<span class="op-dot is-none" title="아직 점검 전"></span>미점검'
+        : opOk(s) ? `<span class="op-dot is-ok"></span>정상 <small>${fmtN(s.chk_ms)}ms</small>` : `<span class="op-dot is-bad"></span>${esc(s.chk_note || ('오류 ' + s.chk_code))}`;
+      const tr = x.tr;
+      const visit = s.stage === '내부용' ? '<small>내부용</small>' : tr && tr.last ? `${fmtN(tr.pv7)}${tr.last < d.meta.d7 ? ` <small>마지막 ${esc(tr.last.slice(5))}</small>` : ''}` : '<small class="op-warn">기록 없음</small>';
+      const se = s.stage === '내부용' ? '<small>차단</small>' : ['naver', 'google', 'bing'].map((k) => `<span class="op-se ${s[k] ? 'is-on' : ''}">${k[0].toUpperCase()}</span>`).join('');
+      html += `
+        <tr class="op-row${open ? ' is-open' : ''}${x.issues.length ? ' has-issue' : ''}" data-op="${esc(s.id)}" tabindex="0">
+          <td class="op-name"><strong>${esc(s.name)}</strong>${s.url ? `<a href="${esc(s.url)}" target="_blank" rel="noopener" class="op-url">${esc(opHost(s.url))} ↗</a>` : ''}</td>
+          <td class="op-stage"><span class="adm-tag is-off">${esc(s.stage)}</span>${s.ops ? `<span class="adm-tag ${OP_STATE_CLS[s.ops] || ''}">${esc(s.ops)}</span>` : '<small>운영 미정</small>'}</td>
+          <td class="op-chk"><span>${chk}</span><span class="op-visit">방문 ${visit}</span></td>
+          <td class="op-inq"><span>${esc(s.inquiry_via || '—')}</span>${x.fresh ? `<span class="adm-tag is-ad">회신 전 ${x.fresh}</span>` : ''}</td>
+          <td class="op-ses">${se}</td>
+          <td class="op-todo">${x.open.length ? `${x.mine ? `<span class="adm-tag is-ad" title="대표님·함께">대표님 ${x.mine}</span>` : ''}${x.claude ? `<span class="adm-tag" title="Claude">Claude ${x.claude}</span>` : ''}` : '<small>없음</small>'}</td>
+          <td class="op-note">${esc(s.note || '')}</td>
+        </tr>`;
+    });
+    html += '</tbody>';
+    q('#opTable').innerHTML = rows.length ? html : '<tbody><tr><td class="acc-empty">조건에 맞는 사이트가 없습니다.</td></tr></tbody>';
+    qa('.op-row', q('#opTable')).forEach((tr) => {
+      const toggle = (e) => { if (e.target.closest('a, button, select, input, textarea')) return; OP.open = OP.open === tr.dataset.op ? null : tr.dataset.op; renderOps(); };
+      tr.addEventListener('click', toggle);
+      tr.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target === tr) toggle(e); });
+    });
+    renderOpDrawer();
+    renderOpTasks();
+  }
+
+  /** 사이트 상세: 표 옆에 붙는 서랍 (표가 넓어도 잘리지 않게) */
+  function renderOpDrawer() {
+    const box = q('#opDrawer');
+    const s = OP.open ? OP.data.sites.find((x) => x.id === OP.open) : null;
+    if (!s) { box.hidden = true; box.innerHTML = ''; document.body.classList.remove('op-drawer-on'); return; }
+    const x = opSite(s);
+    const keep = box.querySelector('.op-drawer-body');
+    const top = keep && box.dataset.site === s.id ? keep.scrollTop : 0;
+    box.dataset.site = s.id;
+    box.innerHTML = `
+      <div class="op-drawer-head">
+        <div><small>${esc(s.cluster || '')}</small><h3>${esc(s.name)}</h3></div>
+        <button type="button" class="op-drawer-x" data-op-close aria-label="닫기">×</button>
+      </div>
+      <div class="op-drawer-body">${opDetail(s, x)}</div>`;
+    box.hidden = false;
+    document.body.classList.add('op-drawer-on');
+    box.querySelector('.op-drawer-body').scrollTop = top;
+    q('[data-op-close]', box).addEventListener('click', () => { OP.open = null; renderOps(); });
+    opBindDetail();
+  }
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && OP.open && !q('#opDrawer').hidden) { OP.open = null; renderOps(); } });
+
+  function opTaskRow(t, withSite, same) {
+    const d = OP.data;
+    const site = t.site === '*' ? '전체 공통' : ((d.sites.find((s) => s.id === t.site) || {}).name || t.site);
+    const sel = (name, list, v) => `<select data-op-task-field="${name}" aria-label="${name === 'owner' ? '담당' : '상태'}">${list.map((o) => `<option${o === v ? ' selected' : ''}>${esc(o)}</option>`).join('')}</select>`;
+    return `<li class="op-task${opDone(t) ? ' is-done' : ''}" data-task="${t.id}">
+      ${withSite ? `<button type="button" class="link-btn op-task-site${same ? ' is-same' : ''}" data-op-goto="${esc(t.site)}"${same ? ' tabindex="-1" aria-hidden="true"' : ''}>${esc(site)}</button>` : ''}
+      <span class="adm-tag is-off">${esc(t.kind)}</span>
+      <span class="op-task-title">${esc(t.title)}${t.due ? ` <small class="op-due${!opDone(t) && t.due < todayKST() ? ' is-late' : ''}">~${esc(t.due.slice(5))}</small>` : ''}${opDone(t) && t.done_at ? ` <small>${esc(KST(t.done_at).slice(5, 10))} 완료</small>` : ''}</span>
+      ${sel('owner', d.meta.owners, t.owner)}${sel('status', d.meta.statuses, t.status)}
+      <button type="button" class="link-btn op-task-del" data-op-task-del aria-label="지우기">지우기</button>
+    </li>`;
+  }
+
+  function opDetail(s, x) {
+    const d = OP.data;
+    const tr = x.tr || {};
+    const ck = d.clicks[s.id] || {};
+    const links = [
+      s.url && `<a href="${esc(s.url)}" target="_blank" rel="noopener">사이트 ↗</a>`,
+      s.url && s.id !== d.self && `<a href="${esc(s.url)}/admin" target="_blank" rel="noopener">사이트 관리자 ↗</a>`,
+      s.repo && `<a href="https://github.com/${esc(s.repo)}" target="_blank" rel="noopener">GitHub ↗</a>`,
+      opCf(s) && `<a href="${esc(opCf(s))}" target="_blank" rel="noopener">Cloudflare ↗</a>`,
+      s.alt && `<a href="${esc(s.alt)}" target="_blank" rel="noopener">예비 주소 ↗</a>`
+    ].filter(Boolean).join('');
+    const info = [
+      ['도메인', s.domain || '연결 전'], ['Cloudflare', [s.cf_kind, s.cf_project].filter(Boolean).join(' · ')], ['데이터 저장소', s.storage],
+      ['운영 법인', s.entity], ['페이지 수', s.pages ? fmtN(s.pages) : ''], ['GitHub 마지막 수정', s.gh_pushed ? KST(s.gh_pushed) : ''],
+      ['접속 점검', s.chk_at ? `${KST(s.chk_at)} · ${opOk(s) ? '정상' : (s.chk_note || '오류')}${s.chk_code ? ' (' + s.chk_code + ')' : ''}` : '아직 점검 전'],
+      ['방문 수집', s.stage === '내부용' ? '내부용(수집 안 함)' : tr.last ? `최근 7일 ${fmtN(tr.pv7)}뷰 · 방문자 ${fmtN(tr.v7)} · 30일 ${fmtN(tr.pv30)}뷰 · 마지막 ${tr.last}` : '최근 30일 기록 없음'],
+      ['30일 클릭', ['book', 'tel', 'kakao', 'form'].some((k) => ck[k]) ? `예약 ${fmtN(ck.book)} · 전화 ${fmtN(ck.tel)} · 카톡 ${fmtN(ck.kakao)} · 신청서 ${fmtN(ck.form)}` : ''],
+      ['문의', x.inq.length ? `최근 ${fmtN(x.inq.length)}건 · 회신 전 ${fmtN(x.fresh)}건` : (OP.leads ? '쌓인 문의 없음' : '')],
+      ['사업 요약', s.summary], ['수익 구조', s.model]
+    ].filter(([, v]) => v);
+    const opt = (list, v) => list.map((o) => `<option${o === v ? ' selected' : ''}>${esc(o)}</option>`).join('');
+    return `
+      <div class="op-detail-grid">
+        <div>
+          <p class="op-links">${links}${x.inq.length ? `<button type="button" class="link-btn" data-op-leads="${esc(s.id)}">전체 문의에서 보기 →</button>` : ''}</p>
+          <dl class="op-info">${info.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')}</dl>
+        </div>
+        <form class="op-edit" data-op-edit="${esc(s.id)}">
+          <div class="op-edit-row">
+            <label>운영 현황<select name="ops"><option value="">미정</option>${opt(d.meta.opsStates, s.ops)}</select></label>
+            <label>단계<select name="stage">${opt(d.meta.stages, s.stage)}</select></label>
+          </div>
+          <label>문의 받는 방식<input name="inquiry_via" maxlength="200" value="${esc(s.inquiry_via)}" /></label>
+          <label>특이사항<textarea name="note" rows="3" maxlength="2000">${esc(s.note)}</textarea></label>
+          <label>메모 <small>(나만 보는 기록)</small><textarea name="memo" rows="2" maxlength="4000">${esc(s.memo)}</textarea></label>
+          <button type="submit" class="btn btn-sm">저장</button>
+        </form>
+      </div>
+      <div class="op-detail-tasks">
+        <h4>할 일 <small>${x.open.length ? `남은 ${x.open.length}건` : '남은 일 없음'}${x.tasks.length - x.open.length ? ` · 완료 ${x.tasks.length - x.open.length}건` : ''}</small></h4>
+        <ul class="op-tasks">${x.tasks.map((t) => opTaskRow(t, false)).join('') || '<li class="acc-empty">등록된 할 일이 없습니다.</li>'}</ul>
+        <form class="op-add is-inline" data-op-add="${esc(s.id)}">
+          <select name="kind" aria-label="구분">${opt(d.meta.kinds, '개선')}</select>
+          <input name="title" maxlength="300" placeholder="이 사이트에 할 일 추가" aria-label="할 일" required />
+          <select name="owner" aria-label="담당">${opt(d.meta.owners, '대표님')}</select>
+          <button type="submit" class="btn btn-sm btn-line">추가</button>
+        </form>
+      </div>`;
+  }
+
+  async function opSaveTask(id, body) {
+    try {
+      const r = await api('ops/tasks/' + id, { method: 'PATCH', body });
+      const i = OP.data.tasks.findIndex((t) => t.id === id);
+      if (i >= 0) OP.data.tasks[i] = r.task;
+      return true;
+    } catch (err) { showMsg(err.message, 'err'); return false; }
+  }
+
+  function opBindTasks(root) {
+    qa('[data-op-task-field]', root).forEach((sel) => sel.addEventListener('change', async () => {
+      const id = Number(sel.closest('[data-task]').dataset.task);
+      if (await opSaveTask(id, { [sel.dataset.opTaskField]: sel.value })) { showMsg('저장했습니다.', 'ok'); renderOps(); }
+    }));
+    qa('[data-op-task-del]', root).forEach((b) => b.addEventListener('click', async () => {
+      const li = b.closest('[data-task]');
+      const id = Number(li.dataset.task);
+      const t = OP.data.tasks.find((x) => x.id === id);
+      if (!t || !window.confirm(`이 할 일을 지울까요?\n\n${t.title}`)) return;
+      try {
+        await api('ops/tasks/' + id, { method: 'DELETE' });
+        OP.data.tasks = OP.data.tasks.filter((x) => x.id !== id);
+        showMsg('지웠습니다.', 'ok');
+        renderOps();
+      } catch (err) { showMsg(err.message, 'err'); }
+    }));
+    qa('[data-op-goto]', root).forEach((b) => b.addEventListener('click', () => {
+      const id = b.dataset.opGoto;
+      if (id === '*') return;
+      OP.open = id; OP.filter.f = ''; OP.filter.q = ''; q('#opSearch').value = '';
+      const s = OP.data.sites.find((x) => x.id === id);
+      if (s && OP.filter.tier && s.tier !== OP.filter.tier) { OP.filter.tier = ''; q('#opTier').value = ''; }
+      qa('#opFilter .f-chip').forEach((x) => x.classList.toggle('is-active', x.dataset.f === ''));
+      renderOps();
+      const row = q(`.op-row[data-op="${id}"]`);
+      if (row) row.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }));
+  }
+
+  function opBindDetail() {
+    const box = q('#opDrawer');
+    opBindTasks(box);
+    const edit = q('[data-op-edit]', box);
+    if (edit) edit.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = edit.dataset.opEdit;
+      const body = { ops: edit.ops.value, stage: edit.stage.value, inquiry_via: edit.inquiry_via.value.trim(), note: edit.note.value.trim(), memo: edit.memo.value.trim() };
+      try {
+        await api('sites/' + id, { method: 'PATCH', body });
+        Object.assign(OP.data.sites.find((s) => s.id === id), body);
+        if (ST.loaded) { const s = ST.sites.find((x) => x.id === id); if (s) Object.assign(s, body); }
+        showMsg('저장했습니다.', 'ok');
+        renderOps();
+      } catch (err) { showMsg(err.message, 'err'); }
+    });
+    const add = q('[data-op-add]', box);
+    if (add) add.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await opCreateTask({ site: add.dataset.opAdd, kind: add.kind.value, title: add.title.value.trim(), owner: add.owner.value });
+    });
+    const lb = q('[data-op-leads]', box);
+    if (lb) lb.addEventListener('click', () => {
+      LD.filter.site = lb.dataset.opLeads;
+      go('leads');
+    });
+  }
+
+  async function opCreateTask(body) {
+    if (!body.site) { showMsg('사이트를 골라 주세요.', 'info'); return false; }
+    if (!body.title) { showMsg('할 일을 적어 주세요.', 'info'); return false; }
+    try {
+      const r = await api('ops/tasks', { method: 'POST', body });
+      OP.data.tasks.unshift(r.task);
+      showMsg('할 일을 추가했습니다.', 'ok');
+      renderOps();
+      return true;
+    } catch (err) { showMsg(err.message, 'err'); return false; }
+  }
+
+  function renderOpTasks() {
+    const d = OP.data;
+    const f = OP.tf;
+    const k = OP.filter.q.toLowerCase();
+    const order = (t) => (t.site === '*' ? -1 : (d.sites.find((s) => s.id === t.site) || { sort: 99999 }).sort);
+    const list = d.tasks.filter((t) => {
+      if (f.owner && t.owner !== f.owner) return false;
+      if (f.status === 'open' && opDone(t)) return false;
+      if (f.status === 'done' && !opDone(t)) return false;
+      if (k && ![t.title, t.note, (d.sites.find((s) => s.id === t.site) || {}).name].join(' ').toLowerCase().includes(k)) return false;
+      return true;
+    }).sort((a, b) => order(a) - order(b) || (a.sort - b.sort));
+    const ul = q('#opTasks');
+    ul.innerHTML = list.length ? list.map((t, i) => opTaskRow(t, true, i > 0 && list[i - 1].site === t.site)).join('') : '<li class="acc-empty">조건에 맞는 할 일이 없습니다.</li>';
+    opBindTasks(ul);
+  }
+
+  qa('#opFilter .f-chip').forEach((b) => b.addEventListener('click', () => {
+    qa('#opFilter .f-chip').forEach((x) => x.classList.toggle('is-active', x === b));
+    OP.filter.f = b.dataset.f; renderOps();
+  }));
+  qa('#opOwner .f-chip').forEach((b) => b.addEventListener('click', () => {
+    qa('#opOwner .f-chip').forEach((x) => x.classList.toggle('is-active', x === b));
+    OP.tf.owner = b.dataset.o; if (OP.data) renderOpTasks();
+  }));
+  qa('#opStatus .f-chip').forEach((b) => b.addEventListener('click', () => {
+    qa('#opStatus .f-chip').forEach((x) => x.classList.toggle('is-active', x === b));
+    OP.tf.status = b.dataset.s; if (OP.data) renderOpTasks();
+  }));
+  q('#opTier').addEventListener('change', (e) => { OP.filter.tier = e.target.value; renderOps(); });
+  q('#opCluster').addEventListener('change', (e) => { OP.filter.cluster = e.target.value; renderOps(); });
+  q('#opState').addEventListener('change', (e) => { OP.filter.state = e.target.value; renderOps(); });
+  let opTimer;
+  q('#opSearch').addEventListener('input', (e) => { clearTimeout(opTimer); opTimer = setTimeout(() => { OP.filter.q = e.target.value.trim(); renderOps(); }, 200); });
+  q('#opAddOpen').addEventListener('click', () => { const f = q('#opAdd'); f.hidden = !f.hidden; if (!f.hidden) f.title.focus(); });
+  q('#opAdd').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const f = e.target;
+    if (await opCreateTask({ site: f.site.value, kind: f.kind.value, title: f.title.value.trim(), owner: f.owner.value, due: f.due.value })) { f.reset(); f.hidden = true; }
+  });
+
+  q('#opCheck').addEventListener('click', async () => {
+    if (!OP.data) return;
+    const btn = q('#opCheck');
+    const targets = opShownSites().filter((s) => s.url);
+    if (!targets.length) { showMsg('점검할 사이트가 없습니다.', 'info'); return; }
+    btn.disabled = true;
+    try {
+      for (let i = 0; i < targets.length; i += 8) {
+        btn.textContent = `점검 중 ${Math.min(i + 8, targets.length)}/${targets.length}`;
+        const r = await api('sites/check', { method: 'POST', body: { ids: targets.slice(i, i + 8).map((s) => s.id) } });
+        r.results.forEach((x) => { const s = OP.data.sites.find((y) => y.id === x.id); if (s) Object.assign(s, { chk_at: r.at, chk_code: x.code, chk_ms: x.ms, chk_note: x.note }, x.pages ? { pages: x.pages } : {}); });
+        renderOps();
+      }
+      const bad = targets.filter((s) => !opOk(s)).length;
+      showMsg(bad ? `접속 점검을 마쳤습니다. ${bad}곳에 문제가 있습니다.` : '접속 점검을 마쳤습니다. 모두 정상입니다.', bad ? 'err' : 'ok');
+    } catch (err) { showMsg(err.message, 'err'); }
+    btn.disabled = false; btn.textContent = '접속 점검';
+  });
+
+  q('#opCsv').addEventListener('click', () => {
+    if (!OP.data) { showMsg('먼저 운영 현황을 불러와 주세요.', 'info'); return; }
+    const rows = opShownSites().map((s) => {
+      const x = opSite(s);
+      const tr = x.tr || {};
+      return [s.cluster, s.name, s.url, s.stage, s.ops, s.chk_at ? (opOk(s) ? '정상' : (s.chk_note || '오류')) : '미점검', tr.pv7 || 0, s.inquiry_via, x.fresh,
+        ['naver', 'google', 'bing'].map((k) => (s[k] ? '○' : '×')).join('/'), x.open.filter((t) => t.owner !== 'Claude').map((t) => t.title).join(' / '),
+        x.open.filter((t) => t.owner === 'Claude').map((t) => t.title).join(' / '), s.note, s.repo ? 'https://github.com/' + s.repo : '', [s.cf_kind, s.cf_project].filter(Boolean).join(' · '), s.storage, s.entity];
+    });
+    downloadCsv(`운영현황_${todayKST()}.csv`, [['사업군', '사이트', '주소', '단계', '운영 현황', '접속', '방문 7일', '문의 받는 방식', '회신 전 문의', '검색 N/G/B', '대표님 할 일', 'Claude 할 일', '특이사항', 'GitHub', 'Cloudflare', '저장소', '운영 법인'], ...rows]);
+  });
+
+  /* =========================================================
      전체 문의 — 각 사이트에 들어온 고객 문의를 한 화면에서
      - 문의 내용은 각 사이트 DB에서 읽기만 한다
      - 확인·회신 표시와 메모는 이 관리자에 따로 남긴다 (각 사이트의 상태 값은 바뀌지 않음)
@@ -1961,7 +2333,7 @@
     const start = (location.hash || '').replace('#', '');
     /* 관리자가 쓰는 브라우저는 방문 통계에서 뺀다 (KPI 화면에서 바꿀 수 있음) */
     try { if (localStorage.getItem('csj_no_stats') === null) localStorage.setItem('csj_no_stats', 'true'); } catch (_) { /* ignore */ }
-    go(['sites', 'skpi', 'leads', 'kpi', 'inquiries', 'members', 'community', 'refs', 'content', 'system'].includes(start) ? start : 'dash');
+    go(['ops', 'sites', 'skpi', 'leads', 'kpi', 'inquiries', 'members', 'community', 'refs', 'content', 'system'].includes(start) ? start : 'dash');
   }
 
   boot();

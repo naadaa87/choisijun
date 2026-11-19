@@ -1,6 +1,6 @@
 /* =========================================================
    /api/admin/* — 관리자 기능 (로그인한 관리자만)
-   로그인 · 대시보드 · 전체 사이트 · 전체 KPI · 전체 문의 · 방문 통계 · 문의 · 회원 · 커뮤니티 · 레퍼런스 · 매일 글
+   로그인 · 대시보드 · 운영 현황 · 전체 사이트 · 전체 KPI · 전체 문의 · 방문 통계 · 문의 · 회원 · 커뮤니티 · 레퍼런스 · 매일 글
    ========================================================= */
 import {
   db, json, fail, notReady, readJson, clean, nowIso, sha256, safeEqual, rateLimit, visitorHash,
@@ -10,6 +10,7 @@ import {
 import { kpi } from '../../_lib/kpi.js';
 import { sitesRoute, sitesSummary, ensureSeed } from '../../_lib/sites.js';
 import { leads, markLead } from '../../_lib/leads.js';
+import { opsRoute } from '../../_lib/ops.js';
 
 const REPO_DEFAULT = 'naadaa87/choisijun';
 const BACKLOG_PATH = 'content/plan/backlog.md';
@@ -56,6 +57,7 @@ export async function onRequest(context) {
     if (!DB) return notReady();
     if (route === 'overview' && method === 'GET') return overview(DB, env);
     if (route === 'kpi' && method === 'GET') return kpi(DB, request);
+    if (parts[0] === 'ops') return opsRoute(DB, env, request, parts, method);
     if (parts[0] === 'sites' || parts[0] === 'skpi') return sitesRoute(DB, env, request, parts, method);
     if (route === 'leads' && method === 'GET') { await ensureSeed(DB); return leads(DB, env, request); }
     if (route === 'leads/mark' && method === 'POST') return markLead(DB, await readJson(request, 10_000));

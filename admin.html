@@ -30,7 +30,7 @@
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" media="print" onload="this.media='all'" />
   <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" /></noscript>
-  <link rel="stylesheet" href="/styles.css?v=f229326c13" />
+  <link rel="stylesheet" href="/styles.css?v=8f42201933" />
 </head>
 <body data-page="admin">
   <a class="skip-link" href="#main">본문 바로가기</a>
@@ -99,6 +99,7 @@
         <div class="adm" id="admApp" hidden>
           <nav class="adm-nav" role="tablist" aria-label="관리 메뉴">
             <button type="button" role="tab" class="adm-tab is-active" data-tab="dash" aria-selected="true">대시보드</button>
+            <button type="button" role="tab" class="adm-tab" data-tab="ops" aria-selected="false">운영 현황 <em class="adm-count" id="cntOps"></em></button>
             <button type="button" role="tab" class="adm-tab" data-tab="sites" aria-selected="false">전체 사이트 <em class="adm-count is-quiet" id="cntSites"></em></button>
             <button type="button" role="tab" class="adm-tab" data-tab="skpi" aria-selected="false">전체 KPI</button>
             <button type="button" role="tab" class="adm-tab" data-tab="leads" aria-selected="false">전체 문의 <em class="adm-count" id="cntLeads"></em></button>
@@ -135,6 +136,57 @@
             </section>
 
             <!-- 전체 사이트 -->
+            <!-- 운영 현황: 관리목록 · 현황 · 단계 · 운영 상태 · 특이사항 · 할 일 -->
+            <section class="adm-panel" data-panel="ops" role="tabpanel" hidden>
+              <ul class="adm-kpis st-tiles op-tiles" id="opTiles"></ul>
+              <div class="adm-toolbar">
+                <div class="board-filters" id="opFilter" role="group" aria-label="보기">
+                  <button class="f-chip is-active" type="button" data-f="">전체</button>
+                  <button class="f-chip" type="button" data-f="check">점검 필요</button>
+                  <button class="f-chip" type="button" data-f="todo">할 일 남은 곳</button>
+                  <button class="f-chip" type="button" data-f="lead">회신 전 문의</button>
+                </div>
+                <div class="adm-search">
+                  <select id="opTier" aria-label="범위"><option value="주력">주력 사이트</option><option value="">전체</option><option value="그 외">그 외</option></select>
+                  <select id="opCluster" aria-label="사업군"><option value="">모든 사업군</option></select>
+                  <select id="opState" aria-label="운영 현황"><option value="">모든 운영 현황</option></select>
+                  <input type="search" id="opSearch" placeholder="사이트 · 특이사항 · 할 일 검색" aria-label="운영 현황 검색" />
+                  <button type="button" class="btn btn-sm btn-line" id="opCheck">접속 점검</button>
+                  <button type="button" class="btn btn-sm btn-line" id="opCsv">CSV</button>
+                </div>
+              </div>
+              <p class="kpi-period st-info" id="opInfo"></p>
+              <div class="op-wrap"><table class="op-table" id="opTable"><tbody><tr><td class="acc-empty">불러오는 중…</td></tr></tbody></table></div>
+              <aside class="op-drawer" id="opDrawer" aria-label="사이트 상세" hidden></aside>
+
+              <div class="op-task-head">
+                <h3>할 일 모아 보기</h3>
+                <button type="button" class="btn btn-sm" id="opAddOpen">할 일 추가</button>
+              </div>
+              <form class="op-add" id="opAdd" hidden>
+                <select name="site" aria-label="사이트" required></select>
+                <select name="kind" aria-label="구분"></select>
+                <input name="title" maxlength="300" placeholder="할 일" aria-label="할 일" required />
+                <select name="owner" aria-label="담당"></select>
+                <input name="due" type="date" aria-label="기한" />
+                <button type="submit" class="btn btn-sm">추가</button>
+              </form>
+              <div class="adm-toolbar">
+                <div class="board-filters" id="opOwner" role="group" aria-label="담당">
+                  <button class="f-chip is-active" type="button" data-o="">모든 담당</button>
+                  <button class="f-chip" type="button" data-o="대표님">대표님</button>
+                  <button class="f-chip" type="button" data-o="Claude">Claude</button>
+                  <button class="f-chip" type="button" data-o="함께">함께</button>
+                </div>
+                <div class="board-filters" id="opStatus" role="group" aria-label="상태">
+                  <button class="f-chip is-active" type="button" data-s="open">남은 일</button>
+                  <button class="f-chip" type="button" data-s="done">완료</button>
+                  <button class="f-chip" type="button" data-s="">전체</button>
+                </div>
+              </div>
+              <ul class="op-tasks" id="opTasks"></ul>
+            </section>
+
             <section class="adm-panel" data-panel="sites" role="tabpanel" hidden>
               <ul class="adm-kpis st-tiles" id="stTiles"></ul>
               <div class="adm-toolbar">
@@ -396,8 +448,8 @@
   <a class="float-cta" id="floatCta" href="/contact">공실개발 상담하기</a>
   <button class="to-top" id="toTop" aria-label="맨 위로">↑</button>
 
-  <script src="/site-config.js?v=f229326c13" defer></script>
-  <script src="/script.js?v=f229326c13" defer></script>
-  <script src="/admin.js?v=f229326c13" defer></script>
+  <script src="/site-config.js?v=8f42201933" defer></script>
+  <script src="/script.js?v=8f42201933" defer></script>
+  <script src="/admin.js?v=8f42201933" defer></script>
 </body>
 </html>

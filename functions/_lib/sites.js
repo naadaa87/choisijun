@@ -7,6 +7,7 @@
    ========================================================= */
 import { json, fail, readJson, clean, nowIso, kst } from './core.js';
 import { SITE_SEED, METRICS, STAGES, SELF_ID } from './sites-seed.js';
+import { OPS_STATES } from './ops-seed.js';
 import { leadCounts } from './leads.js';
 
 const SEED_COLS = ['sort', 'tier', 'cluster', 'name', 'url', 'domain', 'alt', 'repo', 'priv', 'cf_kind', 'cf_project',
@@ -89,6 +90,8 @@ function readFields(body, isNew) {
   const bit = (k) => { if (body[k] !== undefined) out[k] = body[k] === true || body[k] === 1 || body[k] === '1' ? 1 : 0; };
   str('name', 80); str('cluster', 60); str('url', 300); str('domain', 120); str('alt', 300); str('repo', 120);
   str('cf_project', 80); str('storage', 300); str('entity', 80); str('summary', 300); str('model', 400); str('memo', 4000);
+  str('note', 2000); str('inquiry_via', 200);
+  if (body.ops !== undefined) out.ops = OPS_STATES.includes(body.ops) ? body.ops : '';
   bit('priv'); bit('naver'); bit('google'); bit('bing'); bit('archived');
   if (body.tier !== undefined) out.tier = TIERS.includes(body.tier) ? body.tier : '그 외';
   if (body.stage !== undefined) out.stage = STAGES.includes(body.stage) ? body.stage : '미분류';

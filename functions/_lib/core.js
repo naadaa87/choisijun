@@ -223,12 +223,32 @@ const SCHEMA = [
     memo TEXT NOT NULL DEFAULT '',
     replied_at INTEGER,
     updated_at INTEGER NOT NULL
-  )`
+  )`,
+  /* 운영 현황 — 사이트별 할 일 (site '*' = 전체 공통) */
+  `CREATE TABLE IF NOT EXISTS site_tasks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    site TEXT NOT NULL,
+    kind TEXT NOT NULL DEFAULT '개선',
+    title TEXT NOT NULL,
+    owner TEXT NOT NULL DEFAULT '대표님',
+    status TEXT NOT NULL DEFAULT '대기',
+    due TEXT NOT NULL DEFAULT '',
+    note TEXT NOT NULL DEFAULT '',
+    sort INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    done_at TEXT
+  )`,
+  `CREATE INDEX IF NOT EXISTS idx_site_tasks_site ON site_tasks(site, status)`,
+  `CREATE TABLE IF NOT EXISTS admin_flags (k TEXT PRIMARY KEY, v TEXT NOT NULL DEFAULT '', at TEXT)`
 ];
 
 /** 예전에 만든 표에 새 칸 더하기 (이미 있으면 건너뜀) */
 const MIGRATIONS = [
-  ['inquiries', 'member_id', 'ALTER TABLE inquiries ADD COLUMN member_id INTEGER']
+  ['inquiries', 'member_id', 'ALTER TABLE inquiries ADD COLUMN member_id INTEGER'],
+  ['sites', 'ops', "ALTER TABLE sites ADD COLUMN ops TEXT NOT NULL DEFAULT ''"],
+  ['sites', 'note', "ALTER TABLE sites ADD COLUMN note TEXT NOT NULL DEFAULT ''"],
+  ['sites', 'inquiry_via', "ALTER TABLE sites ADD COLUMN inquiry_via TEXT NOT NULL DEFAULT ''"]
 ];
 
 const SEED_POSTS = [
