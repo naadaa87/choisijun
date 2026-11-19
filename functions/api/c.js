@@ -18,7 +18,7 @@ let hostMap = null;
 let hostAt = 0;
 
 /** 등록된 주소 → 사이트 이름. 5분마다 새로 읽는다 */
-async function siteOf(DB, host) {
+export async function siteOf(DB, host) {
   if (!hostMap || Date.now() - hostAt > 5 * 60 * 1000) {
     await ensureSeed(DB);
     const rows = (await DB.prepare("SELECT id, url, domain, alt FROM sites WHERE archived = 0").all()).results || [];

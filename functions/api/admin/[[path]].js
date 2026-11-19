@@ -9,7 +9,7 @@ import {
 } from '../../_lib/core.js';
 import { kpi } from '../../_lib/kpi.js';
 import { sitesRoute, sitesSummary, ensureSeed } from '../../_lib/sites.js';
-import { leads } from '../../_lib/leads.js';
+import { leads, markLead } from '../../_lib/leads.js';
 
 const REPO_DEFAULT = 'naadaa87/choisijun';
 const BACKLOG_PATH = 'content/plan/backlog.md';
@@ -58,6 +58,7 @@ export async function onRequest(context) {
     if (route === 'kpi' && method === 'GET') return kpi(DB, request);
     if (parts[0] === 'sites' || parts[0] === 'skpi') return sitesRoute(DB, env, request, parts, method);
     if (route === 'leads' && method === 'GET') { await ensureSeed(DB); return leads(DB, env, request); }
+    if (route === 'leads/mark' && method === 'POST') return markLead(DB, await readJson(request, 10_000));
 
     if (parts[0] === 'members') {
       if (method === 'GET' && parts.length === 1) return membersList(DB, request);

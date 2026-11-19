@@ -2747,3 +2747,13 @@ a.st-link:hover { border-color: var(--signal); color: #C2380C; }
   .ld-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .ld-src-list { grid-template-columns: 1fr; }
 }
+
+/* 전체 문의 — 확인·회신 표시와 메모 */
+.adm-tag.is-on { background: #EDF7EF; color: #2C7A3E; }
+.ld-row.is-done .adm-row-title strong { color: var(--concrete); }
+.ld-mark { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 12px 0 8px; }
+.ld-mark .link-btn { font-size: 0.8rem; color: var(--concrete); margin-left: 4px; }
+.ld-memo { display: flex; gap: 8px; align-items: flex-start; }
+.ld-memo textarea { flex: 1; min-width: 0; font: inherit; font-size: 0.88rem; line-height: 1.5; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; resize: vertical; background: #fff; }
+.ld-memo-line { margin: 6px 0 0; font-size: 0.82rem; color: #2C7A3E; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 640px) { .ld-memo { flex-direction: column; } .ld-memo .btn { align-self: flex-end; } }

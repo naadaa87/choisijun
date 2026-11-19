@@ -199,7 +199,31 @@ const SCHEMA = [
      target TEXT NOT NULL DEFAULT '',
      vid TEXT NOT NULL DEFAULT ''
    )`,
-  `CREATE INDEX IF NOT EXISTS idx_xev_site_day ON xev(site, day)`
+  `CREATE INDEX IF NOT EXISTS idx_xev_site_day ON xev(site, day)`,
+  /* 문의 저장소가 없는 사이트의 문의를 대신 받아 두는 곳 (/api/lead) */
+  `CREATE TABLE IF NOT EXISTS xleads (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    created_at TEXT NOT NULL,
+    site TEXT NOT NULL,
+    kind TEXT,
+    name TEXT,
+    contact TEXT,
+    message TEXT,
+    page TEXT,
+    data TEXT,
+    ip_hash TEXT,
+    status TEXT NOT NULL DEFAULT 'new'
+  )`,
+  `CREATE INDEX IF NOT EXISTS idx_xleads_site ON xleads(site, id)`,
+  /* 전체 문의 처리 기록: 어느 사이트 문의든 확인·회신 여부와 메모를 여기 남긴다 (k = 사이트|구분|접수번호) */
+  `CREATE TABLE IF NOT EXISTS lead_marks (
+    k TEXT PRIMARY KEY,
+    site TEXT NOT NULL,
+    state TEXT NOT NULL DEFAULT 'seen',
+    memo TEXT NOT NULL DEFAULT '',
+    replied_at INTEGER,
+    updated_at INTEGER NOT NULL
+  )`
 ];
 
 /** 예전에 만든 표에 새 칸 더하기 (이미 있으면 건너뜀) */

@@ -111,3 +111,17 @@ database_id = "16fb666d-88fc-41f8-9399-2fc21c92b545"
 binding = "DB_MYWORKS"
 database_name = "myworks-db"
 database_id = "50158886-ab08-43ea-a7ca-dbb69be1323e"
+
+[[d1_databases]]
+binding = "DB_GUSPACE"
+database_name = "guspacedev-db"
+database_id = "f8c5afb3-87b7-46ef-987c-c910ae92df92"
+
+# KV 에 문의를 저장하는 사이트 (읽기만 함)
+[[kv_namespaces]]
+binding = "KV_PVIT"
+id = "e5c8b55ab564445db29feb2ba8029454"
+
+[[kv_namespaces]]
+binding = "KV_HANTANG"
+id = "5c8abc388c9c4fa48c68fc281139bb7e"

@@ -2,10 +2,11 @@
    관리자 '전체 문의' — 각 사이트 DB에 쌓인 고객 문의를 한 화면에서 보기
    /api/admin/leads
    - 문의를 이쪽으로 복사하지 않는다. 각 사이트의 D1을 이 홈페이지에 연결(바인딩)해 두고, 볼 때마다 그 자리에서 읽는다
-   - 읽기만 한다. 상태 변경·답변은 각 사이트의 관리자 화면에서 한다
-   - 연결은 wrangler.toml 의 [[d1_databases]] 에서 관리한다 (변수 이름 = 아래 bind)
+   - 각 사이트 DB는 읽기만 한다. 확인·회신 여부와 메모는 이 홈페이지의 lead_marks 표에 따로 남긴다
+   - 연결은 wrangler.toml 의 [[d1_databases]]·[[kv_namespaces]] 에서 관리한다 (변수 이름 = 아래 bind)
+   - 문의 저장소가 없는 사이트는 /api/lead 로 이 홈페이지에 직접 보내고(xleads 표), 여기서 함께 보인다
    ========================================================= */
-import { json, clean, kst } from './core.js';
+import { json, fail, clean, kst } from './core.js';
 import { SELF_ID } from './sites-seed.js';
 
 const J = (...parts) => `TRIM(${parts.join(" || ' ' || ")})`;
@@ -70,7 +71,26 @@ export const LEAD_SOURCES = [
   { site: 'todaypartyroom', bind: 'DB_TODAYPARTYROOM', label: '문의·신고', by: 'id',
     q: `SELECT id AS ref, created_at AS at, kind, '' AS name, ${N('contact')} AS contact, content AS text, status FROM reports` },
   { site: 'myworks', bind: 'DB_MYWORKS', label: '사용자 의견', by: 'created_at', soft: true,
-    q: `SELECT id AS ref, created_at AS at, COALESCE(kind, '의견') AS kind, ${J(N('name'), N('ws_name'))} AS name, ${N('contact')} AS contact, body AS text, status FROM fb` }
+    q: `SELECT id AS ref, created_at AS at, COALESCE(kind, '의견') AS kind, ${J(N('name'), N('ws_name'))} AS name, ${N('contact')} AS contact, body AS text, status FROM fb` },
+  { site: 'guspacedev', bind: 'DB_GUSPACE', label: '문의', by: 'id',
+    q: `SELECT id AS ref, created_at AS at, ${J(N('who'), N('space'))} AS kind, ${N('name')} AS name, ${J(N('phone'), N('email'))} AS contact,
+        TRIM(${N('location')} || ${P(' · ', 'size')} || COALESCE(char(10) || message, '')) AS text, status FROM inquiries` },
+  { site: 'ssople', bind: 'DB_SSOPLE', label: '공간 입점 신청', by: 'id', where: 'submitted_at IS NOT NULL',
+    q: `SELECT id AS ref, submitted_at AS at, CASE kind WHEN 'link' THEN '링크 입점' ELSE '신규 입점' END AS kind, ${N('name')} AS name, ${N('contact')} AS contact,
+        TRIM(${N('region')} || ${P(' · ', 'area')}) AS text, status, data AS extra FROM space_apps` },
+  { site: 'eightletters-web', bind: 'DB_YEODEOL', label: '출시 알림 신청', by: 'id', soft: true,
+    q: `SELECT id AS ref, created_at AS at, product AS kind, '' AS name, email AS contact, '' AS text, CASE WHEN notified_at IS NULL THEN 'pending' ELSE 'done' END AS status FROM waitlist` },
+  /* 문의 저장소가 없는 사이트가 /api/lead 로 보낸 것 — 줄마다 사이트가 다르다 */
+  { site: '*', central: true, bind: 'DB', label: '문의', by: 'id',
+    q: `SELECT id AS ref, created_at AS at, kind, name, contact, message AS text, status, data AS extra, site FROM xleads` }
+];
+
+/* KV 에 문의를 저장하는 사이트 (D1 이 아니라 키·값 저장소) */
+export const KV_SOURCES = [
+  { site: 'pvit', bind: 'KV_PVIT', label: '호스트 입점 신청', mode: 'index', prefix: 'apply' },
+  { site: 'pvit', bind: 'KV_PVIT', label: '예약 요청', mode: 'index', prefix: 'booking' },
+  { site: 'pvit', bind: 'KV_PVIT', label: '문의', mode: 'index', prefix: 'contact' },
+  { site: 'hantang-web', bind: 'KV_HANTANG', label: '업소 등록 신청', mode: 'list', prefix: 'sub:' }
 ];
 
 /** 날짜 값(숫자·ISO·'YYYY-MM-DD HH:MM:SS')을 밀리초로 */
@@ -109,11 +129,16 @@ function extraText(raw) {
   return out.join('\n').slice(0, 1200);
 }
 
-async function readSource(env, src, limit) {
+async function readSource(env, src, limit, onlySite) {
   const DB = env[src.bind];
   if (!DB) return { src, ok: false, error: '연결 전', rows: [] };
   try {
-    const rows = (await DB.prepare(`${src.q} ORDER BY ${src.by} DESC LIMIT ?`).bind(limit).all()).results || [];
+    const conds = [];
+    const args = [];
+    if (src.where) conds.push(src.where);
+    if (src.central && onlySite) { conds.push('site = ?'); args.push(onlySite); }
+    const where = conds.length ? ` WHERE ${conds.join(' AND ')}` : '';
+    const rows = (await DB.prepare(`${src.q}${where} ORDER BY ${src.by} DESC LIMIT ?`).bind(...args, limit).all()).results || [];
     return { src, ok: true, rows };
   } catch (e) {
     const msg = String((e && e.message) || e);
@@ -121,56 +146,167 @@ async function readSource(env, src, limit) {
   }
 }
 
+/* KV 에 쌓인 신청서를 문의 모양으로 바꾼다 */
+const KV_NAME = ['name', 'contact_name', 'hostName', 'host_name', 'company', 'name_ko', 'nickname'];
+const KV_PHONE = ['phone', 'contact_phone', 'tel', 'mobile'];
+const KV_MAIL = ['email', 'contact_email'];
+const KV_TEXT = ['message', 'memo', 'note', 'request', 'desc_ko', 'content', 'text'];
+const KV_USED = new Set(['id', 'ref', 'receivedAt', 'created', 'at', 'status', 'type', 'kind', 'category', 'address', 'photos', ...KV_NAME, ...KV_PHONE, ...KV_MAIL, ...KV_TEXT]);
+const kvPick = (o, keys) => { for (const k of keys) if (o && o[k] != null && String(o[k]).trim()) return String(o[k]).trim(); return ''; };
+
+async function readKv(env, src, limit) {
+  const KV = env[src.bind];
+  if (!KV) return { src, ok: false, error: '연결 전', rows: [] };
+  try {
+    let ids = [];
+    if (src.mode === 'index') {
+      const idx = JSON.parse((await KV.get(`${src.prefix}:_index`)) || '[]');
+      ids = idx.slice(0, limit).map((x) => `${src.prefix}:${x.id}`);
+    } else {
+      const keys = [];
+      let cursor;
+      for (let n = 0; n < 5; n++) {
+        const page = await KV.list({ prefix: src.prefix, cursor });
+        keys.push(...page.keys);
+        if (page.list_complete || !page.cursor) break;
+        cursor = page.cursor;
+      }
+      keys.sort((a, b) => String((b.metadata || {}).created || '').localeCompare(String((a.metadata || {}).created || '')));
+      ids = keys.slice(0, limit).map((k) => k.name);
+    }
+    const recs = await Promise.all(ids.map((k) => KV.get(k, 'json').catch(() => null)));
+    const rows = recs.filter(Boolean).map((r) => {
+      const phone = kvPick(r, KV_PHONE);
+      const email = kvPick(r, KV_MAIL);
+      return {
+        ref: r.id || '', at: r.receivedAt || r.created || r.at || '',
+        kind: clean(r.type || r.kind || r.category || '', 60),
+        name: kvPick(r, KV_NAME), contact: [phone, email].filter(Boolean).join(' · '),
+        text: [[r.name_ko, r.address].filter(Boolean).join(' · '), kvPick(r, KV_TEXT)].filter(Boolean).join('\n'),
+        status: r.status || '', extra: JSON.stringify(Object.fromEntries(Object.entries(r).filter(([k]) => !KV_USED.has(k))))
+      };
+    });
+    return { src, ok: true, rows };
+  } catch (e) {
+    return { src, ok: false, error: '읽지 못함', detail: String((e && e.message) || e).slice(0, 160), rows: [] };
+  }
+}
+
+export const leadKey = (site, label, ref) => `${site}|${label}|${ref}`;
+const OPEN_MARK = { seen: true, hold: true };                 // 확인만 했거나 보류 = 아직 회신 전
+export const MARK_STATES = { seen: '확인함', replied: '회신함', done: '처리 완료', hold: '보류', spam: '스팸·무관' };
+
 export async function leads(DB, env, request) {
   const u = new URL(request.url).searchParams;
   const only = clean(u.get('site'), 48);
   const per = only ? 200 : 60;
   const names = Object.fromEntries(((await DB.prepare('SELECT id, name, url FROM sites').all()).results || []).map((r) => [r.id, r]));
-  const list = LEAD_SOURCES.filter((s) => !only || s.site === only);
-  const got = await Promise.all(list.map((s) => readSource(env, s, per)));
+  const list = LEAD_SOURCES.filter((s) => !only || s.central || s.site === only);
+  const kvList = KV_SOURCES.filter((s) => !only || s.site === only);
+  const got = await Promise.all([
+    ...list.map((s) => readSource(env, s, per, only)),
+    ...kvList.map((s) => readKv(env, s, per))
+  ]);
+  const marks = Object.fromEntries((((await DB.prepare('SELECT k, state, memo, replied_at, updated_at FROM lead_marks').all().catch(() => null)) || {}).results || []).map((m) => [m.k, m]));
+  const monthAgo = Date.now() - 30 * 86400 * 1000;
   const items = [];
   const sources = [];
   got.forEach(({ src, ok, error, detail, rows }) => {
-    const site = names[src.site] || { name: src.site, url: '' };
-    let fresh = 0;
+    const counts = {};                                           // 사이트별 (중앙 접수는 줄마다 사이트가 다르다)
     rows.forEach((r) => {
+      const siteId = src.central ? String(r.site || '') : src.site;
+      if (only && siteId !== only) return;
+      const site = names[siteId] || { name: siteId, url: '' };
+      const label = src.central ? '문의(최시준 접수)' : src.label;
+      const ref = String(r.ref == null ? '' : r.ref);
+      const at = toMs(r.at, src.tz);
       const status = String(r.status == null ? '' : r.status).trim();
-      const isNew = NEW.test(status);
-      if (isNew) fresh++;
+      const key = leadKey(siteId, label, ref);
+      const mark = marks[key] || null;
+      const isNew = mark ? Boolean(OPEN_MARK[mark.state]) : (NEW.test(status) || (!status && at > monthAgo));
+      const c = counts[siteId] || (counts[siteId] = { count: 0, fresh: 0, name: site.name, url: site.url });
+      c.count++; if (isNew && !src.soft) c.fresh++;
       const text = [clean(r.text, 3000), extraText(r.extra)].filter(Boolean).join('\n');
       items.push({
-        site: src.site, siteName: site.name, label: src.label, soft: Boolean(src.soft), ref: String(r.ref == null ? '' : r.ref),
-        at: toMs(r.at, src.tz), kind: clean(r.kind, 80), name: clean(r.name, 120), contact: clean(r.contact, 160), text,
-        status: STATUS_KO[status.toLowerCase()] || status, isNew
+        key, site: siteId, siteName: site.name, siteUrl: site.url, label, soft: Boolean(src.soft), central: Boolean(src.central), ref,
+        at, kind: clean(r.kind, 80), name: clean(r.name, 120), contact: clean(r.contact, 160), text,
+        status: STATUS_KO[status.toLowerCase()] || status, isNew,
+        mark: mark ? { state: mark.state, label: MARK_STATES[mark.state] || mark.state, memo: mark.memo || '', repliedAt: mark.replied_at || 0, at: mark.updated_at } : null
       });
     });
-    sources.push({ site: src.site, siteName: site.name, url: site.url, label: src.label, ok, error: error || '', detail: detail || '', count: rows.length, fresh, full: rows.length >= per });
+    if (src.central) {
+      Object.entries(counts).forEach(([id, c]) => sources.push({ site: id, siteName: c.name, url: c.url, label: '문의(최시준 접수)', central: true, ok: true, error: '', detail: '', count: c.count, fresh: c.fresh, full: false }));
+      if (!ok) sources.push({ site: SELF_ID, siteName: (names[SELF_ID] || {}).name || SELF_ID, url: '', label: '문의(최시준 접수)', central: true, ok, error: error || '', detail: detail || '', count: 0, fresh: 0, full: false });
+      return;
+    }
+    const site = names[src.site] || { name: src.site, url: '' };
+    const c = counts[src.site] || { count: 0, fresh: 0 };
+    sources.push({ site: src.site, siteName: site.name, url: site.url, label: src.label, ok, error: error || '', detail: detail || '', count: c.count, fresh: c.fresh, full: rows.length >= per, soft: Boolean(src.soft) });
   });
   items.sort((a, b) => b.at - a.at);
-  return json({ ok: true, now: Date.now(), per, items: items.slice(0, only ? 400 : 600), sources });
+  return json({ ok: true, now: Date.now(), per, states: MARK_STATES, items: items.slice(0, only ? 400 : 800), sources });
+}
+
+/** 전체 문의에서 확인·회신 표시와 메모 남기기: POST /api/admin/leads/mark { key, state, memo } — state 가 '' 면 표시를 지운다 */
+export async function markLead(DB, body) {
+  const key = clean(body && body.key, 300);
+  const parts = key.split('|');
+  if (parts.length < 3 || !parts[0]) return fail('어느 문의인지 알 수 없습니다.');
+  const state = clean(body.state, 20);
+  const memo = clean(body.memo, 2000);
+  const now = Date.now();
+  if (!state) {
+    await DB.prepare('DELETE FROM lead_marks WHERE k = ?').bind(key).run();
+    return json({ ok: true, key, mark: null });
+  }
+  if (!MARK_STATES[state]) return fail('알 수 없는 상태입니다.');
+  const prev = await DB.prepare('SELECT replied_at FROM lead_marks WHERE k = ?').bind(key).first();
+  const repliedAt = state === 'replied' ? (prev && prev.replied_at) || now : (prev && prev.replied_at) || null;
+  await DB.prepare(`INSERT INTO lead_marks (k, site, state, memo, replied_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)
+    ON CONFLICT(k) DO UPDATE SET state = excluded.state, memo = excluded.memo, replied_at = excluded.replied_at, updated_at = excluded.updated_at`)
+    .bind(key, parts[0], state, memo, repliedAt, now).run();
+  return json({ ok: true, key, mark: { state, label: MARK_STATES[state], memo, repliedAt: repliedAt || 0, at: now } });
 }
 
 /** 전체 KPI용: 사이트별 · 달별 문의 수 (최근 것부터 최대 3,000건씩 날짜만 읽어 센다) */
 export async function leadCounts(env, months, onlySite) {
   const first = months[0];
-  const list = LEAD_SOURCES.filter((s) => !s.soft && s.site !== SELF_ID && env[s.bind] && (!onlySite || s.site === onlySite));
   const out = {};        // out[site][month] = n
   const seen = {};       // 읽기에 성공한 사이트
+  const add = (site, ms) => {
+    if (!ms) return;
+    const m = kst(ms).day.slice(0, 7);
+    if (m < first) return;
+    const bucket = out[site] || (out[site] = {});
+    bucket[m] = (bucket[m] || 0) + 1;
+  };
+  const list = LEAD_SOURCES.filter((s) => !s.soft && env[s.bind] && (s.central || (s.site !== SELF_ID && (!onlySite || s.site === onlySite))));
   await Promise.all(list.map(async (src) => {
     try {
       const table = (src.q.match(/FROM (\w+)\s*$/) || [])[1];
       const col = (src.q.match(/(\w+) AS at\b/) || [])[1] || 'created_at';
       if (!table) return;
-      const rows = (await env[src.bind].prepare(`SELECT ${col} AS c FROM ${table} ORDER BY ${src.by} DESC LIMIT 3000`).all()).results || [];
-      seen[src.site] = true;
-      const bucket = out[src.site] || (out[src.site] = {});
+      const conds = [];
+      const args = [];
+      if (src.where) conds.push(src.where);
+      if (src.central && onlySite) { conds.push('site = ?'); args.push(onlySite); }
+      const where = conds.length ? ` WHERE ${conds.join(' AND ')}` : '';
+      const rows = (await env[src.bind].prepare(`SELECT ${col} AS c${src.central ? ', site' : ''} FROM ${table}${where} ORDER BY ${src.by} DESC LIMIT 3000`).bind(...args).all()).results || [];
+      if (!src.central) seen[src.site] = true;
       rows.forEach((r) => {
-        const ms = toMs(r.c, src.tz);
-        if (!ms) return;
-        const m = kst(ms).day.slice(0, 7);
-        if (m >= first) bucket[m] = (bucket[m] || 0) + 1;
+        const site = src.central ? r.site : src.site;
+        if (src.central) seen[site] = true;
+        add(site, toMs(r.c, src.tz));
       });
     } catch (_) { /* 표가 아직 없으면 건너뜀 */ }
+  }));
+  await Promise.all(KV_SOURCES.filter((s) => env[s.bind] && (!onlySite || s.site === onlySite)).map(async (src) => {
+    try {
+      const { ok, rows } = await readKv(env, src, 300);
+      if (!ok) return;
+      seen[src.site] = true;
+      rows.forEach((r) => add(src.site, toMs(r.at)));
+    } catch (_) { /* 건너뜀 */ }
   }));
   return { counts: out, seen };
 }

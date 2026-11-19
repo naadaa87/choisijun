@@ -1714,11 +1714,15 @@
   });
 
   /* =========================================================
-     전체 문의 — 각 사이트에 들어온 고객 문의를 한 화면에서 (읽기 전용)
+     전체 문의 — 각 사이트에 들어온 고객 문의를 한 화면에서
+     - 문의 내용은 각 사이트 DB에서 읽기만 한다
+     - 확인·회신 표시와 메모는 이 관리자에 따로 남긴다 (각 사이트의 상태 값은 바뀌지 않음)
      ========================================================= */
   const LD = { data: null, filter: { f: '', site: '', q: '' }, open: null };
-  const ldKey = (r) => `${r.site}|${r.label}|${r.ref}`;
+  const ldKey = (r) => r.key || `${r.site}|${r.label}|${r.ref}`;
   const ldDate = (ms) => (ms ? KST(new Date(ms).toISOString()) : '날짜 없음');
+  const LD_STATES = [['seen', '확인함'], ['replied', '회신함'], ['done', '처리 완료'], ['hold', '보류'], ['spam', '스팸·무관']];
+  const ldReplied = (r) => r.mark && (r.mark.state === 'replied' || r.mark.state === 'done');
 
   async function loadLeads() {
     const list = q('#ldList');
@@ -1728,6 +1732,7 @@
       const sel = q('#ldSite');
       const seen = [];
       d.sources.forEach((s) => { if (!seen.find((x) => x.site === s.site)) seen.push(s); });
+      seen.sort((x, y) => String(x.siteName).localeCompare(String(y.siteName), 'ko'));
       sel.innerHTML = '<option value="">모든 사이트</option>' + seen.map((s) => `<option value="${esc(s.site)}"${s.site === LD.filter.site ? ' selected' : ''}>${esc(s.siteName)}</option>`).join('');
       renderLeads();
     } catch (err) {
@@ -1752,25 +1757,45 @@
     const weekAgo = d.now - 7 * 86400 * 1000;
     return d.items.filter((r) => {
       if (f.site && r.site !== f.site) return false;
-      if (f.f === 'new' && !r.isNew) return false;
+      if (f.f === 'new' && (!r.isNew || r.soft)) return false;
+      if (f.f === 'replied' && !ldReplied(r)) return false;
+      if (f.f === 'memo' && !(r.mark && r.mark.memo)) return false;
       if (f.f === '7' && r.at < weekAgo) return false;
-      if (k && ![r.siteName, r.kind, r.name, r.contact, r.text, r.ref].join(' ').toLowerCase().includes(k)) return false;
+      if (k && ![r.siteName, r.kind, r.name, r.contact, r.text, r.ref, r.mark ? r.mark.memo : ''].join(' ').toLowerCase().includes(k)) return false;
       return true;
     });
   }
 
   function leadContactLinks(r) {
     const out = [];
-    const email = (r.contact.match(/[^\s@,]+@[^\s@,]+\.[^\s@,]{2,}/) || [])[0];
+    const email = (r.contact.match(/[^\s@,·]+@[^\s@,·]+\.[^\s@,·]{2,}/) || [])[0];
     const phone = ((r.contact.match(/\+?\d[\d\- ]{7,14}\d/) || [])[0] || '').replace(/[^\d+]/g, '');
-    if (phone) { out.push(`<a href="tel:${esc(phone)}">전화</a>`); out.push(`<a href="sms:${esc(phone)}">문자</a>`); }
+    if (phone) { out.push(`<a href="tel:${esc(phone)}" data-ld-reply>전화</a>`); out.push(`<a href="sms:${esc(phone)}" data-ld-reply>문자</a>`); }
     if (email) {
       const subject = `Re: ${r.siteName} 문의 주셔서 감사합니다`;
       const body = `${r.name ? r.name + '님, ' : ''}안녕하세요. ${r.siteName}입니다.\n\n남겨 주신 문의 잘 받았습니다.\n\n\n\n----- 보내 주신 문의 (${ldDate(r.at)}) -----\n${r.text}`;
-      out.push(`<a href="mailto:${esc(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}">메일로 답장</a>`);
+      out.push(`<a href="mailto:${esc(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}" data-ld-reply>메일로 답장</a>`);
     }
     if (r.contact) out.push('<button type="button" class="link-btn" data-ld-copy>연락처 복사</button>');
+    if (!out.length) out.push('<span class="acc-help">남긴 연락처가 없습니다.</span>');
     return out.join('');
+  }
+
+  function ldMarkTag(r) {
+    if (r.mark) {
+      const cls = r.mark.state === 'replied' || r.mark.state === 'done' ? 'is-on' : r.mark.state === 'spam' ? 'is-off' : 'is-ad';
+      return `<span class="adm-tag ${cls}">${esc(r.mark.label)}${r.mark.state === 'replied' && r.mark.repliedAt ? ' ' + esc(KST(new Date(r.mark.repliedAt).toISOString()).slice(5, 10)) : ''}</span>`;
+    }
+    return r.isNew && !r.soft ? '<span class="adm-tag is-ad">회신 전</span>' : '';
+  }
+
+  async function ldSaveMark(r, state, memo) {
+    try {
+      const res = await api('leads/mark', { method: 'POST', body: { key: ldKey(r), state, memo: memo == null ? (r.mark ? r.mark.memo : '') : memo } });
+      r.mark = res.mark;
+      r.isNew = r.mark ? r.mark.state === 'seen' || r.mark.state === 'hold' : r.isNew;
+      return true;
+    } catch (err) { showMsg(err.message, 'err'); return false; }
   }
 
   function renderLeads() {
@@ -1782,31 +1807,34 @@
     const okSites = new Set(d.sources.filter((s) => s.ok).map((s) => s.site));
     const allSites = new Set(d.sources.map((s) => s.site));
     const fresh = real.filter((r) => r.isNew);
+    const replied30 = real.filter((r) => r.mark && r.mark.repliedAt && r.mark.repliedAt >= d.now - 30 * day).length;
     q('#cntLeads').textContent = fresh.length ? String(fresh.length) : '';
     const tiles = [
-      [fmtN(fresh.length), '아직 처리 전', '각 사이트에서 상태가 새 문의·접수인 것'],
+      [fmtN(fresh.length), '회신 전', '아직 표시가 없거나 확인만 한 문의'],
       [fmtN(real.filter((r) => r.at >= todayStart).length), '오늘 들어온 문의', `어제 ${fmtN(real.filter((r) => r.at >= todayStart - day && r.at < todayStart).length)}건`],
       [fmtN(real.filter((r) => r.at >= d.now - 7 * day).length), '최근 7일', `최근 30일 ${fmtN(real.filter((r) => r.at >= d.now - 30 * day).length)}건`],
-      [`${okSites.size}<small>/${allSites.size}</small>`, '연결된 사이트', '문의를 DB에 저장하는 사이트 가운데']
+      [fmtN(replied30), '최근 30일 회신', `연결된 사이트 ${okSites.size}/${allSites.size}곳`]
     ];
     q('#ldTiles').innerHTML = tiles.map(([n, label, foot]) => `<li><button type="button" tabindex="-1"><span class="adm-kpi-num">${n}</span><span class="adm-kpi-label">${esc(label)}</span><span class="adm-kpi-foot">${esc(foot)}</span></button></li>`).join('');
 
     const rows = shownLeads();
-    q('#ldInfo').innerHTML = `<strong>${fmtN(rows.length)}건</strong> 보는 중 · 사이트마다 최근 ${d.per}건까지 불러옵니다 · 여기서는 보기만 하고, 상태 변경과 답변 기록은 각 사이트 관리자 화면에서 합니다`;
+    q('#ldInfo').innerHTML = `<strong>${fmtN(rows.length)}건</strong> 보는 중 · 사이트마다 최근 ${d.per}건까지 불러옵니다 · 문의를 열면 '확인함'으로 표시되고, 연락한 뒤 '회신함'을 누르면 회신 전 목록에서 빠집니다`;
 
     /* 사이트별 현황 */
     const bySite = [];
     d.sources.forEach((s) => {
       let g = bySite.find((x) => x.site === s.site);
-      if (!g) { g = { site: s.site, name: s.siteName, url: s.url, count: 0, fresh: 0, bad: [], full: false }; bySite.push(g); }
-      g.count += s.count; g.fresh += s.fresh; g.full = g.full || s.full;
+      if (!g) { g = { site: s.site, name: s.siteName, url: s.url, count: 0, fresh: 0, bad: [], full: false, central: false, labels: [] }; bySite.push(g); }
+      g.count += s.count; g.fresh += s.fresh; g.full = g.full || s.full; g.central = g.central || Boolean(s.central);
+      if (!g.labels.includes(s.label)) g.labels.push(s.label);
       if (!s.ok) g.bad.push(`${s.label}: ${s.error}`);
     });
+    bySite.sort((x, y) => (y.fresh - x.fresh) || (y.count - x.count));
     const problem = bySite.filter((g) => g.bad.length);
     q('#ldSources').innerHTML = `
-      <details class="ld-src"${LD.srcOpen ? ' open' : ''}><summary>사이트별 현황 <small>${bySite.filter((g) => g.fresh).length}곳에 처리 전 문의${problem.length ? ` · 읽지 못한 곳 ${problem.length}곳` : ''}</small></summary>
-        <ul class="ld-src-list">${bySite.map((g) => `<li><button type="button" class="link-btn" data-ld-site="${esc(g.site)}">${esc(g.name)}</button><span>${g.bad.length && !g.count ? esc(g.bad[0].split(': ')[1]) : `최근 ${fmtN(g.count)}${g.full ? '+' : ''}건`}</span>${g.fresh ? `<span class="adm-tag is-ad">처리 전 ${g.fresh}</span>` : ''}${g.url ? `<a href="${esc(g.url)}/admin" target="_blank" rel="noopener">관리자 ↗</a>` : ''}</li>`).join('')}</ul>
-        <p class="acc-help">'연결 전'은 그 사이트의 DB가 아직 이 관리자에 연결되지 않은 것이고, '아직 문의 표가 없음'은 그 사이트에 첫 문의가 들어오기 전이라는 뜻입니다. 지유공간개발·프빗·플레이션 등 문의를 DB에 저장하지 않는 사이트는 목록에 없습니다.</p>
+      <details class="ld-src"${LD.srcOpen ? ' open' : ''}><summary>사이트별 현황 <small>${bySite.length}곳 연결 · ${bySite.filter((g) => g.fresh).length}곳에 회신 전 문의${problem.length ? ` · 확인이 필요한 곳 ${problem.length}곳` : ''}</small></summary>
+        <ul class="ld-src-list">${bySite.map((g) => `<li title="${esc(g.labels.join(' · '))}${g.bad.length ? '\n' + esc(g.bad.join('\n')) : ''}"><button type="button" class="link-btn" data-ld-site="${esc(g.site)}">${esc(g.name)}</button><span>${g.bad.length && !g.count ? esc(g.bad[0].split(': ').slice(1).join(': ')) : `최근 ${fmtN(g.count)}${g.full ? '+' : ''}건`}${g.central ? ' · 최시준 접수' : ''}</span>${g.fresh ? `<span class="adm-tag is-ad">회신 전 ${g.fresh}</span>` : ''}${g.url ? `<a href="${esc(g.url)}/admin" target="_blank" rel="noopener">관리자 ↗</a>` : ''}</li>`).join('')}</ul>
+        <p class="acc-help">'연결 전'은 그 사이트의 저장소가 이 관리자에 아직 연결되지 않은 것이고, '아직 문의 표가 없음'은 그 사이트에 첫 문의가 들어오기 전이라는 뜻입니다. 문의 저장소가 없는 사이트(플레이션·프롭피어·BFC·몽크루·연결점)는 이 홈페이지가 대신 받아 '최시준 접수'로 표시합니다.</p>
       </details>`;
     const det = q('.ld-src');
     if (det) det.addEventListener('toggle', () => { LD.srcOpen = det.open; });
@@ -1816,31 +1844,54 @@
     list.innerHTML = rows.length ? rows.slice(0, 300).map((r) => {
       const open = LD.open === ldKey(r);
       const text = r.text || '';
+      const memo = r.mark ? r.mark.memo : '';
+      const where = r.central
+        ? '이 홈페이지가 대신 받은 문의입니다 (그 사이트 관리자에는 없음)'
+        : `<a href="${esc(r.siteUrl || '')}/admin" target="_blank" rel="noopener">${esc(r.siteName)} 관리자에서 보기 ↗</a>`;
       return `
-      <li class="adm-row ld-row${open ? ' is-open' : ''}" tabindex="0" data-key="${esc(ldKey(r))}">
-        <div class="acc-item-head"><span class="adm-tag is-site">${esc(r.siteName)}</span>${r.kind ? `<span class="adm-tag">${esc(r.kind)}</span>` : ''}${r.status ? `<span class="adm-tag ${r.isNew ? 'is-ad' : 'is-off'}">${esc(r.status)}</span>` : ''}<span class="acc-date mono">${esc(ldDate(r.at))}${r.at ? ' · ' + ago(new Date(r.at).toISOString()) : ''}</span></div>
+      <li class="adm-row ld-row${open ? ' is-open' : ''}${ldReplied(r) ? ' is-done' : ''}" tabindex="0" data-key="${esc(ldKey(r))}">
+        <div class="acc-item-head"><span class="adm-tag is-site">${esc(r.siteName)}</span>${r.kind ? `<span class="adm-tag">${esc(r.kind)}</span>` : ''}${ldMarkTag(r)}${r.status ? `<span class="adm-tag is-off" title="그 사이트에 저장된 상태">사이트: ${esc(r.status)}</span>` : ''}<span class="acc-date mono">${esc(ldDate(r.at))}${r.at ? ' · ' + ago(new Date(r.at).toISOString()) : ''}</span></div>
         <p class="adm-row-title"><strong>${esc(r.name || '(이름 없음)')}</strong><span>${esc(r.contact)}</span></p>
         ${open ? `<div class="adm-message ld-text">${esc(text) || '<em>내용 없음</em>'}</div>
           <p class="adm-contact">${leadContactLinks(r)}</p>
-          <p class="acc-help ld-foot">${esc(r.label)} · 접수번호 ${esc(r.ref)} · <a href="${esc((d.sources.find((s) => s.site === r.site) || {}).url || '')}/admin" target="_blank" rel="noopener">${esc(r.siteName)} 관리자에서 처리하기 ↗</a></p>`
-          : `<p class="adm-row-text ld-clip">${esc(text.slice(0, 140))}${text.length > 140 ? '…' : ''}</p>`}
+          <div class="ld-mark" role="group" aria-label="처리 표시">${LD_STATES.map(([v, label]) => `<button type="button" class="f-chip${r.mark && r.mark.state === v ? ' is-active' : ''}" data-ld-state="${v}">${label}</button>`).join('')}${r.mark ? '<button type="button" class="link-btn" data-ld-state="">표시 지우기</button>' : ''}</div>
+          <div class="ld-memo"><textarea rows="2" maxlength="2000" placeholder="메모 (통화 내용, 견적 금액, 다음 연락일 등)" data-ld-memo>${esc(memo)}</textarea><button type="button" class="btn btn-sm btn-line" data-ld-memo-save>메모 저장</button></div>
+          <p class="acc-help ld-foot">${esc(r.label)} · 접수번호 ${esc(r.ref)}${r.mark && r.mark.repliedAt ? ` · 회신 ${esc(ldDate(r.mark.repliedAt))}` : ''} · ${where}</p>`
+          : `<p class="adm-row-text ld-clip">${esc(text.slice(0, 140))}${text.length > 140 ? '…' : ''}</p>${memo ? `<p class="ld-memo-line">메모 · ${esc(memo.slice(0, 120))}</p>` : ''}`}
       </li>`;
     }).join('') + (rows.length > 300 ? `<li class="acc-empty">${fmtN(rows.length - 300)}건이 더 있습니다. 사이트를 고르거나 검색해 좁혀 보세요.</li>` : '')
       : `<li class="acc-empty">${d.items.length ? '조건에 맞는 문의가 없습니다.' : '아직 불러온 문의가 없습니다. 사이트별 현황을 열어 연결 상태를 확인해 주세요.'}</li>`;
     qa('.ld-row', list).forEach((li) => {
       const toggle = (e) => {
-        if (e.target.closest('a, button')) return;
+        if (e.target.closest('a, button, textarea')) return;
         LD.open = LD.open === li.dataset.key ? null : li.dataset.key;
+        const r = LD.open ? d.items.find((x) => ldKey(x) === LD.open) : null;
         renderLeads();
+        if (r && !r.mark) ldSaveMark(r, 'seen', '').then((ok) => { if (ok) renderLeads(); });   // 열어 본 문의는 '확인함'
       };
       li.addEventListener('click', toggle);
-      li.addEventListener('keydown', (e) => { if (e.key === 'Enter') toggle(e); });
+      li.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target === li) toggle(e); });
     });
+    const cur = LD.open ? d.items.find((x) => ldKey(x) === LD.open) : null;
+    if (!cur) return;
     const copy = q('[data-ld-copy]', list);
     if (copy) copy.addEventListener('click', async () => {
-      const r = d.items.find((x) => ldKey(x) === LD.open);
-      if (!r) return;
-      try { await navigator.clipboard.writeText(r.contact); showMsg('연락처를 복사했습니다.', 'ok'); } catch (_) { showMsg(r.contact, 'info'); }
+      try { await navigator.clipboard.writeText(cur.contact); showMsg('연락처를 복사했습니다.', 'ok'); } catch (_) { showMsg(cur.contact, 'info'); }
+    });
+    qa('[data-ld-reply]', list).forEach((a) => a.addEventListener('click', () => {
+      if (!ldReplied(cur)) showMsg("연락을 마치면 아래 '회신함'을 눌러 주세요. 회신 전 목록에서 빠집니다.", 'info');
+    }));
+    qa('[data-ld-state]', list).forEach((b) => b.addEventListener('click', async () => {
+      const memoEl = q('[data-ld-memo]', list);
+      if (await ldSaveMark(cur, b.dataset.ldState, memoEl ? memoEl.value.trim() : '')) {
+        showMsg(b.dataset.ldState ? `'${b.textContent}'(으)로 표시했습니다.` : '표시를 지웠습니다.', 'ok');
+        renderLeads();
+      }
+    }));
+    const save = q('[data-ld-memo-save]', list);
+    if (save) save.addEventListener('click', async () => {
+      const memo = q('[data-ld-memo]', list).value.trim();
+      if (await ldSaveMark(cur, (cur.mark && cur.mark.state) || 'seen', memo)) { showMsg('메모를 저장했습니다.', 'ok'); renderLeads(); }
     });
   }
 
@@ -1849,8 +1900,9 @@
     const rows = shownLeads();
     if (!rows.length) { showMsg('내려받을 문의가 없습니다.', 'info'); return; }
     downloadCsv(`전체문의_${todayKST()}.csv`, [
-      ['접수일시', '사이트', '구분', '유형', '이름·소속', '연락처', '내용', '상태', '접수번호'],
-      ...rows.map((r) => [r.at ? ldDate(r.at) : '', r.siteName, r.label, r.kind, r.name, r.contact, r.text, r.status, r.ref])
+      ['접수일시', '사이트', '구분', '유형', '이름·소속', '연락처', '내용', '사이트 상태', '처리 표시', '회신일', '메모', '접수번호'],
+      ...rows.map((r) => [r.at ? ldDate(r.at) : '', r.siteName, r.label, r.kind, r.name, r.contact, r.text, r.status,
+        r.mark ? r.mark.label : (r.isNew && !r.soft ? '회신 전' : ''), r.mark && r.mark.repliedAt ? ldDate(r.mark.repliedAt) : '', r.mark ? r.mark.memo : '', r.ref])
     ]);
   });
 
