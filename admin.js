@@ -1822,7 +1822,7 @@
       const x = opSite(s);
       const open = OP.open === s.id;
       const chk = !s.chk_at ? '<span class="op-dot is-none" title="아직 점검 전"></span>미점검'
-        : opOk(s) ? `<span class="op-dot is-ok"></span>정상 <small>${fmtN(s.chk_ms)}ms</small>` : `<span class="op-dot is-bad"></span>${esc(s.chk_note || ('오류 ' + s.chk_code))}`;
+        : opOk(s) ? `<span class="op-dot is-ok"></span>정상${s.chk_ms ? ` <small>${fmtN(s.chk_ms)}ms</small>` : ''}` : `<span class="op-dot is-bad"></span>${esc(s.chk_note || ('오류 ' + s.chk_code))}`;
       const tr = x.tr;
       const visit = s.stage === '내부용' ? '<small>내부용</small>' : tr && tr.last ? `${fmtN(tr.pv7)}${tr.last < d.meta.d7 ? ` <small>마지막 ${esc(tr.last.slice(5))}</small>` : ''}` : '<small class="op-warn">기록 없음</small>';
       const se = s.stage === '내부용' ? '<small>차단</small>' : ['naver', 'google', 'bing'].map((k) => `<span class="op-se ${s[k] ? 'is-on' : ''}">${k[0].toUpperCase()}</span>`).join('');
