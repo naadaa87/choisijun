@@ -1,21 +1,28 @@
 # 새 문의 메일 알림 Worker — choisijun-notify
-# · 매시간 7분에 주력 사이트들의 문의 저장소(각 사이트 D1·KV·최시준 대신 접수)를 확인하고
+# · 매시 정각에 주력 사이트들의 문의 저장소(각 사이트 D1·KV·최시준 대신 접수)를 확인하고
 #   새 문의가 있으면 한 건마다 메일 한 통을 naadaa87@gmail.com 으로 보냅니다.
 # · 보내는 주소는 alert@choisijun.com (Cloudflare Email Routing). 받는 주소는 Email Routing 에서 '확인된 주소'여야 합니다.
 # · 데이터베이스 연결은 홈페이지(../wrangler.toml)와 같습니다. 사이트를 새로 연결하면 두 파일 모두 고쳐 주세요.
-# · 비밀 값은 쓰지 않습니다.
+# · 매일 아침 DIGEST_HOUR(한국 시각)에는 전날 사이트별 KPI·문의·특이사항·진행 상황을 정리한 일일 리포트를
+#   같은 받는 주소로 한 통 보냅니다 (src/digest.js). 그 2시간 전에 접속 점검, 1시간 전에 GitHub 내역 준비를 합니다.
+# · 비밀 값은 쓰지 않습니다. (선택) GITHUB_TOKEN 을 Secret 으로 넣으면 GitHub 조회 한도 걱정이 없어집니다.
 name = "choisijun-notify"
 main = "src/index.js"
 compatibility_date = "2026-07-24"
 workers_dev = true
 
 [triggers]
-crons = ["7 * * * *"]
+crons = ["0 * * * *"]
 
 [vars]
 NOTIFY_TO = "naadaa87@gmail.com"
 NOTIFY_FROM = "alert@choisijun.com"
 ADMIN_URL = "https://choisijun.com/admin#leads"
+# 일일 리포트
+DIGEST_HOUR = "8"
+ADMIN_BASE = "https://choisijun.com/admin"
+RSS_URL = "https://choisijun.com/rss.xml"
+GITHUB_OWNER = "naadaa87"
 
 [[send_email]]
 name = "MAIL"
