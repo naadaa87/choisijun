@@ -405,7 +405,7 @@ export async function gather(env, D, got) {
 
   return {
     rows, zero, tot, month, self, yLeads, todayLeads, waiting, alerts,
-    progress: { commits, created: gh ? gh.created || [] : [], ghMore: gh ? gh.more || 0 : 0, tDone, tNew, tMoved, open: open.length, owners, changes, newSites, seo, rss, nameOf },
+    progress: { commits, created: gh ? gh.created || [] : [], ghMore: gh ? gh.more || 0 : 0, ghFailed: gh ? gh.failed || [] : [], tDone, tNew, tMoved, open: open.length, owners, changes, newSites, seo, rss, nameOf },
     snapNext
   };
 }
@@ -577,7 +577,9 @@ export function compose(env, D, x) {
       blocks.push(sub4(`GitHub 반영 · 저장소 ${P.commits.length}곳, ${total}건`) + P.commits.map((r) => `
         <div style="margin-top:10px;font-size:13px;color:${C.ink}"><b>${esc(r.site || r.name)}</b>${r.site ? `<span style="color:${C.faint}"> · ${esc(r.name)}</span>` : ''} <span style="color:${C.point};font-weight:700">${r.total}건</span></div>
         ${ul(r.commits.map((c) => `${esc(c.t)} <span style="color:${C.faint}">${hm(c.at)}</span>`).concat(r.total > r.commits.length ? [`<span style="color:${C.faint}">그 전 ${r.total - r.commits.length}건은 생략</span>`] : []))}`).join(''));
-    } else blocks.push(sub4('GitHub 반영') + p('어제는 공개 저장소에 올라간 변경이 없습니다.', 'margin-top:4px'));
+    } else if (!P.ghFailed.length) blocks.push(sub4('GitHub 반영') + p('어제는 공개 저장소에 올라간 변경이 없습니다.', 'margin-top:4px'));
+    else blocks.push(sub4('GitHub 반영'));
+    if (P.ghFailed.length) blocks.push(small(`변경이 있었던 저장소 중 ${P.ghFailed.length}곳은 커밋 내역을 읽지 못했습니다 · ${esc(P.ghFailed.join(', '))}`));
     if (P.created.length) blocks.push(small(`새로 만든 저장소 · ${esc(P.created.join(', '))}`));
     if (P.ghMore) blocks.push(small(`이 밖에 저장소 ${P.ghMore}곳에도 변경이 있었습니다.`));
   }
@@ -632,7 +634,8 @@ ${h.join('\n')}
   x.alerts.forEach((a) => t.push(`- [${a.tag}] ${a.text}`));
   t.push('', '■ 04 홈페이지 · 프로젝트 진행과 변동');
   if (P.commits) {
-    if (!P.commits.length) t.push('GitHub: 어제 변경 없음');
+    if (!P.commits.length && !P.ghFailed.length) t.push('GitHub: 어제 변경 없음');
+    if (P.ghFailed.length) t.push(`GitHub: 커밋 내역을 읽지 못한 저장소 ${P.ghFailed.join(', ')}`);
     P.commits.forEach((r) => { t.push(`- ${r.site || r.name} (${r.name}) ${r.total}건`); r.commits.forEach((c) => t.push(`  · ${c.t}`)); });
   }
   t.push(tItems.length
