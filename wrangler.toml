@@ -68,6 +68,11 @@ database_name = "rulerule-db"
 database_id = "c1e64cda-b2b8-4c27-bd02-a2ddc4377b67"
 
 [[d1_databases]]
+binding = "DB_MYEONMYEON"
+database_name = "myeonmyeon-db"
+database_id = "b06fb4bf-279f-41de-b77c-520712710ba8"
+
+[[d1_databases]]
 binding = "DB_MYCHALLENGE"
 database_name = "machal-db"
 database_id = "2edb236d-958b-42f3-b550-f8615defcbb7"

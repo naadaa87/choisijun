@@ -9,7 +9,7 @@
 import { json, fail, readJson, clean, nowIso, kst } from './core.js';
 import { ensureSeed } from './sites.js';
 import { SELF_ID, STAGES } from './sites-seed.js';
-import { OPS_STATES, TASK_KINDS, TASK_OWNERS, TASK_STATUS, SEED_DONE_AT, SITE_OPS, TASK_SEED } from './ops-seed.js';
+import { OPS_STATES, TASK_KINDS, TASK_OWNERS, TASK_STATUS, SEED_DONE_AT, SITE_OPS, TASK_SEED, OPS_ADDS } from './ops-seed.js';
 
 const FLAG = 'ops_seed_20261119';
 let seeded = false;
@@ -41,7 +41,32 @@ export async function ensureOps(DB) {
     stmts.push(DB.prepare('INSERT OR REPLACE INTO admin_flags (k, v, at) VALUES (?, ?, ?)').bind(FLAG, '1', now));
     for (let i = 0; i < stmts.length; i += 40) await DB.batch(stmts.slice(i, i + 40));
   }
+  await ensureOpsAdds(DB);
   seeded = true;
+}
+
+/** 나중에 더한 사이트의 운영 현황·할 일을 한 번만 넣는다 */
+async function ensureOpsAdds(DB) {
+  for (const add of OPS_ADDS) {
+    const done = await DB.prepare('SELECT v FROM admin_flags WHERE k = ?').bind(add.flag).first();
+    if (done) continue;
+    const site = await DB.prepare('SELECT id FROM sites WHERE id = ?').bind(add.site).first();
+    if (!site) continue;                                   // 사이트가 아직 목록에 없으면 다음에
+    const now = nowIso();
+    const top = await DB.prepare('SELECT COALESCE(MAX(sort), 0) AS s FROM site_tasks').first();
+    const base = (top && top.s) || 0;
+    const stmts = [DB.prepare(`UPDATE sites SET
+        ops = CASE WHEN ops = '' THEN ? ELSE ops END,
+        note = CASE WHEN note = '' THEN ? ELSE note END,
+        inquiry_via = CASE WHEN inquiry_via = '' THEN ? ELSE inquiry_via END
+      WHERE id = ?`).bind(add.ops.ops, add.ops.note, add.ops.inquiry_via, add.site)];
+    add.tasks.forEach(([kind, title, owner, status], i) => {
+      stmts.push(DB.prepare('INSERT INTO site_tasks (site, kind, title, owner, status, sort, created_at, updated_at, done_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)')
+        .bind(add.site, kind, title, owner, status, base + (i + 1) * 10, now, now, status === '완료' ? now : null));
+    });
+    stmts.push(DB.prepare('INSERT OR REPLACE INTO admin_flags (k, v, at) VALUES (?, ?, ?)').bind(add.flag, '1', now));
+    await DB.batch(stmts);
+  }
 }
 
 export async function opsRoute(DB, env, request, parts, method) {
