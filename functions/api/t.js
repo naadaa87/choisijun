@@ -52,6 +52,21 @@ const FAMILY = [
   [/(^|\.)vacancy\.co\.kr$/, '공실개발'],
   [/(^|\.)orbis-estate\.com$/, '오르비스'],
   [/(^|\.)coremood\.kr$/, '코어무드']
+  [/(^|\.)restel\.kr$/, '레스텔'],
+  [/(^|\.)pvit\.kr$/, '프빗'],
+  [/(^|\.)mezzanine\.life$/, '메자닌 서울'],
+  [/(^|\.)honplace\.com$/, '혼플'],
+  [/(^|\.)seuseurolab\.com$/, '스스로연구소'],
+  [/(^|\.)guspace\.kr$/, '지유공간개발'],
+  [/(^|\.)passionstore\.kr$/, '열정상회'],
+  [/(^|\.)myworks\.ai\.kr$/, '마이웍스'],
+  [/(^|\.)factanddo\.com$/, '팩트앤두'],
+  [/(^|\.)mychallenge\.kr$/, '마이챌린지'],
+  [/(^|\.)myeonmyeon\.com$/, '면면'],
+  [/(^|\.)bareunbp\.com$/, '바른혈압'],
+  [/(^|\.)rulerule\.kr$/, '룰룰'],
+  [/(^|\.)hantang\.kr$/, '한탕'],
+  [/(^|\.)yeodeol\.kr$/, '여덟글자'],
 ];
 /* 주소 없이 들어온 경우, 앱 안의 브라우저면 그 앱에서 온 것으로 본다 */
 const INAPP = [

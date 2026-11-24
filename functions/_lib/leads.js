@@ -275,17 +275,14 @@ export async function markLead(DB, body) {
 }
 
 /** 전체 KPI용: 사이트별 · 달별 문의 수 (최근 것부터 최대 3,000건씩 날짜만 읽어 센다) */
-export async function leadCounts(env, months, onlySite) {
-  const first = months[0];
-  const out = {};        // out[site][month] = n
-  const seen = {};       // 읽기에 성공한 사이트
-  const add = (site, ms) => {
-    if (!ms) return;
-    const m = kst(ms).day.slice(0, 7);
-    if (m < first) return;
-    const bucket = out[site] || (out[site] = {});
-    bucket[m] = (bucket[m] || 0) + 1;
-  };
+/**
+ * 연결된 모든 문의 저장소에서 접수 시각만 모은다 (사이트 · 밀리초).
+ * sinceMs 보다 오래된 문의는 뺀다. seen: 읽기에 성공한 사이트
+ */
+export async function leadTimes(env, sinceMs, onlySite) {
+  const items = [];
+  const seen = {};
+  const push = (site, ms) => { if (ms && ms >= sinceMs) items.push({ site, ms }); };
   const list = LEAD_SOURCES.filter((s) => !s.soft && env[s.bind] && (s.central || (s.site !== SELF_ID && (!onlySite || s.site === onlySite))));
   await Promise.all(list.map(async (src) => {
     try {
@@ -302,7 +299,7 @@ export async function leadCounts(env, months, onlySite) {
       rows.forEach((r) => {
         const site = src.central ? r.site : src.site;
         if (src.central) seen[site] = true;
-        add(site, toMs(r.c, src.tz));
+        push(site, toMs(r.c, src.tz));
       });
     } catch (_) { /* 표가 아직 없으면 건너뜀 */ }
   }));
@@ -311,8 +308,22 @@ export async function leadCounts(env, months, onlySite) {
       const { ok, rows } = await readKv(env, src, 300);
       if (!ok) return;
       seen[src.site] = true;
-      rows.forEach((r) => add(src.site, toMs(r.at)));
+      rows.forEach((r) => push(src.site, toMs(r.at)));
     } catch (_) { /* 건너뜀 */ }
   }));
+  return { items, seen };
+}
+
+/** 사이트별 · 달별 문의 수 (전체 KPI 표) */
+export async function leadCounts(env, months, onlySite) {
+  const first = months[0];
+  const out = {};        // out[site][month] = n
+  const { items, seen } = await leadTimes(env, Date.parse(first + '-01T00:00:00+09:00') - 86400000, onlySite);
+  items.forEach(({ site, ms }) => {
+    const m = kst(ms).day.slice(0, 7);
+    if (m < first) return;
+    const bucket = out[site] || (out[site] = {});
+    bucket[m] = (bucket[m] || 0) + 1;
+  });
   return { counts: out, seen };
 }

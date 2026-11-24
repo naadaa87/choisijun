@@ -551,7 +551,7 @@ const Track = (function trackModule() {
   window.addEventListener('pageshow', (e) => { if (e.persisted) { touchSession(false); start(); } });
 
   /* 클릭: 링크·버튼의 종류와 이름 */
-  const FAMILY = /(^|\.)(socialfactory\.co\.kr|ssople\.com|playtion\.kr|megaspot\.kr|hellomingle\.kr|vacancy\.co\.kr|orbis-estate\.com|coremood\.kr|tgrzspace\.pages\.dev)$/i;
+  const FAMILY = /(^|\.)(socialfactory\.co\.kr|ssople\.com|playtion\.kr|megaspot\.kr|hellomingle\.kr|vacancy\.co\.kr|orbis-estate\.com|coremood\.kr|tgrzspace\.pages\.dev|restel\.kr|pvit\.kr|mezzanine\.life|honplace\.com|seuseurolab\.com|guspace\.kr|passionstore\.kr|myworks\.ai\.kr|factanddo\.com|mychallenge\.kr|myeonmyeon\.com|bareunbp\.com|rulerule\.kr|hantang\.kr|yeodeol\.kr)$/i;
   const SNS = /(^|\.)(instagram\.com|threads\.(net|com)|youtube\.com|youtu\.be|facebook\.com|linkedin\.com|blog\.naver\.com|brunch\.co\.kr|x\.com|twitter\.com)$/i;
   const labelOf = (el) => (el.getAttribute('data-track') || el.getAttribute('aria-label') || el.textContent || el.getAttribute('title') || '')
     .replace(/\s+/g, ' ').trim().slice(0, 60);
@@ -2367,7 +2367,7 @@ const INQUIRY_STATUS = ['접수', '진행중', '완료'];
   const wrap = document.getElementById('netFinder');
   if (!wrap) return;
   const chips = Array.from(wrap.querySelectorAll('.f-chip'));
-  const cards = Array.from(document.querySelectorAll('.net-card'));
+  const cards = Array.from(document.querySelectorAll('.net-card, .net-item'));
   const result = document.getElementById('netResult');
   function apply(use, scroll) {
     let n = 0;
@@ -2384,7 +2384,7 @@ const INQUIRY_STATUS = ['접수', '진행중', '완료'];
     });
     // 그룹 안에 맞는 카드가 하나도 없으면 그룹째 접기
     document.querySelectorAll('section[id^="group-"]').forEach((sec) => {
-      const any = Array.from(sec.querySelectorAll('.net-card')).some((c) => !c.classList.contains('is-dim'));
+      const any = Array.from(sec.querySelectorAll('.net-card, .net-item')).some((c) => !c.classList.contains('is-dim'));
       sec.classList.toggle('is-empty', Boolean(use) && !any);
     });
     if (result) {

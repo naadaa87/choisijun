@@ -1,6 +1,6 @@
 /* =========================================================
    최시준 홈페이지 — 관리자 페이지 (/admin)
-   대시보드 · 전체 사이트 · 전체 KPI · 전체 문의 · 방문 통계 · 문의 · 회원 · 커뮤니티 · 레퍼런스 · 매일 글 · 설정
+   대시보드 · KPI 추이 · 전체 사이트 · 전체 KPI · 전체 문의 · 방문 통계 · 문의 · 회원 · 커뮤니티 · 레퍼런스 · 매일 글 · 설정
    서버: Cloudflare Pages Functions (/api/admin/*) + D1
    ========================================================= */
 (function adminApp() {
@@ -127,6 +127,7 @@
     qa('.adm-panel').forEach((p) => { p.hidden = p.dataset.panel !== tab; });
     try { history.replaceState(null, '', '#' + tab); } catch (_) { /* ignore */ }
     if (tab === 'ops') loadOps();
+    if (tab === 'trend') loadTrend();
     if (tab === 'sites') loadSites();
     if (tab === 'skpi') { if (SK.open) SK.scroll = true; loadSkpi(); }
     if (tab === 'leads') loadLeads();
@@ -177,6 +178,7 @@
       ];
       q('#admKpis').innerHTML = kpis.map(([tab, n, label, foot]) =>
         `<li><button type="button" data-go="${tab}"><span class="adm-kpi-num">${n}</span><span class="adm-kpi-label">${esc(label)}</span><span class="adm-kpi-foot">${esc(foot)}</span></button></li>`).join('');
+      loadDashTrend();
 
       q('#admRecent').innerHTML = d.recent.length ? d.recent.map((r) => `
         <li class="acc-item adm-click" data-inq="${r.id}">
@@ -2345,6 +2347,462 @@
     ]);
   });
 
+  /* =========================================================
+     KPI 추이 — 일별 · 주별 · 월별 그래프와 전날(전주 · 전달) 대비 증감
+     - 마지막 기간(오늘 · 이번 주 · 이번 달)은 진행 중이라, 완료된 기간끼리 비교하고
+       진행 중인 기간은 직전 기간의 '같은 시점까지' 값과 따로 비교한다
+     - 운영 현황에서 완료한 할 일을 날짜에 표시해 한 일과 숫자 변화를 함께 본다
+     ========================================================= */
+  const TR_M = [
+    { k: 'v', label: '방문자', unit: '명', hint: '사이트마다 다녀간 사람 수를 더한 값입니다. 두 사이트를 본 사람은 두 번 셉니다.' },
+    { k: 'pv', label: '페이지뷰', unit: '회', hint: '페이지를 연 횟수입니다.' },
+    { k: 'se', label: '검색 유입', unit: '회', hint: '네이버·구글·다음·AI 검색에서 들어와 시작된 방문입니다.' },
+    { k: 'inq', label: '문의', unit: '건', hint: '각 사이트 문의 저장소와 대신 받은 문의를 접수 시각 기준으로 셉니다.' },
+    { k: 'book', label: '예약 이동', unit: '회', hint: '예약 버튼·예약 링크를 누른 횟수입니다.' },
+    { k: 'ct', label: '전화·카톡', unit: '회', hint: '전화·카카오톡·메일 링크를 누른 횟수입니다.' }
+  ];
+  const TR_BY = Object.fromEntries(TR_M.map((m) => [m.k, m]));
+  const TR_WORD = {
+    day: { last: '어제', before: '그제', vs: '전날', curLong: '오늘 지금까지', cut: '어제 같은 시각', avgN: 7, avg: '최근 7일 평균', name: '일별', per: '일' },
+    week: { last: '지난주', before: '그 전 주', vs: '전주', curLong: '이번 주 지금까지', cut: '지난주 같은 시점', avgN: 4, avg: '최근 4주 평균', name: '주별', per: '주' },
+    month: { last: '지난달', before: '그 전 달', vs: '전달', curLong: '이번 달 지금까지', cut: '지난달 같은 시점', avgN: 3, avg: '최근 3개월 평균', name: '월별', per: '개월' }
+  };
+  const TR_UP = '#127A4A';
+  const TR_DOWN = '#C2341A';
+  const TR_AVG = '#898781';
+  const TR = { unit: 'day', n: 30, scope: 'all', metric: 'v', sort: 'value', data: null };
+  try {
+    const saved = JSON.parse(localStorage.getItem('csj_trend') || '{}');
+    if (TR_WORD[saved.unit]) TR.unit = saved.unit;
+    if (Number(saved.n)) TR.n = Number(saved.n);
+    if (typeof saved.scope === 'string') TR.scope = saved.scope;
+    if (TR_BY[saved.metric]) TR.metric = saved.metric;
+  } catch (_) { /* ignore */ }
+  const trSave = () => { try { localStorage.setItem('csj_trend', JSON.stringify({ unit: TR.unit, n: TR.n, scope: TR.scope, metric: TR.metric })); } catch (_) { /* ignore */ } };
+
+  const trHas = (s, m) => s.s[m].some((x) => x != null);
+  const trAny = (s) => TR_M.some((m) => trHas(s, m.k));
+  function trSum(list, m, n) {
+    const out = Array(n).fill(null);
+    list.forEach((s) => s.s[m].forEach((x, i) => { if (x != null) out[i] = (out[i] || 0) + x; }));
+    return out;
+  }
+  const trPrevSum = (list, m) => list.reduce((a, s) => a + (trHas(s, m) ? (s.prev[m] || 0) : 0), 0);
+  function trScopeSites(d, scope = TR.scope) {
+    if (scope === 'all') return d.sites.filter(trAny);
+    if (scope === 'focus') return d.sites.filter((s) => s.tier === '주력' && trAny(s));
+    return d.sites.filter((s) => s.id === scope);
+  }
+  function trScopeName(d, scope = TR.scope) {
+    if (scope === 'all') return '전체 사이트';
+    if (scope === 'focus') return '주력 사이트';
+    const s = d.sites.find((x) => x.id === scope);
+    return s ? s.name : '사이트';
+  }
+  function trLabel(unit, key, long) {
+    if (unit === 'month') { const [y, m] = key.split('-'); return long ? `${y}년 ${Number(m)}월` : `${Number(m)}월`; }
+    const [, mm, dd] = key.split('-');
+    const md = `${Number(mm)}/${Number(dd)}`;
+    if (unit === 'week') {
+      if (!long) return md;
+      const e = new Date(Date.parse(key + 'T00:00:00Z') + 6 * 86400000);
+      return `${md}(월) ~ ${e.getUTCMonth() + 1}/${e.getUTCDate()}(일)`;
+    }
+    return long ? `${md} (${DAYS[new Date(key + 'T12:00:00Z').getUTCDay()]})` : md;
+  }
+  /* 증감: { cls, text } — 화살표와 부호로 방향을 같이 보여 준다 (색만으로 구분하지 않음) */
+  function trDelta(cur, prev, unit = '') {
+    if (cur == null || prev == null) return { cls: 'is-none', text: '비교할 기록 없음', d: null };
+    const d = cur - prev;
+    if (!d) return { cls: 'is-flat', text: '변화 없음', d: 0 };
+    const pct = prev ? ` (${d > 0 ? '+' : '−'}${fmtPct(Math.abs(d) / prev, Math.abs(d) / prev < 0.1 ? 1 : 0)})` : '';
+    return { cls: d > 0 ? 'is-up' : 'is-down', text: `${d > 0 ? '▲' : '▼'} ${fmtN(Math.abs(d))}${unit}${pct}`, d };
+  }
+  function trAvg(vals, end, k) {
+    const xs = vals.slice(Math.max(0, end - k + 1), end + 1).filter((x) => x != null);
+    return xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null;
+  }
+  const trRound = (x) => (x == null ? null : x >= 100 ? Math.round(x) : Math.round(x * 10) / 10);
+
+  /* 작은 추이선 — 축 없이 모양만 (마지막 진행 중 기간은 속이 빈 점) */
+  function trSpark(vals, w = 120, h = 30) {
+    const xs = vals.map((v, i) => [i, v]).filter(([, v]) => v != null);
+    if (xs.length < 2) return `<svg class="tr-spark-svg" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" aria-hidden="true"></svg>`;
+    const max = Math.max(1, ...xs.map(([, v]) => v));
+    const n = vals.length;
+    const X = (i) => 2 + (i / (n - 1)) * (w - 6);
+    const Y = (v) => h - 3 - (v / max) * (h - 7);
+    const done = xs.filter(([i]) => i < n - 1);
+    const line = done.map(([i, v], j) => `${j ? 'L' : 'M'}${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
+    const last = xs[xs.length - 1];
+    const prevPt = done[done.length - 1];
+    const tail = last[0] === n - 1 && prevPt ? `<path d="M${X(prevPt[0]).toFixed(1)},${Y(prevPt[1]).toFixed(1)} L${X(last[0]).toFixed(1)},${Y(last[1]).toFixed(1)}" stroke="${C1}" stroke-width="1.5" stroke-dasharray="2 3" fill="none"/>` : '';
+    const dot = last[0] === n - 1
+      ? `<circle cx="${X(last[0])}" cy="${Y(last[1])}" r="2.6" fill="#fff" stroke="${C1}" stroke-width="1.5"/>`
+      : `<circle cx="${X(last[0])}" cy="${Y(last[1])}" r="2.6" fill="${C1}"/>`;
+    return `<svg class="tr-spark-svg" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" aria-hidden="true"><path d="${line}" fill="none" stroke="${C1}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>${tail}${dot}</svg>`;
+  }
+
+  /* 한 지표 카드 (KPI 추이 · 대시보드 공용) */
+  function trTile(d, list, m, opts = {}) {
+    const W = TR_WORD[d.unit];
+    const n = d.keys.length;
+    const vals = trSum(list, m.k, n);
+    const L = vals[n - 2]; const B = vals[n - 3]; const C = vals[n - 1];
+    const has = vals.some((x) => x != null);
+    const dl = trDelta(L, B, m.unit);
+    const cut = trPrevSum(list, m.k);
+    const dc = trDelta(C, has ? cut : null, '');
+    const avg = trRound(trAvg(vals, n - 2, W.avgN));
+    const da = avg != null && L != null && avg ? (L - avg) / avg : null;
+    const body = has ? `
+        <span class="tr-tile-num">${L == null ? '–' : fmtN(L)}<small>${esc(m.unit)}</small></span>
+        <span class="tr-tile-delta ${dl.cls}">${esc(W.vs)} 대비 ${esc(dl.text)}</span>
+        ${opts.compact ? '' : `<span class="tr-tile-sub">${esc(W.curLong)} <strong>${fmtN(C || 0)}</strong> · ${esc(W.cut)} ${fmtN(cut)}${dc.d ? ` <em class="${dc.cls}">${dc.d > 0 ? '+' : '−'}${fmtN(Math.abs(dc.d))}</em>` : ''}</span>
+        ${avg != null ? `<span class="tr-tile-sub">${esc(W.avg)} ${fmtN(avg)}${da != null && Math.abs(da) >= 0.005 ? ` 대비 <em class="${da > 0 ? 'is-up' : 'is-down'}">${da > 0 ? '+' : '−'}${fmtPct(Math.abs(da), 0)}</em>` : ''}</span>` : ''}`}
+        <span class="tr-tile-spark">${trSpark(vals, opts.compact ? 96 : 132, 30)}</span>`
+      : '<span class="tr-tile-num is-empty">–</span><span class="tr-tile-sub">아직 기록이 없습니다</span>';
+    const tag = opts.button ? 'button' : 'div';
+    return `<li><${tag} ${opts.button ? `type="button" data-tr-metric="${m.k}" aria-pressed="${TR.metric === m.k}"` : ''} class="tr-tile${TR.metric === m.k && opts.button ? ' is-on' : ''}" title="${esc(m.hint)}">
+        <span class="tr-tile-label">${esc(m.label)} <small>${esc(W.last)}</small></span>${body}
+      </${tag}></li>`;
+  }
+
+  async function loadTrend() {
+    const box = q('#trTiles');
+    if (!TR.data) box.innerHTML = '<li class="acc-empty">불러오는 중…</li>';
+    try {
+      const d = await api(`trend?unit=${TR.unit}&n=${TR.n}`);
+      TR.data = d;
+      TR.n = d.n;
+      if (!['all', 'focus'].includes(TR.scope) && !d.sites.some((s) => s.id === TR.scope)) TR.scope = 'all';
+      renderTrend();
+    } catch (err) {
+      box.innerHTML = `<li class="acc-empty">${esc(err.message)}</li>`;
+    }
+  }
+
+  function renderTrend() {
+    const d = TR.data;
+    if (!d) return;
+    const W = TR_WORD[d.unit];
+    const n = d.keys.length;
+    qa('#trUnit [data-unit]').forEach((b) => b.classList.toggle('is-active', b.dataset.unit === d.unit));
+    q('#trN').innerHTML = d.opts.map((x) => `<button class="f-chip${x === d.n ? ' is-active' : ''}" type="button" data-n="${x}">${x}${esc(W.per)}</button>`).join('');
+
+    /* 보기 범위 */
+    const sel = q('#trScope');
+    const groups = {};
+    d.sites.filter(trAny).forEach((s) => { (groups[s.cluster || '기타'] = groups[s.cluster || '기타'] || []).push(s); });
+    sel.innerHTML = '<option value="all">전체 사이트 합계</option><option value="focus">주력 사이트 합계</option>'
+      + Object.keys(groups).sort().map((g) => `<optgroup label="${esc(g.replace(/^\d+\s*/, ''))}">${groups[g].map((s) => `<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('')}</optgroup>`).join('');
+    sel.value = TR.scope;
+    if (sel.value !== TR.scope) { TR.scope = 'all'; sel.value = 'all'; }
+
+    const list = trScopeSites(d);
+    const name = trScopeName(d);
+    const lastEnd = d.unit === 'week' ? new Date(Date.parse(d.keys[n - 1] + 'T00:00:00Z') + 6 * 86400000).toISOString().slice(0, 10) : d.keys[n - 1];
+    const span = d.unit === 'month' ? `${trLabel('month', d.keys[0], true)} ~ ${trLabel('month', d.keys[n - 1], true)}` : `${trLabel('day', d.keys[0], true)} ~ ${trLabel('day', lastEnd, true)}`;
+    q('#trInfo').innerHTML = `<strong>${esc(name)}</strong> · ${esc(span)}`
+      + ` · 마지막 칸(${esc(W.curLong.replace(' 지금까지', ''))})은 진행 중${d.firstDay ? ` · 방문 기록 시작 ${esc(d.firstDay.replace(/-/g, '.'))}` : ''}`;
+
+    q('#trTiles').innerHTML = TR_M.map((m) => trTile(d, list, m, { button: true })).join('');
+    q('#trBrief').innerHTML = trBrief(d, list, name);
+    trRenderChart();
+    trRenderTable();
+  }
+
+  /* 한눈에 읽는 요약 문장 */
+  function trBrief(d, list, name) {
+    const W = TR_WORD[d.unit];
+    const n = d.keys.length;
+    const v = trSum(list, 'v', n); const inq = trSum(list, 'inq', n); const se = trSum(list, 'se', n);
+    const parts = [];
+    if (v[n - 2] != null && v[n - 3] == null) {
+      parts.push(`${W.last} ${esc(name)} 방문자는 <strong>${fmtN(v[n - 2])}명</strong>입니다 (${W.before}는 방문 기록 전).`);
+    } else if (v[n - 2] != null) {
+      const dv = v[n - 2] - v[n - 3];
+      const pct = v[n - 3] ? ` (${dv >= 0 ? '+' : '−'}${fmtPct(Math.abs(dv) / v[n - 3], 0)})` : '';
+      parts.push(`${W.last} ${esc(name)} 방문자는 <strong>${fmtN(v[n - 2])}명</strong>으로, ${W.vs}보다 `
+        + (dv ? `<strong class="${dv > 0 ? 'is-up' : 'is-down'}">${fmtN(Math.abs(dv))}명${pct} ${dv > 0 ? '늘었습니다' : '줄었습니다'}</strong>.` : '변화가 없었습니다.'));
+    }
+    if (inq[n - 2] != null) parts.push(`문의는 <strong>${fmtN(inq[n - 2])}건</strong>${inq[n - 3] != null ? `(${W.vs} ${fmtN(inq[n - 3])}건)` : ''}${se[n - 2] != null ? `, 검색으로 시작된 방문은 <strong>${fmtN(se[n - 2])}회</strong>` : ''}입니다.`);
+    if (list.length > 1) {
+      const mv = list.filter((s) => s.s.v[n - 2] != null && s.s.v[n - 3] != null).map((s) => ({ s, d: s.s.v[n - 2] - s.s.v[n - 3] }));
+      const up = mv.filter((x) => x.d > 0).sort((a, b) => b.d - a.d)[0];
+      const dn = mv.filter((x) => x.d < 0).sort((a, b) => a.d - b.d)[0];
+      if (up || dn) parts.push(`방문이 가장 많이 ${up ? `늘어난 곳은 ${esc(up.s.name)}(+${fmtN(up.d)}명)` : ''}${up && dn ? ', 가장 많이 ' : ''}${dn ? `줄어든 곳은 ${esc(dn.s.name)}(−${fmtN(Math.abs(dn.d))}명)` : ''}입니다.`);
+    }
+    if (v[n - 1] != null) {
+      const cut = trPrevSum(list, 'v');
+      parts.push(`${W.curLong} ${fmtN(v[n - 1])}명이 다녀갔습니다 (${W.cut} ${fmtN(cut)}명).`);
+    }
+    return parts.length ? parts.join(' ') : '아직 이 범위에 쌓인 기록이 없습니다.';
+  }
+
+  /* 큰 그래프 — 일별은 선(+ 이동평균), 주별 · 월별은 막대 */
+  function trRenderChart() {
+    const d = TR.data;
+    const box = q('#trChart');
+    if (!d || !box) return;
+    const m = TR_BY[TR.metric];
+    const W = TR_WORD[d.unit];
+    const list = trScopeSites(d);
+    const ids = new Set(list.map((s) => s.id));
+    const all = trSum(list, m.k, d.keys.length);
+    const cut = trPrevSum(list, m.k);
+    const allAvg = d.unit === 'day' ? all.map((_, i) => (i >= all.length - 1 ? null : trRound(trAvg(all, i, 7)))) : null;
+    /* 기록이 시작되기 전 기간은 그래프에서 덜어낸다 (최소 6칸은 남김) */
+    const firstIdx = all.findIndex((x) => x != null);
+    const start = firstIdx < 0 ? 0 : Math.max(0, Math.min(firstIdx, all.length - 6));
+    const keys = d.keys.slice(start);
+    const n = keys.length;
+    const vals = all.slice(start);
+    const avg = allAvg ? allAvg.slice(start) : null;
+    const marks = {};
+    d.marks.filter((x) => ids.has(x.site)).forEach((x) => { (marks[x.k] = marks[x.k] || []).push(x); });
+    const siteName = Object.fromEntries(d.sites.map((s) => [s.id, s.name]));
+
+    q('#trTitle').innerHTML = `${esc(m.label)} <small>${esc(W.name)} · ${esc(trScopeName(d))}</small>`;
+    q('#trLegend').innerHTML = d.unit === 'day'
+      ? `<li><span class="kpi-key" style="background:${C1}"></span>${esc(m.label)}</li><li><span class="kpi-key is-dash" style="--c:${TR_AVG}"></span>7일 평균</li><li><span class="tr-mark-key" aria-hidden="true"></span>완료한 할 일</li>`
+      : `<li><span class="kpi-key is-box" style="background:${C1}"></span>${esc(m.label)}</li><li><span class="kpi-key is-box is-partial" style="--c:${C1}"></span>진행 중</li><li><span class="tr-mark-key" aria-hidden="true"></span>완료한 할 일</li>`;
+
+    if (!vals.some((x) => x != null)) { box.innerHTML = '<p class="acc-empty">이 범위에는 아직 기록이 없습니다.</p>'; return; }
+
+    const Wd = Math.max(280, box.clientWidth || 600);
+    const H = Wd < 520 ? 230 : 270;
+    const pad = { l: 42, r: 16, t: 18, b: 46 };
+    const iw = Wd - pad.l - pad.r;
+    const ih = H - pad.t - pad.b;
+    const maxV = Math.max(1, ...vals.filter((x) => x != null), ...(avg || []).filter((x) => x != null));
+    const step = niceStep(maxV, 4);
+    const top = Math.ceil(maxV / step) * step;
+    const bars = d.unit !== 'day';
+    const slot = iw / n;
+    const x = (i) => (bars ? pad.l + slot * (i + 0.5) : pad.l + (n === 1 ? iw / 2 : (i / (n - 1)) * iw));
+    const y = (v) => pad.t + ih - (v / top) * ih;
+    const fmtTick = (v) => (v >= 10000 ? Math.round(v / 1000) + 'K' : fmtN(v));
+    let grid = '';
+    for (let v = 0; v <= top + 0.001; v += step) {
+      grid += `<line x1="${pad.l}" x2="${pad.l + iw}" y1="${y(v)}" y2="${y(v)}" class="${v === 0 ? 'kpi-axis' : 'kpi-grid'}"/>`;
+      grid += `<text x="${pad.l - 8}" y="${y(v) + 4}" text-anchor="end" class="kpi-tick">${fmtTick(v)}</text>`;
+    }
+    const every = Math.max(1, Math.ceil(n / (Wd < 520 ? 5 : bars ? 12 : 8)));
+    let xt = '';
+    keys.forEach((k, i) => {
+      if (i % every !== 0 && i !== n - 1) return;
+      if (i !== n - 1 && n - 1 - i < every / 2) return;
+      xt += `<text x="${x(i)}" y="${H - 6}" text-anchor="middle" class="kpi-tick">${esc(i === n - 1 ? (d.unit === 'day' ? '오늘' : d.unit === 'week' ? '이번 주' : '이번 달') : trLabel(d.unit, k))}</text>`;
+    });
+    /* 완료한 할 일 표시 — 그래프 아래 줄 */
+    const markY = pad.t + ih + 15;
+    const mk = keys.map((k, i) => (marks[k] ? `<g class="tr-mark"><rect x="${x(i) - 4.5}" y="${markY - 4.5}" width="9" height="9" rx="2" transform="rotate(45 ${x(i)} ${markY})"/>${marks[k].length > 1 ? `<text x="${x(i) + 8}" y="${markY + 4}" class="tr-mark-n">${marks[k].length}</text>` : ''}</g>` : '')).join('');
+
+    let plot = '';
+    if (bars) {
+      const bw = Math.max(4, Math.min(36, slot * 0.62));
+      plot = vals.map((v, i) => {
+        if (v == null) return '';
+        const x0 = x(i) - bw / 2; const y0 = y(v); const base = y(0);
+        const r = Math.min(4, bw / 2, base - y0);
+        const p = v > 0 ? `M${x0},${base} V${y0 + r} Q${x0},${y0} ${x0 + r},${y0} H${x0 + bw - r} Q${x0 + bw},${y0} ${x0 + bw},${y0 + r} V${base} Z` : '';
+        const partial = i === n - 1;
+        return p ? `<path d="${p}" fill="${C1}" ${partial ? 'fill-opacity="0.32" stroke="' + C1 + '" stroke-width="1.5" stroke-dasharray="3 3"' : ''}/>` : '';
+      }).join('');
+      const L = n - 2;
+      if (vals[L] != null) plot += `<text x="${x(L)}" y="${y(vals[L]) - 7}" text-anchor="middle" class="kpi-endlabel">${fmtN(vals[L])}</text>`;
+    } else {
+      const seg = (arr, upto) => {
+        let out = ''; let pen = false;
+        arr.forEach((v, i) => {
+          if (i > upto) return;
+          if (v == null) { pen = false; return; }
+          out += `${pen ? 'L' : 'M'}${x(i).toFixed(1)},${y(v).toFixed(1)} `;
+          pen = true;
+        });
+        return out;
+      };
+      const solid = seg(vals, n - 2);
+      const a = avg ? seg(avg, n - 2) : '';
+      const L = n - 2;
+      const tail = vals[n - 1] != null && vals[L] != null ? `<path d="M${x(L)},${y(vals[L])} L${x(n - 1)},${y(vals[n - 1])}" fill="none" stroke="${C1}" stroke-width="2" stroke-dasharray="3 4"/>` : '';
+      const area = solid ? `${solid}L${x(L).toFixed(1)},${y(0)} L${x(vals.findIndex((v) => v != null)).toFixed(1)},${y(0)} Z` : '';
+      plot = `${area ? `<path d="${area}" fill="${C1}" opacity="0.07"/>` : ''}
+        ${a ? `<path d="${a}" fill="none" stroke="${TR_AVG}" stroke-width="2" stroke-dasharray="5 4" stroke-linejoin="round"/>` : ''}
+        <path d="${solid}" fill="none" stroke="${C1}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>${tail}
+        ${vals[L] != null ? `<circle cx="${x(L)}" cy="${y(vals[L])}" r="4" fill="${C1}" stroke="#fff" stroke-width="2"/><text x="${x(L)}" y="${y(vals[L]) - 10}" text-anchor="middle" class="kpi-endlabel">${fmtN(vals[L])}</text>` : ''}
+        ${vals[n - 1] != null ? `<circle cx="${x(n - 1)}" cy="${y(vals[n - 1])}" r="4" fill="#fff" stroke="${C1}" stroke-width="2"/>` : ''}`;
+    }
+
+    box.innerHTML = `
+      <svg viewBox="0 0 ${Wd} ${H}" width="${Wd}" height="${H}" aria-hidden="true">
+        ${grid}${xt}${plot}${mk}
+        <g class="kpi-hover" style="display:none"><line class="kpi-cross" y1="${pad.t}" y2="${pad.t + ih}"/>${bars ? '' : `<circle class="kpi-hdot1" r="4.5" fill="${C1}" stroke="#fff" stroke-width="2"/>`}</g>
+        <rect class="kpi-hit" x="${pad.l - 6}" y="0" width="${iw + 12}" height="${H}" fill="transparent"/>
+      </svg>
+      <div class="kpi-tip" hidden></div>`;
+    const svg = q('svg', box);
+    const hover = q('.kpi-hover', box);
+    const tip = q('.kpi-tip', box);
+    box.tabIndex = 0;
+    box.setAttribute('aria-label', `${m.label} ${W.name} 추이. 좌우 화살표로 기간별 값을 볼 수 있습니다.`);
+    let cur = -1;
+    const line = (text, strong, color, cls) => {
+      const p = document.createElement('p');
+      if (color !== undefined) { const key = document.createElement('span'); key.className = 'kpi-tip-key' + (color ? '' : ' is-none'); if (color) key.style.background = color; p.appendChild(key); }
+      if (strong != null) { const b = document.createElement('strong'); b.textContent = strong; if (cls) b.className = cls; p.appendChild(b); }
+      p.appendChild(document.createTextNode(' ' + text));
+      return p;
+    };
+    function show(i) {
+      if (i < 0 || i >= n) return;
+      cur = i;
+      const v = vals[i];
+      hover.style.display = '';
+      const cross = q('.kpi-cross', box);
+      cross.setAttribute('x1', x(i)); cross.setAttribute('x2', x(i));
+      const dot = q('.kpi-hdot1', box);
+      if (dot) { if (v == null) dot.setAttribute('cy', -20); else { dot.setAttribute('cx', x(i)); dot.setAttribute('cy', y(v)); } }
+      tip.textContent = '';
+      const head = document.createElement('p'); head.className = 'kpi-tip-head';
+      head.textContent = trLabel(d.unit, keys[i], true) + (i === n - 1 ? ' · 진행 중' : '');
+      tip.appendChild(head);
+      tip.appendChild(line(m.label, v == null ? '기록 전' : fmtN(v) + m.unit, C1));
+      if (i === n - 1 && v != null) {
+        const dd = trDelta(v, cut);
+        tip.appendChild(line(`${W.cut} ${fmtN(cut)}${m.unit} 대비`, dd.text, '', dd.cls));
+      } else if (i > 0 && v != null && vals[i - 1] != null) {
+        const dd = trDelta(v, vals[i - 1]);
+        tip.appendChild(line(`${W.vs} 대비`, dd.text, '', dd.cls));
+      }
+      if (avg && avg[i] != null) tip.appendChild(line('7일 평균', fmtN(avg[i]), TR_AVG));
+      (marks[keys[i]] || []).slice(0, 5).forEach((t) => tip.appendChild(line(`${siteName[t.site] || t.site} · ${t.title}`, '◆', undefined, 'tr-tip-mark')));
+      const extra = (marks[keys[i]] || []).length - 5;
+      if (extra > 0) tip.appendChild(line(`외 ${extra}건`, null));
+      tip.hidden = false;
+      const bw = box.clientWidth;
+      const scale = svg.getBoundingClientRect().width / Wd || 1;
+      const px = x(i) * scale;
+      const tw = tip.offsetWidth;
+      tip.style.left = Math.max(0, Math.min(bw - tw, px + 14 > bw - tw ? px - tw - 14 : px + 14)) + 'px';
+      tip.style.top = '6px';
+    }
+    const hide = () => { hover.style.display = 'none'; tip.hidden = true; cur = -1; };
+    const pick = (clientX) => {
+      const r = svg.getBoundingClientRect();
+      const px = (clientX - r.left) * (Wd / r.width);
+      return bars ? Math.floor((px - pad.l) / slot) : Math.round(((px - pad.l) / iw) * (n - 1));
+    };
+    const hit = q('.kpi-hit', box);
+    hit.addEventListener('mousemove', (e) => show(Math.max(0, Math.min(n - 1, pick(e.clientX)))));
+    hit.addEventListener('mouseleave', hide);
+    hit.addEventListener('touchstart', (e) => { if (e.touches[0]) show(Math.max(0, Math.min(n - 1, pick(e.touches[0].clientX)))); }, { passive: true });
+    hit.addEventListener('touchmove', (e) => { if (e.touches[0]) show(Math.max(0, Math.min(n - 1, pick(e.touches[0].clientX)))); }, { passive: true });
+    box.onkeydown = (e) => {
+      if (e.key === 'ArrowRight') { e.preventDefault(); show(Math.min(n - 1, cur < 0 ? n - 1 : cur + 1)); }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); show(Math.max(0, cur < 0 ? n - 1 : cur - 1)); }
+      if (e.key === 'Escape') hide();
+    };
+    box.onblur = hide;
+  }
+
+  /* 사이트별 비교 — 고른 지표 하나로 */
+  function trRenderTable() {
+    const d = TR.data;
+    const m = TR_BY[TR.metric];
+    const W = TR_WORD[d.unit];
+    const n = d.keys.length;
+    const single = !['all', 'focus'].includes(TR.scope);
+    const pool = TR.scope === 'all' ? d.sites : d.sites.filter((s) => s.tier === '주력' || s.id === TR.scope);
+    const rows = pool.filter((s) => trHas(s, m.k)).map((s) => {
+      const v = s.s[m.k];
+      return { s, L: v[n - 2], B: v[n - 3], C: v[n - 1], cut: s.prev[m.k] || 0, dl: trDelta(v[n - 2], v[n - 3], ''), tot: v.slice(0, n - 1).reduce((a, x) => a + (x || 0), 0) };
+    });
+    const key = (r) => (r.dl.d == null ? 0 : r.dl.d);
+    if (TR.sort === 'up') rows.sort((a, b) => key(b) - key(a) || (b.L || 0) - (a.L || 0));
+    else if (TR.sort === 'down') rows.sort((a, b) => key(a) - key(b) || (b.L || 0) - (a.L || 0));
+    else rows.sort((a, b) => (b.L || 0) - (a.L || 0) || b.tot - a.tot);
+    qa('#trSort [data-sort]').forEach((b) => b.classList.toggle('is-active', b.dataset.sort === TR.sort));
+    q('#trTableTitle').innerHTML = `사이트별 ${esc(m.label)} <small>${esc(W.last)} 기준 · ${esc(W.vs)} 대비</small>`;
+
+    /* 늘어난 곳 · 줄어든 곳 */
+    const ups = rows.filter((r) => r.dl.d > 0).sort((a, b) => b.dl.d - a.dl.d).slice(0, 3);
+    const downs = rows.filter((r) => r.dl.d < 0).sort((a, b) => a.dl.d - b.dl.d).slice(0, 3);
+    const li = (r) => `<li><button type="button" class="link-btn" data-tr-site="${esc(r.s.id)}">${esc(r.s.name)}</button> <em class="${r.dl.cls}">${esc(r.dl.text)}</em></li>`;
+    q('#trMoves').innerHTML = single ? '' : `
+      <div><p class="tr-moves-h">${esc(W.vs)}보다 많이 늘어난 곳</p>${ups.length ? `<ul>${ups.map(li).join('')}</ul>` : '<p class="acc-empty">없음</p>'}</div>
+      <div><p class="tr-moves-h">${esc(W.vs)}보다 많이 줄어든 곳</p>${downs.length ? `<ul>${downs.map(li).join('')}</ul>` : '<p class="acc-empty">없음</p>'}</div>`;
+
+    const head = `<div class="tr-row tr-row-head" aria-hidden="true"><span>사이트</span><span>${esc(W.last)}</span><span>${esc(W.vs)} 대비</span><span>${esc(W.curLong)}</span><span>추이 (${n}${esc(W.per)})</span></div>`;
+    q('#trTable').innerHTML = rows.length ? head + rows.map((r) => `
+      <div class="tr-row${r.s.id === TR.scope ? ' is-on' : ''}">
+        <button type="button" class="tr-site" data-tr-site="${esc(r.s.id)}" title="이 사이트만 보기"><strong>${esc(r.s.name)}</strong><small>${esc((r.s.cluster || '').replace(/^\d+\s*/, ''))}</small></button>
+        <span class="tr-cell"><span class="tr-cap">${esc(W.last)}</span><strong>${r.L == null ? '–' : fmtN(r.L)}</strong></span>
+        <span class="tr-cell"><span class="tr-cap">${esc(W.vs)} 대비</span><em class="${r.dl.cls}">${esc(r.dl.text)}</em></span>
+        <span class="tr-cell"><span class="tr-cap">${esc(W.curLong)}</span><strong>${r.C == null ? '–' : fmtN(r.C)}</strong><small>${esc(W.cut)} ${fmtN(r.cut)}</small></span>
+        <span class="tr-cell tr-cell-spark">${trSpark(r.s.s[m.k], 120, 28)}</span>
+      </div>`).join('') : '<p class="acc-empty">이 지표에 쌓인 기록이 있는 사이트가 없습니다.</p>';
+  }
+
+  /* 이벤트 */
+  q('#trUnit').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-unit]');
+    if (!b || b.dataset.unit === TR.unit) return;
+    TR.unit = b.dataset.unit; TR.n = 0; trSave(); loadTrend();
+  });
+  q('#trN').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-n]');
+    if (!b) return;
+    TR.n = Number(b.dataset.n); trSave(); loadTrend();
+  });
+  q('#trScope').addEventListener('change', (e) => { TR.scope = e.target.value; trSave(); renderTrend(); });
+  q('#trTiles').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-tr-metric]');
+    if (!b) return;
+    TR.metric = b.dataset.trMetric; trSave();
+    qa('#trTiles [data-tr-metric]').forEach((x) => { const on = x === b; x.classList.toggle('is-on', on); x.setAttribute('aria-pressed', String(on)); });
+    trRenderChart(); trRenderTable();
+  });
+  q('#trSort').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-sort]');
+    if (!b) return;
+    TR.sort = b.dataset.sort; trRenderTable();
+  });
+  q('[data-panel="trend"]').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-tr-site]');
+    if (!b) return;
+    TR.scope = b.dataset.trSite === TR.scope ? 'all' : b.dataset.trSite;
+    trSave(); renderTrend();
+    q('#trBrief').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+  q('#trCsv').addEventListener('click', () => {
+    const d = TR.data;
+    if (!d) { showMsg('먼저 추이를 불러와 주세요.', 'info'); return; }
+    const W = TR_WORD[d.unit];
+    const rows = [[`KPI 추이 (${W.name})`, `${d.keys[0]} ~ ${d.keys[d.keys.length - 1]}`, '마지막 기간은 진행 중'], [],
+      ['사이트', '구분', '기간', ...TR_M.map((m) => `${m.label}(${m.unit})`)]];
+    d.sites.filter(trAny).forEach((s) => d.keys.forEach((k, i) => rows.push([s.name, s.tier, k, ...TR_M.map((m) => (s.s[m.k][i] == null ? '' : s.s[m.k][i]))])));
+    downloadCsv(`KPI추이_${W.name}_${d.keys[0]}_${d.keys[d.keys.length - 1]}.csv`, rows);
+  });
+  window.addEventListener('resize', () => {
+    clearTimeout(TR.rt);
+    TR.rt = setTimeout(() => { if (TR.data && !q('[data-panel="trend"]').hidden) trRenderChart(); }, 200);
+  });
+
+  /* 대시보드: 어제 성과 (전체 사이트) */
+  async function loadDashTrend() {
+    const box = q('#admTrend');
+    if (!box) return;
+    try {
+      const d = await api('trend?unit=day&n=14');
+      const list = trScopeSites(d, 'all');
+      box.innerHTML = ['v', 'se', 'inq', 'book'].map((k) => trTile(d, list, TR_BY[k], { compact: true })).join('');
+    } catch (err) {
+      box.innerHTML = `<li class="acc-empty">${esc(err.message)}</li>`;
+    }
+  }
+
   /* ---------------- 설정 · 바로가기 ---------------- */
   function renderSystem() {
     const s = state.setup || {};
@@ -2400,7 +2858,7 @@
     const start = (location.hash || '').replace('#', '');
     /* 관리자가 쓰는 브라우저는 방문 통계에서 뺀다 (KPI 화면에서 바꿀 수 있음) */
     try { if (localStorage.getItem('csj_no_stats') === null) localStorage.setItem('csj_no_stats', 'true'); } catch (_) { /* ignore */ }
-    go(['ops', 'sites', 'skpi', 'leads', 'kpi', 'inquiries', 'members', 'community', 'refs', 'content', 'system'].includes(start) ? start : 'dash');
+    go(['ops', 'trend', 'sites', 'skpi', 'leads', 'kpi', 'inquiries', 'members', 'community', 'refs', 'content', 'system'].includes(start) ? start : 'dash');
   }
 
   boot();
