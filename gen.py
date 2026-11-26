@@ -1185,10 +1185,17 @@ NETWORK_GROUPS = [
 ]
 # 함께 키우는 서비스 — 문을 연 지 얼마 안 됐거나 콘텐츠를 쌓아 가는 중인 곳 (목록으로만 보여 줌)
 NETWORK_MORE_GROUPS = [
-    ("m-space", "공간 · 플랫폼"),
-    ("m-build", "공간 개발 · 시공 · 관리"),
-    ("m-work", "사업자 도구 · 커뮤니티"),
-    ("m-life", "생활 · 콘텐츠"),
+    ("m-space", "공간 예약 · 플랫폼"),
+    ("m-build", "공간 개발 · 부동산"),
+    ("m-work", "사업자 성장 · 커뮤니티"),
+    ("m-life", "생활 · 여행 · 콘텐츠"),
+]
+# 한눈에 보기 — 누구를 위한 곳인지로 네 갈래로 묶는다 (대표 사업 그룹 + 함께 키우는 서비스 그룹)
+NETWORK_LANES = [
+    ("lane-space", "공간을 쓰는 분", "예약하고 바로 쓰는 공간과 공간 찾기", ("space", "m-space")),
+    ("lane-biz", "공간을 가진 · 만드는 분", "공실 진단부터 중개, 인테리어, 원상복구까지", ("biz", "m-build")),
+    ("lane-work", "사업하는 분", "1인 사업과 사이드프로젝트를 돕는 도구와 모임", ("m-work",)),
+    ("lane-life", "일상 · 여행", "생활 정보, 취미, 여행", ("m-life",)),
 ]
 # tier="main": 방문·문의가 꾸준하고 운영이 자리 잡은 대표 사업 (카드로 크게)
 # tier="more": 함께 키우는 서비스 (목록). 운영 현황·KPI 추이를 보고 자리가 잡히면 main 으로 올린다.
@@ -1246,6 +1253,12 @@ NETWORK = [
     dict(tier="more", key="honplace", group="m-space", name="혼플", en="HONPLACE", url="https://honplace.com", mark="HP", color="#7A5C3E",
          kind="혼자 가기 좋은 곳", line="혼자 가기 좋은 곳을 골라 소개하는 큐레이션 미디어입니다.",
          facts=[], uses=["rest"], internal=None, anchor="혼자 가기 좋은 곳 혼플"),
+    dict(tier="more", key="todaypartyroom", group="m-space", name="오늘의파티룸", en="TODAY PARTYROOM", url="https://todaypartyroom.pages.dev", mark="오늘", color="#FF6B3D", stage="베타",
+         kind="당일 · 전날 할인 파티룸", line="오늘·내일 비어 있는 파티룸을 당일·전날 할인가로 모아 보는 곳. 원하는 지역에 빈 방이 나오면 알림을 받을 수 있습니다.",
+         facts=[], uses=["party"], internal=None, anchor="당일 할인 파티룸 오늘의파티룸"),
+    dict(tier="more", key="bagstop", group="m-space", name="백스톱", en="BAGSTOP", url="https://bagstop.pages.dev", mark="BS", color="#2B6CB0", stage="베타",
+         kind="여행자 짐보관", line="카페·식당·숙소처럼 가까운 가게에 짐을 맡기는 짐보관 예약 서비스입니다. 시간과 자리를 미리 보고 1분이면 예약합니다.",
+         facts=[], uses=["travel"], internal=None, anchor="여행 짐보관 예약 백스톱 BagStop"),
     dict(tier="more", key="seuseurolab", group="m-build", name="스스로연구소", en="SEUSEURO LAB", url="https://seuseurolab.com", mark="SL", color="#4A7C59",
          kind="상업공간 셀프시공", line="가게 공사를 직접 할 일과 맡길 일로 나눠 주는 셀프시공 연구소입니다.",
          facts=[], uses=["interior", "startup"], internal=None, anchor="상업공간 셀프시공 스스로연구소"),
@@ -1257,6 +1270,18 @@ NETWORK = [
          facts=["통건물 마스터리스", "층별 개발 · 운영"],
          uses=["owner", "vacancy"], internal=None,
          anchor="통건물 마스터리스 TGRZ SPACE"),
+    dict(tier="more", key="blankspaceindex", group="m-build", name="BLANK SPACE INDEX", en="BLANK SPACE INDEX", url="https://blankspaceindex.pages.dev", mark="BX", color="#111111",
+         kind="공간 가치 진단 지수", line="주소 하나로 공간·상업용 부동산의 가치를 진단하고, 왜 그런지와 무엇을 해야 하는지까지 짚어 주는 평가 체계입니다.",
+         facts=[], uses=["vacancy", "property"], internal=None, anchor="공간·상업용 부동산 가치 진단 BLANK SPACE INDEX"),
+    dict(tier="more", key="wonsangtaero", group="m-build", name="원상태로", en="WONSANGTAERO", url="https://wonsangtaero.pages.dev", mark="원상", color="#5D6D7E",
+         kind="퇴거 · 원상복구", line="상업공간을 비울 때 원상복구 범위부터 정리하고, 같은 조건의 견적과 시공 관리, 완료 확인까지 이어 줍니다.",
+         facts=[], uses=["exit"], internal=None, anchor="상가 퇴거·원상복구 원상태로"),
+    dict(tier="more", key="proppeer", group="m-build", name="프롭피어", en="PROPPEER", url="https://proppeer.pages.dev", mark="PP", color="#0F766E", stage="베타",
+         kind="부동산 전문가 연결", line="공실·임대차·매입·용도변경 문제를 3분 진단으로 정리하고, 맞는 전문가와 해결 과정까지 연결합니다.",
+         facts=[], uses=["property", "vacancy"], internal=None, anchor="부동산 문제 전문가 연결 프롭피어"),
+    dict(tier="more", key="ksba", group="m-build", name="한국공간비즈니스협회", en="KSBA", url="https://ksba-web.pages.dev", mark="KS", color="#1E3A5F", stage="설립 준비",
+         kind="공간산업 협회", line="공간대여·공실개발 산업의 표준과 품질인증, 교육, 회원사 거래 생태계를 만들기 위해 설립을 준비하는 단체입니다.",
+         facts=[], uses=["startup"], internal=None, anchor="한국공간비즈니스협회 KSBA"),
     dict(tier="more", key="passionstore", group="m-work", name="열정상회", en="PASSION STORE", url="https://passionstore.kr", mark="열정", color="#D2541E",
          kind="사업자 커뮤니티", line="업에 진심인 사업자·자영업자·프리랜서의 모임입니다.",
          facts=[], uses=["work"], internal=None, anchor="사업자 커뮤니티 열정상회"),
@@ -1265,12 +1290,18 @@ NETWORK = [
          facts=["업무 · 프로젝트 관리", "사람 · AI 연결"],
          uses=["work"], internal=None,
          anchor="1인 경영자 업무 운영 시스템 마이웍스"),
-    dict(tier="more", key="factanddo", group="m-work", name="팩트앤두", en="FACT&DO", url="https://factanddo.com", mark="FD", color="#1D6F8A",
+    dict(tier="more", key="factanddo", group="m-work", name="팩트앤두", en="FACT&DO", url="https://factanddo.com", mark="FD", color="#1D6F8A", stage="사전등록",
          kind="부업 교육 검증", line="부업·수익화 교육을 먼저 검증하고, 4주 동안 함께 실행해 보는 곳입니다.",
          facts=[], uses=["work"], internal=None, anchor="부업 교육 검증 팩트앤두"),
     dict(tier="more", key="mychallenge", group="m-work", name="마이챌린지", en="MY CHALLENGE", url="https://mychallenge.kr", mark="MC", color="#C0392B",
          kind="사이드프로젝트 12주", line="사이드프로젝트를 12주 동안 함께 진행해 첫 매출까지 가 보는 모임입니다.",
          facts=[], uses=["work"], internal=None, anchor="사이드프로젝트 챌린지 마이챌린지"),
+    dict(tier="more", key="bfc", group="m-work", name="BFC 종합경영자문", en="BF CONSULTING", url="https://bfconsulting.pages.dev", mark="BF", color="#1F3A60",
+         kind="경영 자문", line="개인사업자·법인을 위한 대표 옆의 외부 경영기획실. 경영·재무·마케팅·조직을 한 계획으로 묶어 진단부터 실행까지 함께합니다.",
+         facts=[], uses=["work"], internal=None, anchor="종합경영자문 BFC 비에프컨설팅"),
+    dict(tier="more", key="yeongyeoljeom", group="m-work", name="연결점", en="YEONGYEOLJEOM", url="https://yeongyeoljeom.pages.dev", mark="연결", color="#7C3AED", stage="오픈 준비",
+         kind="리퍼럴 마켓플레이스", line="아는 고객·사업자·점포를 필요한 기업에 소개하고, 소개 보상을 비교하고 관리하는 리퍼럴 마켓플레이스입니다.",
+         facts=[], uses=["work"], internal=None, anchor="리퍼럴 마켓플레이스 연결점"),
     dict(tier="more", key="myeonmyeon", group="m-life", name="면면", en="MYEONMYEON", url="https://myeonmyeon.com", mark="면면", color="#C8102E",
          kind="라면 도감 · 랭킹", line="한국과 세계 라면 516가지를 모은 도감, 먹어 본 사람들의 기록으로 매기는 라면 랭킹입니다.",
          facts=[], uses=["life"], internal=None, anchor="라면 도감·랭킹 면면"),
@@ -1288,12 +1319,21 @@ NETWORK = [
          facts=["오늘의 색 카드", "감정 날씨 기록", "궁합 · 신년운세 리포트"],
          uses=["life"], internal=None,
          anchor="오늘의 색과 감정으로 읽는 사주 여덟글자"),
+    dict(tier="more", key="yunto", group="m-life", name="윤토", en="YUNTO", url="https://yuntoworld.pages.dev", mark="YT", color="#0E7490",
+         kind="창작 언어", line="소리 15개, 규칙 13조, 예외 없이 30분이면 첫 문장을 만드는 창작 언어 윤토와 고유문자를 소개합니다.",
+         facts=[], uses=["life"], internal=None, anchor="창작 언어 윤토 YUNTO"),
+    dict(tier="more", key="fleating", group="m-life", name="플리팅", en="FLEATING", url="https://fleating-web.pages.dev", mark="FL", color="#DB2777", stage="베타",
+         kind="플리마켓 일정 · 셀러 모집", line="전국 플리마켓 일정과 셀러 모집, 참여 셀러와 커뮤니티를 한곳에 모으는 플리마켓 플랫폼입니다.",
+         facts=[], uses=["life"], internal=None, anchor="플리마켓 일정·셀러 모집 플리팅"),
+    dict(tier="more", key="mongcrew", group="m-life", name="몽크루", en="MONGOLIA CREW", url="https://mongcrew.pages.dev", mark="몽크", color="#B45309", stage="오픈 준비",
+         kind="몽골 여행 동행", line="일정과 성향이 맞는 동행을 찾고, 출발까지 안심하고 확정하는 몽골 여행 동행 플랫폼입니다.",
+         facts=[], uses=["travel"], internal=None, anchor="몽골 여행 동행 몽크루"),
 ]
 NETWORK_BY_KEY = {n['key']: n for n in NETWORK}
 
 # '이럴 때 찾으세요' — 고객의 필요 → 사이트
 NETWORK_USES = [
-    ("party", "생일 · 파티 · 소모임", ["ssople", "playtion", "pvit"]),
+    ("party", "생일 · 파티 · 소모임", ["ssople", "playtion", "pvit", "todaypartyroom"]),
     ("game", "게임하며 놀기", ["playtion", "ssople", "rulerule"]),
     ("study", "스터디 · 회의 · 강의", ["socialfactory", "mingle"]),
     ("seminar", "세미나 · 워크숍", ["socialfactory", "megaspot"]),
@@ -1301,12 +1341,14 @@ NETWORK_USES = [
     ("office", "코워킹 · 1인 사무실", ["socialfactory"]),
     ("cafe", "카페 · 동네 모임 · 언어교환", ["mingle"]),
     ("rest", "혼자 쉬기 · 휴식", ["restel", "honplace", "hantang", "pvit"]),
-    ("vacancy", "상가 · 건물 공실 해결", ["gongbaek", "guspace", "tgrz", "orbis"]),
-    ("property", "빌딩 · 상가 매매 · 임대", ["orbis"]),
+    ("vacancy", "상가 · 건물 공실 해결", ["gongbaek", "guspace", "tgrz", "orbis", "blankspaceindex", "proppeer"]),
+    ("property", "빌딩 · 상가 매매 · 임대", ["orbis", "proppeer", "blankspaceindex"]),
     ("interior", "매장 브랜딩 · 인테리어 · 셀프시공", ["coremood", "seuseurolab"]),
-    ("startup", "공간 창업 준비", ["coremood", "orbis", "gongbaek", "seuseurolab"]),
-    ("work", "1인 사업 · 사이드프로젝트", ["myworks", "passionstore", "mychallenge", "factanddo"]),
-    ("life", "생활 정보 · 취미", ["myeonmyeon", "bareunbp", "rulerule", "yeodeol"]),
+    ("exit", "매장 정리 · 퇴거 · 원상복구", ["wonsangtaero", "orbis"]),
+    ("startup", "공간 창업 준비", ["coremood", "orbis", "gongbaek", "seuseurolab", "ksba"]),
+    ("work", "1인 사업 · 경영 · 사이드프로젝트", ["myworks", "bfc", "passionstore", "mychallenge", "factanddo", "yeongyeoljeom"]),
+    ("travel", "여행 · 짐 보관", ["bagstop", "hantang", "mongcrew"]),
+    ("life", "생활 정보 · 취미", ["myeonmyeon", "bareunbp", "rulerule", "yeodeol", "yunto", "fleating"]),
 ]
 
 # 글 주제별로 함께 보여줄 사이트
@@ -1372,12 +1414,17 @@ def network_groups_html():
     return '\n\n'.join(out)
 
 
+def net_stage(n):
+    """베타 · 사전등록 · 오픈 준비 · 설립 준비 — 아직 정식 운영 전인 곳에만 붙는 표시"""
+    return f'<span class="net-stage">{esc(n["stage"])}</span>' if n.get('stage') else ''
+
+
 def net_item(n):
     """함께 키우는 서비스 — 한 줄 목록"""
     host = re.sub(r'^https?://(www\.)?', '', n['url']).rstrip('/')
     uses = ' '.join(k for k, _, keys in NETWORK_USES if n['key'] in keys)
     return (f'<li class="net-item" data-uses="{uses}" id="net-{n["key"]}"><a href="{n["url"]}"{ext_attrs()} title="{esc(n["anchor"])}">'
-            f'<span class="net-item-name"><strong>{esc(n["name"])}</strong><span class="net-item-kind">{esc(n["kind"])}</span></span>'
+            f'<span class="net-item-name"><strong>{esc(n["name"])}</strong>{net_stage(n)}<span class="net-item-kind">{esc(n["kind"])}</span></span>'
             f'<span class="net-item-line">{esc(n["line"])}</span><span class="net-item-host mono">{esc(host)} ↗</span></a></li>')
 
 
@@ -1394,9 +1441,33 @@ def network_more_html():
         <header class="section-head reveal">
           <p class="eyebrow mono">GROWING · {count}</p>
           <h2>함께 키우고 있는 <span class="accent">서비스</span></h2>
-          <p class="lede">문을 연 지 얼마 되지 않았거나 콘텐츠를 쌓아 가는 중인 서비스입니다. 쓰임새가 맞는다면 먼저 둘러보셔도 좋습니다.</p>
+          <p class="lede">문을 연 지 얼마 되지 않았거나 콘텐츠를 쌓아 가는 중인 서비스입니다. 쓰임새가 맞는다면 먼저 둘러보셔도 좋습니다. 이름 옆에 '베타'나 '오픈 준비'가 붙은 곳은 아직 정식 운영 전입니다.</p>
         </header>
         <div class="net-more">{''.join(cols)}</div>
+      </div>
+    </section>"""
+
+
+def network_map():
+    """/network — 한눈에 보기: 누구를 위한 곳인지 네 갈래로, 이름을 누르면 아래 설명으로 이동"""
+    lanes = []
+    for lk, title, sub, groups in NETWORK_LANES:
+        items = [n for n in NETWORK if n['group'] in groups]
+        items.sort(key=lambda n: (n['tier'] != 'main', bool(n.get('stage'))))
+        lis = ''.join(
+            f'<li class="{"is-main" if n["tier"] == "main" else ""}"><a href="#net-{n["key"]}">{esc(n["name"])}</a>{net_stage(n)}</li>'
+            for n in items)
+        lanes.append(f'<div class="net-lane reveal" id="{lk}"><p class="net-lane-count mono">{len(items):02d}</p><h3>{esc(title)}</h3>'
+                     f'<p class="net-lane-sub">{esc(sub)}</p><ul>{lis}</ul></div>')
+    main_n = sum(1 for n in NETWORK if n['tier'] == 'main')
+    return f"""    <section class="section section-tint" id="map">
+      <div class="container">
+        <header class="section-head reveal">
+          <p class="eyebrow mono">AT A GLANCE · {len(NETWORK)}</p>
+          <h2>한눈에 보는 <span class="accent">패밀리 사이트</span></h2>
+          <p class="lede">누구를 위한 곳인지에 따라 네 갈래로 묶었습니다. 굵은 이름 {main_n}곳은 방문과 문의가 꾸준한 대표 사업입니다. 이름을 누르면 아래 설명으로 이동합니다.</p>
+        </header>
+        <div class="net-map">{''.join(lanes)}</div>
       </div>
     </section>"""
 
@@ -1415,10 +1486,15 @@ def network_home():
         if items:
             rows.append(f'<div class="net-row"><p class="net-row-label mono">{esc(label)}</p><div class="net-mini-grid">'
                         + ''.join(net_card(n, full=False) for n in items) + '</div></div>')
-    more = [n for n in NETWORK if n['tier'] == 'more']
-    if more:
-        links = ''.join(f'<li><a href="{n["url"]}"{ext_attrs()} title="{esc(n["anchor"])}"><strong>{esc(n["name"])}</strong><span>{esc(n["kind"])}</span></a></li>' for n in more)
-        rows.append(f'<div class="net-row"><p class="net-row-label mono">함께 키우는 서비스</p><ul class="net-chips">{links}</ul></div>')
+    groups = []
+    for gk, label in NETWORK_MORE_GROUPS:
+        items = [n for n in NETWORK if n['tier'] == 'more' and n['group'] == gk]
+        if items:
+            links = ''.join(f'<li><a href="{n["url"]}"{ext_attrs()} title="{esc(n["anchor"])}"><strong>{esc(n["name"])}</strong>'
+                            f'<span>{esc(n["kind"])}</span>{net_stage(n)}</a></li>' for n in items)
+            groups.append(f'<div class="net-chip-group"><p class="mono">{esc(label)}</p><ul class="net-chips">{links}</ul></div>')
+    if groups:
+        rows.append('<div class="net-row"><p class="net-row-label mono">함께 키우는 서비스</p><div class="net-chip-groups">' + ''.join(groups) + '</div></div>')
     return '<div class="net-rows">' + ''.join(rows) + '</div>'
 
 
@@ -1438,7 +1514,7 @@ def network_use_guide():
     """문의하기 등: '공간 예약이라면 여기로' 안내 — 용도 → 사이트 표"""
     rows = []
     for k, label, keys in NETWORK_USES:
-        if k in ('life', 'work', 'rest'):
+        if k in ('life', 'work', 'rest', 'travel'):
             continue
         links = ' · '.join(f'<a href="{NETWORK_BY_KEY[x]["url"]}"{ext_attrs()}>{esc(NETWORK_BY_KEY[x]["name"])}</a>' for x in keys)
         rows.append(f'<li><span>{esc(label)}</span><span>{links}</span></li>')
@@ -1554,9 +1630,11 @@ TOKENS['PARTNER_KIND_OPTIONS'] = ''.join(f'<option value="{esc(k)}">{esc(k)}</op
 TOKENS['PARTNER_BRAND_CHIPS'] = ''.join(
     f'<label class="pt-chip"><input type="checkbox" name="brands" value="{esc(v)}" /><span>{esc(v)}</span></label>'
     for v in [n['name'] for n in NETWORK if n['tier'] == 'main'] + ['함께 키우는 서비스', '최시준 강의·자문', '아직 정하지 않음'])
+TOKENS['NETWORK_MAP'] = network_map()
 TOKENS['NETWORK_FINDER'] = network_finder()
 TOKENS['NETWORK_HOME'] = network_home()
 TOKENS['NETWORK_COUNT'] = str(len(NETWORK))
+TOKENS['NETWORK_MAIN_COUNT'] = str(sum(1 for n in NETWORK if n['tier'] == 'main'))
 TOKENS['NETWORK_USE_GUIDE'] = network_use_guide()
 TOKENS['NETWORK_PICK_PRO'] = network_pick(["gongbaek", "coremood", "orbis", "guspace"], "공간 사업을 함께하는 패밀리 서비스",
                                           lede="진단·설계·중개·운영을 각 분야 사이트에서 더 자세히 볼 수 있습니다.")
@@ -1564,6 +1642,56 @@ TOKENS['NETWORK_PICK_KONDAE'] = network_pick(["socialfactory", "megaspot", "ming
                                              eyebrow="KONDAE CLUSTER", lede="모임은 소셜팩토리, 큰 행사는 메가스팟, 쉬어 갈 땐 밍글, 2차는 플레이션.")
 TOKENS['NETWORK_PICK_SPACE'] = network_pick(["ssople", "playtion", "socialfactory", "megaspot", "mingle"], "공간을 바로 예약하고 싶다면",
                                             eyebrow="BOOK A SPACE", lede="파티·게임·모임·행사·카페 — 각 브랜드 사이트에서 바로 예약하고 문의할 수 있습니다.")
+
+
+# 방문 통계에 예전부터 쓰던 이름 — 지난 기록과 이어지도록 그대로 둔다
+FAMILY_LABEL_KEEP = {'hellomingle.kr': '헬로밍글', 'vacancy.co.kr': '공실개발', 'orbis-estate.com': '오르비스'}
+
+
+def build_family_sync():
+    """패밀리 사이트 목록(NETWORK) 하나로 나머지를 맞춘다
+    - functions/_lib/family.js : 방문 통계가 '패밀리 사이트에서 온 방문'을 알아보는 목록
+    - script.js 의 FAMILY      : 패밀리 사이트로 나가는 클릭을 따로 세는 목록
+    - setup/family-sites-snippet.html : 다른 브랜드 사이트 푸터에 붙이는 패밀리 사이트 블록"""
+    hosts = []
+    for n in NETWORK:
+        h = re.sub(r'^https?://(www\.)?', '', n['url']).split('/')[0].lower()
+        if h not in [x for x, _ in hosts]:
+            hosts.append((h, FAMILY_LABEL_KEEP.get(h, n['name'])))
+    js = ('/* gen.py 가 패밀리 사이트 목록(NETWORK)에서 만든 파일입니다. 직접 고치지 말고 gen.py 를 고친 뒤 다시 만드세요. */\n'
+          'export const FAMILY_SITES = [\n' + ''.join(f"  ['{h}', '{l}'],\n" for h, l in hosts) + '];\n')
+    with io.open(os.path.join('functions', '_lib', 'family.js'), 'w', encoding='utf-8') as f:
+        f.write(js)
+    rx = '|'.join(re.escape(h).replace('\\-', '-') for h, _ in hosts)
+    with io.open('script.js', encoding='utf-8') as f:
+        sj = f.read()
+    sj2 = re.sub(r"  const FAMILY = /\(\^\|\\\.\)\([^\n]*\)\$/i;", lambda m: "  const FAMILY = /(^|\\.)(" + rx + ")$/i;", sj, count=1)
+    if sj2 != sj:
+        with io.open('script.js', 'w', encoding='utf-8') as f:
+            f.write(sj2)
+    # 다른 사이트용 패밀리 블록
+    st = 'display:inline-block;min-width:96px;opacity:.6;font-size:12px;'
+    a_st = 'color:inherit;text-decoration:none;margin-right:14px;white-space:nowrap;'
+    def line(label, items):
+        links = ''.join(f'<a href="{n["url"]}" target="_blank" rel="noopener" title="{esc(n["anchor"])}" style="{a_st}">{esc(n["name"])}</a>' for n in items)
+        return f'    <p style="margin:6px 0;"><span style="{st}">{esc(label)}</span>{links}</p>\n'
+    body = ''
+    for gk, label, _, _ in NETWORK_GROUPS:
+        body += line(label, [n for n in NETWORK if n['tier'] == 'main' and n['group'] == gk])
+    for gk, label in NETWORK_MORE_GROUPS:
+        body += line(label, [n for n in NETWORK if n['tier'] == 'more' and n['group'] == gk and not n.get('stage')])
+    snippet = (f"<!--\n  패밀리 사이트 블록 — 다른 브랜드 사이트 푸터 위에 그대로 붙여넣는 코드\n"
+               f"  (choisijun.com 의 gen.py NETWORK 목록에서 자동 생성 · {TODAY})\n"
+               "  - 자기 사이트 링크는 지워도 되고 그대로 두어도 됩니다\n"
+               "  - 베타 · 오픈 준비 중인 곳은 넣지 않았습니다\n"
+               "  - 색은 사이트 디자인에 맞게 color / border 값만 바꾸세요\n-->\n"
+               '<section class="family-sites" aria-label="패밀리 사이트" style="border-top:1px solid rgba(0,0,0,.12);padding:22px 0;font-size:14px;line-height:1.7;">\n'
+               '  <div style="max-width:1120px;margin:0 auto;padding:0 20px;">\n'
+               '    <p style="margin:0 0 8px;font-weight:700;">FAMILY SITES — <a href="https://choisijun.com/network" target="_blank" rel="noopener" style="color:#FF4712;text-decoration:none;">최시준이 만들고 운영하는 공간 · 서비스 전체 보기 →</a></p>\n'
+               + body + '  </div>\n</section>\n')
+    with io.open(os.path.join('setup', 'family-sites-snippet.html'), 'w', encoding='utf-8') as f:
+        f.write(snippet)
+    print('built family lists', len(hosts))
 
 
 def build_llms():
@@ -1843,6 +1971,7 @@ def build():
     build_sitemap()
     build_rss()
     build_llms()
+    build_family_sync()
     if VERIFY:
         print('검색엔진 소유확인 태그:', ', '.join(VERIFY))
 

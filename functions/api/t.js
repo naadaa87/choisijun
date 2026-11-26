@@ -4,6 +4,7 @@
    - IP 주소와 쿠키는 저장하지 않는다. 방문자 구분은 브라우저에 만든 임의 번호(vid)로만 한다
    - 관리자로 로그인한 브라우저, 검색 로봇, 자동화 브라우저는 세지 않는다
    ========================================================= */
+import { FAMILY_SITES } from '../_lib/family.js';
 import { db, isAdmin, kst, clean, hasMemberCookie } from '../_lib/core.js';
 
 export const BOT = /\bbot\b|bot\/|bytespider|crawl|spider|slurp|bingpreview|facebookexternalhit|meta-externalagent|headless|phantom|lighthouse|pagespeed|gtmetrix|pingdom|uptime|monitor|curl\/|wget\/|python|axios|node-fetch|go-http|java\/|okhttp|yeti\/|daumoa|kakaotalk-scrap|whatsapp\/|telegrambot|discordbot|slackbot|preview|scrap/i;
@@ -43,31 +44,7 @@ const BLOG = [
   [/(^|\.)rocketpunch\.com$/, '로켓펀치'],
   [/(^|\.)thevc\.kr$/, '더브이씨']
 ];
-const FAMILY = [
-  [/(^|\.)socialfactory\.co\.kr$/, '소셜팩토리'],
-  [/(^|\.)ssople\.com$/, '쏘플파티룸'],
-  [/(^|\.)playtion\.kr$/, '플레이션'],
-  [/(^|\.)megaspot\.kr$/, '메가스팟'],
-  [/(^|\.)hellomingle\.kr$/, '헬로밍글'],
-  [/(^|\.)vacancy\.co\.kr$/, '공실개발'],
-  [/(^|\.)orbis-estate\.com$/, '오르비스'],
-  [/(^|\.)coremood\.kr$/, '코어무드']
-  [/(^|\.)restel\.kr$/, '레스텔'],
-  [/(^|\.)pvit\.kr$/, '프빗'],
-  [/(^|\.)mezzanine\.life$/, '메자닌 서울'],
-  [/(^|\.)honplace\.com$/, '혼플'],
-  [/(^|\.)seuseurolab\.com$/, '스스로연구소'],
-  [/(^|\.)guspace\.kr$/, '지유공간개발'],
-  [/(^|\.)passionstore\.kr$/, '열정상회'],
-  [/(^|\.)myworks\.ai\.kr$/, '마이웍스'],
-  [/(^|\.)factanddo\.com$/, '팩트앤두'],
-  [/(^|\.)mychallenge\.kr$/, '마이챌린지'],
-  [/(^|\.)myeonmyeon\.com$/, '면면'],
-  [/(^|\.)bareunbp\.com$/, '바른혈압'],
-  [/(^|\.)rulerule\.kr$/, '룰룰'],
-  [/(^|\.)hantang\.kr$/, '한탕'],
-  [/(^|\.)yeodeol\.kr$/, '여덟글자'],
-];
+const FAMILY = FAMILY_SITES.map(([host, name]) => [new RegExp('(^|\\.)' + host.replace(/[.]/g, '\\.') + '$'), name]);
 /* 주소 없이 들어온 경우, 앱 안의 브라우저면 그 앱에서 온 것으로 본다 */
 const INAPP = [
   [/KAKAOTALK/i, 'SNS', '카카오톡'],

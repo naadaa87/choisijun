@@ -551,7 +551,7 @@ const Track = (function trackModule() {
   window.addEventListener('pageshow', (e) => { if (e.persisted) { touchSession(false); start(); } });
 
   /* 클릭: 링크·버튼의 종류와 이름 */
-  const FAMILY = /(^|\.)(socialfactory\.co\.kr|ssople\.com|playtion\.kr|megaspot\.kr|hellomingle\.kr|vacancy\.co\.kr|orbis-estate\.com|coremood\.kr|tgrzspace\.pages\.dev|restel\.kr|pvit\.kr|mezzanine\.life|honplace\.com|seuseurolab\.com|guspace\.kr|passionstore\.kr|myworks\.ai\.kr|factanddo\.com|mychallenge\.kr|myeonmyeon\.com|bareunbp\.com|rulerule\.kr|hantang\.kr|yeodeol\.kr)$/i;
+  const FAMILY = /(^|\.)(ssople\.com|megaspot\.kr|socialfactory\.co\.kr|vacancy\.co\.kr|orbis-estate\.com|coremood\.kr|playtion\.kr|hellomingle\.kr|restel\.kr|pvit\.kr|mezzanine\.life|honplace\.com|todaypartyroom\.pages\.dev|bagstop\.pages\.dev|seuseurolab\.com|guspace\.kr|tgrzspace\.pages\.dev|blankspaceindex\.pages\.dev|wonsangtaero\.pages\.dev|proppeer\.pages\.dev|ksba-web\.pages\.dev|passionstore\.kr|myworks\.ai\.kr|factanddo\.com|mychallenge\.kr|bfconsulting\.pages\.dev|yeongyeoljeom\.pages\.dev|myeonmyeon\.com|bareunbp\.com|rulerule\.kr|hantang\.kr|yeodeol\.kr|yuntoworld\.pages\.dev|fleating-web\.pages\.dev|mongcrew\.pages\.dev)$/i;
   const SNS = /(^|\.)(instagram\.com|threads\.(net|com)|youtube\.com|youtu\.be|facebook\.com|linkedin\.com|blog\.naver\.com|brunch\.co\.kr|x\.com|twitter\.com)$/i;
   const labelOf = (el) => (el.getAttribute('data-track') || el.getAttribute('aria-label') || el.textContent || el.getAttribute('title') || '')
     .replace(/\s+/g, ' ').trim().slice(0, 60);

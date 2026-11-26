@@ -3312,3 +3312,40 @@ a.mk-req:hover em { color: var(--signal); }
 .vc-chip b { color: var(--signal); margin-left: 2px; }
 .vc-chip:hover, .vc-chip.is-active { border-color: var(--signal); color: var(--signal); }
 @media (max-width: 900px) { .vc-pipe { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+/* ---------- 패밀리 사이트: 한눈에 보기 · 단계 표시 ---------- */
+.net-stage { display: inline-block; font-size: 0.68rem; font-weight: 700; line-height: 1; padding: 3px 6px; border-radius: 4px; background: var(--paper-tint); color: var(--concrete); border: 1px solid var(--line); vertical-align: middle; white-space: nowrap; }
+.net-map { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.net-lane { background: #fff; border: 1px solid var(--line); border-top: 3px solid var(--signal); border-radius: 10px; padding: 20px 18px 18px; }
+.net-lane-count { font-size: 0.74rem; color: var(--signal); margin: 0 0 4px; letter-spacing: 0.08em; }
+.net-lane h3 { font-size: 1.08rem; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 4px; }
+.net-lane-sub { font-size: 0.82rem; color: var(--concrete); line-height: 1.5; margin: 0 0 12px; }
+.net-lane ul { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.net-lane li { display: flex; align-items: center; gap: 6px; padding: 7px 0; border-bottom: 1px dashed var(--line); font-size: 0.9rem; }
+.net-lane li:last-child { border-bottom: 0; }
+.net-lane li a { color: #3A3A38; }
+.net-lane li a:hover { color: var(--signal); }
+.net-lane li.is-main a { font-weight: 800; color: var(--ink); }
+.net-lane li.is-main::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--signal); flex: none; }
+.net-lane li:not(.is-main)::before { content: ''; width: 6px; height: 6px; border-radius: 50%; border: 1px solid var(--concrete-soft); flex: none; }
+.net-chip-groups { display: flex; flex-direction: column; gap: 12px; }
+.net-chip-group > .mono { font-size: 0.72rem; color: var(--concrete); margin: 0 0 6px; }
+.net-chips a .net-stage { align-self: center; }
+.net-flow-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.net-item, .net-card { scroll-margin-top: calc(var(--header-h) + 24px); }
+.net-item:target a, .net-card:target { box-shadow: inset 3px 0 0 var(--signal); background: #FFF8F5; }
+@media (max-width: 1100px) {
+  .net-map { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .net-flow-5 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 760px) {
+  .net-flow-5 { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .net-map { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .net-lane ul { display: grid; grid-template-columns: 1fr 1fr; column-gap: 12px; }
+  .net-lane li { font-size: 0.86rem; min-width: 0; }
+  .net-lane li:nth-last-child(2):nth-child(odd) { border-bottom: 0; }
+}
