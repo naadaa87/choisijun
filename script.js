@@ -2723,3 +2723,21 @@ const INQUIRY_STATUS = ['접수', '진행중', '완료'];
   if (start && !chips.some((b) => b.dataset.use === start)) start = '';
   apply(start, false);
 })();
+
+/* ---------------------------------------------------------
+   주소 끝의 #faq-n · 질문 링크로 오면 그 질문을 펼친다 (글 위쪽 '이 글이 답하는 질문', 주제 가이드)
+   --------------------------------------------------------- */
+(function openFaqFromHash() {
+  const open = () => {
+    if (!location.hash) return;
+    let el = null;
+    try { el = document.querySelector(location.hash); } catch (_) { return; }
+    if (el && el.tagName === 'DETAILS') el.open = true;
+  };
+  window.addEventListener('hashchange', open);
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest('a[href^="#faq-"]');
+    if (a) setTimeout(open, 0);
+  });
+  open();
+})();

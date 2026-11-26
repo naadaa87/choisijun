@@ -91,22 +91,24 @@ def make(key, eyebrow, title, out):
 def text_of(s):
     return html.unescape(re.sub(r'<[^>]+>', '', re.sub(r'<br\s*/?>', ' ', s))).strip()
 
+def key_of(f):
+    name = os.path.basename(f)[:-5]
+    if f.startswith('insights/'):
+        return name if name.startswith('topic-') else 'insight-' + name   # 주제별 가이드는 topic-<slug>
+    if name.startswith('portfolio-'):
+        return 'region-' + name[len('portfolio-'):]
+    return name
+
 files = [f for f in glob.glob('*.html') + glob.glob('insights/*.html') if f not in ('index.html', '404.html')]
 if not ALL:
-    files = [f for f in glob.glob('insights/*.html')
-             if not os.path.exists('assets/og/insight-' + os.path.basename(f)[:-5] + '.jpg')]
+    # 기본: 공유 이미지가 아직 없는 페이지만 (매일 새 글, 새로 만든 페이지)
+    files = [f for f in files if not os.path.exists('assets/og/' + key_of(f) + '.jpg')]
 for f in sorted(files):
     s = open(f, encoding='utf-8').read()
     m = re.search(r'<h1[^>]*>(.*?)</h1>', s, re.S)
     e = re.search(r'<p class="eyebrow[^"]*">(.*?)</p>', s, re.S)
     if not m:
         continue
-    name = os.path.basename(f)[:-5]
-    if f.startswith('insights/'):
-        key = 'insight-' + name
-    elif name.startswith('portfolio-'):
-        key = 'region-' + name[len('portfolio-'):]
-    else:
-        key = name
+    key = key_of(f)
     make(key, text_of(e.group(1)) if e else 'CHOI SIJUN', re.sub(r'\s+', ' ', text_of(m.group(1))), f'assets/og/{key}.jpg')
     print('og', key)

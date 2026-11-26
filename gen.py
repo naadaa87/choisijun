@@ -173,8 +173,8 @@ PAGES = [
          keywords=f"{BASE_KEYWORDS}, 파티룸 포트폴리오, 공간 기획 사례, 모임공간, 게임파티룸, 지역별 파티룸"),
     dict(key="references", file="references.html", nav="레퍼런스", crumb="레퍼런스", schema="CollectionPage",
          title="레퍼런스 — 공간개발·브랜드·강의·언론 기록 | 최시준",
-         desc="10년+ 340개+ 공간의 기록. 공간개발, 브랜드 런칭, 파트너십, 강의·교육, 언론 보도 레퍼런스를 연도별로 모았습니다.",
-         keywords=f"{BASE_KEYWORDS}, 레퍼런스, 강의 이력, 언론 보도"),
+         desc="10년 넘게 340개가 넘는 공간을 만든 기록. 공간개발, 브랜드 런칭, 파트너십, 기업·대학 강의, 언론 보도까지 최시준의 레퍼런스를 연도별로 모았습니다.",
+         keywords=f"{BASE_KEYWORDS}, 최시준 레퍼런스, 공간개발 사례, 브랜드 런칭, 강의 이력, 언론 보도"),
     dict(key="media", file="media.html", nav="미디어", crumb="미디어", schema="CollectionPage",
          title="미디어 — 쇼릴·언론 보도·방송 출연 | 최시준",
          desc="15초 쇼릴 2026, KBS·JTBC·CCTV 등 언론 보도와 방송 출연, 공식 채널, 그리고 공간사업 판단기준을 담은 최시준의 최근 글.",
@@ -211,7 +211,7 @@ PAGES = [
     dict(key="glossary", file="glossary.html", nav=None, crumb="용어 사전", schema="DefinedTermSet",
          title="공간사업 용어 사전 — 공실개발·마스터리스·무인공간·SPMS | 최시준",
          desc="공실개발, 공간수익화, 비선호층, 마스터리스, 수익쉐어, 위탁운영, 목적형 공간, 무인공간, 예약제, SPMS, 가동률, 고정비 등 공간사업에서 쓰는 말을 최시준의 기준으로 풀었습니다.",
-         keywords="공실개발 뜻, 공간수익화 뜻, 마스터리스 뜻, 수익쉐어, 위탁운영, 무인공간, 비선호층, 가동률, 공간대여, 최시준"),
+         keywords="공실개발 뜻, 공간수익화 뜻, 마스터리스 뜻, 용도변경, 원상복구 범위, 상가 공실률, 전대 동의, 공헌이익, 수익쉐어, 위탁운영, 무인공간, 비선호층, 가동률, 최시준"),
     dict(key="network", file="network.html", nav=None, crumb="패밀리 사이트", schema="CollectionPage",
          title="패밀리 사이트 — 쏘플파티룸·플레이션·소셜팩토리·메가스팟·밍글·공백·코어무드 | 최시준",
          desc="최시준이 만들고 운영하는 공간과 서비스를 한곳에 모았습니다. 파티룸·게임파티룸·모임공간·대형 행사장·무인 디저트카페부터 공실개발·공간 브랜딩·상업용 부동산 중개까지, 필요한 곳을 바로 찾아가세요.",
@@ -321,7 +321,7 @@ def md_to_html(md):
                     i += 1
                 a_html = " ".join(ans)
                 faq.append((title, a_html))
-                out.append(f'<details class="faq-item"><summary>{md_inline(title)}</summary><p>{md_inline(a_html)}</p></details>')
+                out.append(f'<details class="faq-item" id="faq-{len(faq)}"><summary>{md_inline(title)}</summary><p>{md_inline(a_html)}</p></details>')
                 continue
             out.append(f"<h3>{md_inline(title)}</h3>")
             i += 1; continue
@@ -401,6 +401,125 @@ for _a in INSIGHTS:
         title=f"{_a['title']} | 최시준", desc=_a["desc"],
         keywords=(_a["keywords"] + ", " if _a["keywords"] else "") + "최시준, 공실개발, 공간수익화"))
 
+# ------------------------------------------------------------------
+# 주제 가이드 — 인사이트 글을 검색어 기준으로 묶은 허브 페이지 (/insights/topic-<slug>)
+#   cat: 글 머리말 category 와 같아야 함 · pin: 맨 앞에 둘 글 · extra: 다른 주제지만 함께 읽을 글
+#   intro 는 사이트에 이미 있는 사실만으로 씁니다
+# ------------------------------------------------------------------
+TOPICS = [
+    dict(cat="공실개발", slug="vacancy", name="공실개발 가이드",
+         title="공실개발 가이드 — 상가 공실 활용, 지하·고층·장기 공실 해결 | 최시준",
+         h1='공실개발 가이드 — 비어 있는 상가를 <span class="accent">수익공간</span>으로',
+         desc="상가 공실을 임대료 인하가 아니라 용도와 운영 구조로 푸는 방법. 지하·고층·장기 공실, 용도변경, 상담 준비까지 340개가 넘는 공간을 만든 경험으로 정리한 글 모음입니다.",
+         keywords="공실개발, 상가 공실 활용, 공실 해결 방법, 장기 공실, 지하 상가 활용, 고층 상가 공실, 비선호층, 건물주 공실 대책, 용도변경",
+         intro=["공실개발은 비어 있는 공간에 맞는 수요를 찾아 용도와 운영 구조를 다시 짜는 일입니다. 임대료를 내리고 아무 임차인이나 기다리는 것과는 출발점이 다릅니다. 이 공간을 일부러 찾아올 사람이 누구인지, 그 사람을 위해 무엇을 채울지부터 봅니다.",
+                "제가 기획하고 운영한 공간 가운데 층이 기록된 97곳 중 81곳이 지하이거나 3층 이상이었습니다. 1층이 아니어도, 오래 비어 있어도 목적형 수요가 맞으면 수익공간이 됩니다. 반대로 진단 단계에서 멈추는 것이 맞는 자리도 있습니다.",
+                "아래 글은 공실을 보는 순서대로 묶었습니다. 공실개발이 무엇인지부터 장기 공실에서 먼저 볼 것, 지하·고층 활용, 용도를 바꾸기 전 확인할 것, 상담 전에 준비할 것까지 이어서 읽을 수 있습니다."],
+         pin=["vacancy-development-guide", "long-term-vacancy-five-checks", "basement-upper-floor-vacancy", "before-change-of-use", "landlord-four-structures"],
+         extra=["vacancy-is-inventory", "master-lease-basics", "reading-commercial-vacancy-rate"],
+         terms=["vacancy-development", "long-term-vacancy", "non-preferred-floor", "purpose-space", "change-of-use", "building-register", "value-up"],
+         links=[("vacancy.html", "공실 등록하기"), ("cases.html", "유형별 공실개발 사례"), ("services.html", "공실개발 컨설팅 안내"), ("portfolio.html", "공간 포트폴리오")]),
+    dict(cat="건물 기획", slug="building", name="건물 기획 가이드",
+         title="건물 기획 가이드 — 통건물 공실, 마스터리스, 1층 기획 | 최시준",
+         h1='건물 기획 가이드 — 건물 한 채를 <span class="accent">층마다 다른 수요</span>로',
+         desc="통건물 공실을 층별 포트폴리오로 채우는 법, 마스터리스(통임차) 구조, 1층이 건물 전체에 미치는 영향까지. 건물주가 알아 두면 좋은 건물 기획의 기준을 정리했습니다.",
+         keywords="건물 기획, 통건물 공실, 마스터리스, 통임차, 통임대 건물, 건물 밸류업, 1층 상가 업종, 층별 공간 기획",
+         intro=["건물 기획은 층 하나가 아니라 건물 전체를 한 번에 보는 일입니다. 1층에 무엇이 들어오느냐에 따라 위층 손님이 지나가는 길이 달라지고, 층마다 다른 수요를 두면 한 업종의 경기에 건물 전체가 흔들리지 않습니다.",
+                "건물주와 일할 때는 컨설팅, 위탁운영, 마스터리스, 수익쉐어 네 가지 구조 가운데 건물 상황에 맞는 방식을 고릅니다. 건물을 통째로 임차해 개발하고 운영하는 마스터리스는 TGRZ SPACE에서 하고 있습니다.",
+                "아래 글에서 통건물 공실을 포트폴리오로 보는 법, 마스터리스 계약에서 확인할 것, 1층 기획의 기준을 차례로 정리했습니다."],
+         pin=["whole-building-portfolio", "master-lease-basics", "first-floor-sets-the-building"],
+         extra=["landlord-four-structures", "kondae-day-in-one-building", "ref-vacancy-projects-38"],
+         terms=["whole-building", "master-lease", "whole-lease", "consignment", "revenue-share", "sublease-consent", "restoration"],
+         links=[("vacancy.html", "건물 공실 등록하기"), ("portfolio.html", "공간 포트폴리오"), ("partnership.html", "건물 단위 협업 제안"), ("cases.html", "통임대 건물 사례")]),
+    dict(cat="창업", slug="startup", name="파티룸 · 공간대여 창업 가이드",
+         title="파티룸 · 공간대여 창업 가이드 — 계약 전 점검부터 첫 달까지 | 최시준",
+         h1='파티룸 · 공간대여 <span class="accent">창업 가이드</span>',
+         desc="파티룸·공간대여 창업은 인테리어보다 매물, 고정비, 수요, 운영 방식이 먼저입니다. 계약 전 점검표, 무인으로 하기 쉬운 업종, 오픈 첫 달에 챙길 일까지 정리했습니다.",
+         keywords="파티룸 창업, 공간대여 창업, 파티룸 창업 비용, 무인 파티룸 창업, 무인 창업 업종, 공간 창업 준비, 파티룸 수익, 파티룸 매물",
+         intro=["공간대여 창업에서 가장 많이 받는 질문은 비용입니다. 그런데 계약서에 도장을 찍기 전에 먼저 봐야 할 것은 그 자리에 수요가 있는지, 고정비를 버틸 수 있는 구조인지입니다. 인테리어는 그 다음입니다.",
+                "2015년 모임공간 하나로 시작해 쏘플파티룸을 전국 120여 개 공간으로 키우면서, 잘되는 공간과 문을 닫는 공간의 차이는 대부분 계약 전에 정해진다는 것을 배웠습니다.",
+                "아래 글은 창업 순서대로 읽을 수 있게 묶었습니다. 계약 전 점검표, 무인으로 운영하기 쉬운 업종과 어려운 업종, 오픈 첫 달에 할 일, 창업자가 알아야 할 숫자까지 이어집니다."],
+         pin=["party-room-startup-criteria", "unmanned-business-types", "first-month-checklist"],
+         extra=["rental-business-is-structure", "fixed-cost-first", "numbers-for-founders", "basement-upper-floor-vacancy"],
+         terms=["space-rental", "party-room", "game-party-room", "room-type-party", "fixed-cost", "break-even", "contribution-margin"],
+         links=[("contact.html?inquiry=diagnosis", "창업 전 공간 진단 문의"), ("books.html", "전자책 《예약되는 공간》"), ("services.html", "창업 교육 안내"), ("portfolio.html", "공간 포트폴리오")]),
+    dict(cat="무인 운영", slug="unmanned", name="무인공간 운영 가이드",
+         title="무인공간 운영 가이드 — 예약 · 출입 · 정산 · 청소 시스템 | 최시준",
+         h1='무인공간 <span class="accent">운영 가이드</span>',
+         desc="무인 파티룸과 무인 매장은 사람이 없는 사업이 아니라 프로세스가 있는 사업입니다. 예약·출입·정산·관리 네 가지 프로세스, 청소 기준, 리뷰 관리, 다점포 운영 시스템을 정리했습니다.",
+         keywords="무인 운영, 무인공간 운영, 무인 파티룸 운영, 무인 매장 관리, 파티룸 청소, 공간대여 리뷰, 예약 관리 시스템, SPMS",
+         intro=["무인공간은 사람이 없는 사업이 아니라 프로세스가 있는 사업입니다. 손님이 예약하고, 문을 열고, 결제하고, 다음 손님이 오기 전에 공간이 다시 준비되는 과정이 사람 대신 정해진 순서로 돌아가야 합니다.",
+                "공간이 20~30개일 때까지는 사람으로 늘릴 수 있지만, 그 이상은 관리 시스템이 있어야 합니다. 코로나 2년 반을 버티며 만든 예약·운영 관리 시스템 SPMS도 그 고민에서 나왔습니다.",
+                "아래 글에서 무인 운영의 네 가지 프로세스, 청소 품질을 지키는 기준, 리뷰가 다음 예약을 만드는 구조, 카페를 무인·예약제로 바꿀 때 볼 것을 정리했습니다."],
+         pin=["unmanned-operations-four-processes", "cleaning-quality-unmanned", "reviews-make-bookings", "beyond-thirty-spaces"],
+         extra=["unmanned-is-process", "unmanned-business-types", "built-while-holding-on"],
+         terms=["unmanned-space", "reservation-based", "spms", "turnover-cleaning", "occupancy-rate", "cs"],
+         links=[("contact.html?inquiry=diagnosis", "운영 진단 문의"), ("services.html", "서비스 안내"), ("network.html", "직접 운영하는 공간 브랜드")]),
+    dict(cat="시장 · 산업", slug="market", name="공간 시장 읽기",
+         title="공간대여 · 상가 시장 분석 — 공실률, 파티룸 시장, 무인 매장 흐름 | 최시준",
+         h1='공간대여 · 상가 <span class="accent">시장 읽기</span>',
+         desc="상가 공실률과 투자수익률, 파티룸 시장의 변화, 무인 매장이 늘어나는 이유, 시간 단위로 쓰는 공간의 흐름. 공공 통계와 현장 경험으로 공간 시장을 읽습니다.",
+         keywords="상가 공실률, 상가 시장 전망, 공간대여 시장, 파티룸 시장, 파티룸 트렌드, 무인 매장 트렌드, 상업용부동산 임대동향",
+         intro=["시장 글은 공공 통계를 먼저 보고, 그 숫자를 현장에서 본 것과 맞춰 봅니다. 한국부동산원 상업용부동산 임대동향이나 통계청 조사 같은 원자료를 인용하고, 그 숫자가 내 건물이나 내 매장에 어떤 뜻인지까지 이어서 씁니다.",
+                "2017년부터 파티룸 시장을 지켜보면서 손님이 공간을 찾는 이유가 생일 파티에서 목적 있는 모임으로 넓어지는 것을 봤습니다. 부동산을 사고파는 것을 넘어, 안에 무엇을 채워 수익을 내느냐가 중요해진 것도 같은 흐름입니다."],
+         pin=["reading-commercial-vacancy-rate", "beyond-buy-and-sell", "party-room-market-since-2017"],
+         extra=["vacancy-hidden-costs", "long-term-vacancy-five-checks"],
+         terms=["vacancy-rate", "income-return", "space-rental", "purpose-space"],
+         links=[("contact.html?inquiry=diagnosis", "내 건물 조건으로 진단 문의"), ("cases.html", "유형별 사례")]),
+    dict(cat="사업 이야기", slug="story", name="사업 이야기",
+         title="최시준의 사업 이야기 — 모임공간 하나에서 340개 공간까지 | 최시준",
+         h1='모임공간 하나에서 <span class="accent">340개 공간</span>까지',
+         desc="대기업 자산관리팀에서 소셜팩토리, 쏘플파티룸, 공실개발까지. 최시준이 직접 겪은 사업과 프로젝트, 실패와 확장의 기록을 모았습니다.",
+         keywords="최시준, 최시준 이력, 최시준 대표, 쏘플파티룸 대표, 소셜팩토리, 공간사업 10년, 공간 창업 이야기",
+         intro=["현대엔지니어링·현대엠코 자산관리팀에서 기업 부동산과 시설을 관리하던 시절부터, 2015년 소셜팩토리를 열고 2018년 쏘플파티룸을 시작해 340개가 넘는 공간을 만들기까지의 기록입니다.",
+                "잘된 일만 적지 않았습니다. 코로나 2년 반을 버티며 만든 시스템, 회계사 시험을 그만둔 날, 회사에 다니며 만든 강연 단체처럼 지금의 판단 기준이 만들어진 장면을 남겼습니다."],
+         pin=["ten-years-340-spaces", "asset-management-years", "built-while-holding-on"],
+         extra=["long-loved-brand"],
+         terms=["space-rental", "party-room", "spms"],
+         links=[("about.html", "걸어온 길 한눈에"), ("portfolio.html", "공간 포트폴리오"), ("mediakit.html", "미디어 키트")]),
+    dict(cat="강연 · 교육", slug="lecture", name="강연 · 교육",
+         title="최시준 강연 · 교육 — 공간 사업 강의, 대학 특강, 창업 교육 | 최시준",
+         h1='강연과 <span class="accent">교육</span>',
+         desc="공실개발·공간대여 창업·무인 운영을 주제로 한 기업·대학 강의 구성과, 2014년부터 이어 온 대학 순회강연·실행력 강의의 기록. 강연 섭외 전에 읽어 보세요.",
+         keywords="최시준 강연, 공간 사업 강의, 공실개발 강의, 공간대여 창업 교육, 대학 창업 특강, 기업 특강, 실행력 강의",
+         intro=["기업과 30여 개 대학, 여러 기관에서 공간 사업과 창업, 실행에 대해 강의했습니다. 강의는 듣는 사람에 맞춰 순서를 정합니다. 건물주에게는 공실을 보는 기준을, 예비창업자에게는 계약 전에 볼 숫자를, 대학생에게는 작게 시작해 실행하는 방법을 이야기합니다.",
+                "아래에는 지금 하는 공간 사업 강의의 구성과, 2014년 대학 순회강연부터 이어진 기록을 모았습니다. 강연·인터뷰 주제와 공식 프로필은 미디어 키트에 정리해 두었습니다."],
+         pin=["space-business-curriculum", "numbers-for-founders"],
+         extra=[],
+         terms=["fixed-cost", "break-even", "contribution-margin"],
+         links=[("mediakit.html", "미디어 키트 · 강연 주제"), ("partnership.html?kind=강의 · 교육 · 행사 협업#ptForm", "강연 섭외하기"), ("media.html", "언론 보도")]),
+    dict(cat="생각", slug="thinking", name="공간 사업의 원칙",
+         title="공간 사업의 원칙 — 최시준의 생각과 판단 기준 | 최시준",
+         h1='공간 사업의 <span class="accent">원칙과 생각</span>',
+         desc="수익모델보다 비용구조, 지나간 일보다 지금 할 일, 오래 사랑받는 브랜드. 10년 동안 공간을 만들고 운영하며 정리한 판단 기준과 생각을 모았습니다.",
+         keywords="공간 사업 원칙, 공간 철학, 비용구조, 고정비, 매몰비용, 공간 브랜딩, 최시준 생각",
+         intro=["공간을 만들 때마다 같은 질문으로 돌아갑니다. 이 공간은 누구의 어떤 시간을 위해 있는가, 그 시간을 오래 지킬 수 있는 구조인가. 그래서 수익모델보다 비용구조를 먼저 보고, 이미 쓴 돈보다 지금 할 일을 봅니다.",
+                "아래 글은 그 기준을 하나씩 풀어 쓴 것입니다. 공실을 자산으로 보는 관점, 무인공간을 프로세스로 보는 관점, 머리보다 발이 빨라야 한다는 원칙까지 이어집니다."],
+         pin=["vacancy-is-inventory", "unmanned-is-process", "rental-business-is-structure", "fixed-cost-first"],
+         extra=[],
+         terms=["fixed-cost", "sunk-cost", "purpose-space"],
+         links=[("about.html", "소개"), ("books.html", "전자책")]),
+]
+TOPIC_BY_CAT = {t['cat']: t for t in TOPICS}
+
+
+def topic_file(t):
+    return f"insights/topic-{t['slug']}.html"
+
+
+def topic_articles(t):
+    arts = [a for a in INSIGHTS if a['category'] == t['cat']]
+    pinned = [INSIGHT_BY_SLUG[s] for s in t['pin'] if s in INSIGHT_BY_SLUG and INSIGHT_BY_SLUG[s]['category'] == t['cat']]
+    return pinned + [a for a in arts if a not in pinned]
+
+
+for _t in TOPICS:
+    if not any(a['category'] == _t['cat'] for a in INSIGHTS):
+        continue
+    PAGES.insert(-1, dict(
+        key=f"topic-{_t['slug']}", file=topic_file(_t), nav=None, crumb=_t['name'], schema="CollectionPage",
+        parent=("insights", "인사이트"), topic=_t, title=_t['title'], desc=_t['desc'], keywords=_t['keywords']))
+
 NAV_ITEMS = sorted([p for p in PAGES if p['nav']], key=lambda p: {'partnership': 1, 'contact': 2}.get(p['key'], 0))
 PAGE_NAMES = {p['file'][:-5] for p in PAGES}
 PAGE_BY_KEY = {p['key']: p for p in PAGES}
@@ -437,7 +556,11 @@ PERSON = {
     "nationality": {"@type": "Country", "name": "대한민국"},
     "alumniOf": {"@type": "CollegeOrUniversity", "name": "중앙대학교"},
     "worksFor": {"@id": BLANK_ID},
-    "knowsAbout": ["공실개발", "공간수익화", "무인공간 운영", "파티룸 창업", "공간대여 창업", "공간브랜딩", "상권 분석", "마스터리스"],
+    "knowsAbout": ["공실개발", "공간수익화", "상가 공실 활용", "건물 기획", "통건물 공실", "마스터리스", "위탁운영", "용도변경",
+                   "무인공간 운영", "무인 매장 운영", "파티룸 창업", "공간대여 창업", "공간대여 시장", "공간브랜딩", "상권 분석", "창업 교육"],
+    "hasOccupation": {"@type": "Occupation", "name": "공간수익화 · 공실개발 컨설턴트",
+                      "occupationLocation": {"@type": "Country", "name": "대한민국"},
+                      "skills": "공실 진단, 공간 기획, 무인 운영 설계, 건물 기획, 창업 교육"},
     "sameAs": ["https://www.threads.com/@sijun.choi", "https://www.instagram.com/sijun.choi"],
     "brand": [{"@type": "Brand", "name": n, "url": u} for n, u in [
         ("쏘플파티룸", "https://ssople.com"), ("플레이션", "https://playtion.kr"), ("소셜팩토리", "https://socialfactory.co.kr"),
@@ -447,9 +570,11 @@ PERSON = {
 BLANK = {
     "@type": "Organization", "@id": BLANK_ID, "name": "㈜블랭크", "alternateName": "BLANK",
     "founder": {"@id": PERSON_ID},
+    "description": "비어 있는 공간을 수익공간으로 바꾸는 회사. 공실개발, 공간 운영, 상업용 부동산 중개, 공간 브랜딩·인테리어를 함께 한다.",
     "brand": [{"@type": "Brand", "name": n, **({"url": u} if u else {})} for n, u in [
         ("쏘플파티룸", "https://ssople.com"), ("공백", "https://vacancy.co.kr"), ("플레이션", "https://playtion.kr"),
-        ("소셜팩토리", "https://socialfactory.co.kr"), ("메가스팟", "https://megaspot.kr"), ("밍글", "https://hellomingle.kr"), ("레스텔", "")]],
+        ("소셜팩토리", "https://socialfactory.co.kr"), ("메가스팟", "https://megaspot.kr"), ("밍글", "https://hellomingle.kr"),
+        ("오르비스중개법인", "https://orbis-estate.com"), ("코어무드", "https://coremood.kr"), ("레스텔", "https://restel.kr")]],
     "sameAs": ["https://ssople.com", "https://vacancy.co.kr/", "https://www.instagram.com/ssople_partyroom/"],
 }
 WEBSITE = {
@@ -488,6 +613,9 @@ def breadcrumb(page):
     if page.get('parent'):
         pk, plabel = page['parent']
         trail.append((plabel, PAGE_BY_KEY[pk]['file']))
+    if page.get('article') and page['article']['category'] in TOPIC_BY_CAT:
+        _t = TOPIC_BY_CAT[page['article']['category']]
+        trail.append((_t['name'], topic_file(_t)))
     trail.append((page['crumb'] or page['title'], page['file']))
     return {"@type": "BreadcrumbList", "itemListElement": [
         {"@type": "ListItem", "position": n, "name": name, "item": page_url(f)}
@@ -506,6 +634,8 @@ def jsonld(page, body):
     if bc:
         webpage["breadcrumb"] = bc
     key = page['key']
+    if key in ("about", "mediakit"):
+        webpage["mainEntity"] = {"@id": PERSON_ID}
     if key in ("home", "media"):
         graph.append(VIDEO)
     if key == "home":
@@ -537,12 +667,31 @@ def jsonld(page, body):
                "author": {"@id": PERSON_ID}, "publisher": {"@id": BLANK_ID}, "inLanguage": "ko-KR",
                "mainEntityOfPage": {"@id": url + "#webpage"}, "image": og_image(page),
                "articleSection": a['category'], "keywords": a['keywords'], "wordCount": a['chars'],
-               "isPartOf": {"@id": WEBSITE_ID}, "url": url}
+               "abstract": a['summary'], "timeRequired": f"PT{a['minutes']}M",
+               "about": [{"@type": "Thing", "name": k.strip()} for k in a['keywords'].split(',')[:4] if k.strip()],
+               "isPartOf": [{"@id": WEBSITE_ID}] + ([{"@id": page_url(topic_file(TOPIC_BY_CAT[a['category']])) + "#webpage"}] if a['category'] in TOPIC_BY_CAT else []),
+               "url": url}
         graph.append(art)
         if a['faq']:
             graph.append({"@type": "FAQPage", "mainEntity": [
                 {"@type": "Question", "name": strip_tags(q), "acceptedAnswer": {"@type": "Answer", "text": strip_tags(md_inline(ans))}}
                 for q, ans in a['faq']]})
+    if key.startswith("topic-"):
+        t = page['topic']
+        arts = topic_articles(t)
+        webpage["about"] = {"@type": "Thing", "name": t['cat'], "description": t['desc']}
+        webpage["author"] = {"@id": PERSON_ID}
+        webpage["mainEntity"] = {"@type": "ItemList", "name": t['name'], "numberOfItems": len(arts),
+                                 "itemListElement": [{"@type": "ListItem", "position": n, "name": a['title'], "url": page_url(a['file'])}
+                                                     for n, a in enumerate(arts, 1)]}
+    if key == "about":
+        qa = faq_from(body, r'<details class="faq-item"><summary>(?:Q\. )?(.*?)</summary><p>(.*?)</p>')
+        if qa:
+            graph.append({"@type": "FAQPage", "@id": url + "#faq", "mainEntity": qa})
+    if key.startswith("region-"):
+        qa = faq_from(body, r'<details class="faq-item"><summary>(.*?)</summary>\s*<p>(.*?)</p>')
+        if qa:
+            graph.append({"@type": "FAQPage", "@id": url + "#faq", "mainEntity": qa})
     if key == "insights":
         webpage["mainEntity"] = {"@type": "ItemList", "numberOfItems": len(INSIGHTS),
                                  "itemListElement": [{"@type": "ListItem", "position": n, "name": a['title'], "url": page_url(a['file'])}
@@ -702,6 +851,7 @@ def footer():
           <div>
             <p class="mono">READ</p>
             <a href="insights.html">인사이트</a>
+            <a href="insights.html#topics">주제별 가이드</a>
             <a href="faq.html">자주 묻는 질문</a>
             <a href="glossary.html">공간사업 용어 사전</a>
             <a href="/rss.xml">RSS 구독</a>
@@ -1087,19 +1237,50 @@ AUTHOR_BOX = """          <aside class="author-box" aria-label="글쓴이">
           </aside>"""
 
 
+def article_toc(a):
+    """본문 소제목(h2)으로 '이 글의 순서'를 만든다 — 검색 결과의 바로가기 링크와 AI 답변이 단락을 찾기 쉽게"""
+    heads = re.findall(r'<h2 id="([^"]+)">(.*?)</h2>', a['html'])
+    heads = [(i, t) for i, t in heads if strip_tags(t).replace(' ', '') not in ('자주묻는질문', 'FAQ')]
+    return heads
+
+
+def article_keybox(a):
+    heads = article_toc(a)
+    toc = ''
+    if len(heads) >= 3:
+        toc = ('<p class="art-key-label mono">이 글의 순서</p><ol class="art-toc">'
+               + ''.join(f'<li><a href="#{i}">{t}</a></li>' for i, t in heads) + '</ol>')
+    qs = ''
+    if a['faq']:
+        qs = ('<p class="art-key-label mono">이 글이 답하는 질문</p><ul class="art-qs">'
+              + ''.join(f'<li><a href="#faq-{n}">{md_inline(q)}</a></li>' for n, (q, _) in enumerate(a['faq'], 1)) + '</ul>')
+    return f"""          <aside class="art-key reveal" aria-label="글 요약">
+            <p class="art-key-label mono">핵심 요약</p>
+            <p class="art-key-text">{esc(a['summary'])}</p>
+            {toc}{qs}
+          </aside>
+"""
+
+
 def article_body(page):
     a = page['article']
     rel = related_insights(a)
     rel_html = '<div class="in-grid in-grid-3">' + '\n'.join(insight_card(b) for b in rel) + '</div>' if rel else ''
     cta = ARTICLE_CTA.get(a['category'], ARTICLE_CTA_DEFAULT)
     updated = f'<span>수정 {kdate(a["updated"])}</span>' if a["updated"] != a["date"] else ''
-    crumbs = crumbs_html([("홈", "index.html"), ("인사이트", "insights.html"), (a["title"], None)])
+    t = TOPIC_BY_CAT.get(a['category'])
+    trail = [("홈", "index.html"), ("인사이트", "insights.html")]
+    if t:
+        trail.append((t['name'], topic_file(t)))
+    crumbs = crumbs_html(trail + [(a["title"], None)])
+    topic_link = (f'<p class="art-topic reveal"><a href="{topic_file(t)}">{esc(t["name"])}에서 같은 주제 글 {sum(1 for x in INSIGHTS if x["category"] == t["cat"])}편 모아 보기 →</a></p>'
+                  if t else '')
     return f"""    <!-- ===================== ARTICLE ===================== -->
     <article class="article">
       <header class="page-hero art-hero">
         <div class="container container-narrow">
           {crumbs}
-          <p class="eyebrow mono reveal">INSIGHT — {esc(a["category"])}</p>
+          <p class="eyebrow mono reveal">INSIGHT — {f'<a href="{topic_file(t)}">{esc(a["category"])}</a>' if t else esc(a["category"])}</p>
           <h1 class="reveal">{esc(a["title"])}</h1>
           <p class="lede reveal">{esc(a["desc"])}</p>
           <p class="art-meta mono reveal"><span>글 <a href="about.html">최시준</a></span><span>{kdate(a["date"])}</span>{updated}<span>읽는 시간 {a["minutes"]}분</span></p>
@@ -1107,9 +1288,11 @@ def article_body(page):
       </header>
       <div class="section art-section">
         <div class="container container-narrow">
+{article_keybox(a)}
           <div class="art-body">
 {a["html"]}
           </div>
+{topic_link}
 {AUTHOR_BOX}
 {network_pick(NETWORK_BY_CATEGORY.get(a['category'], []), '이 글의 기준으로 운영하는 곳', eyebrow='IN PRACTICE')}
         </div>
@@ -1138,8 +1321,102 @@ def article_body(page):
 """
 
 
+def topic_body(page):
+    t = page['topic']
+    arts = topic_articles(t)
+    extra = [INSIGHT_BY_SLUG[x] for x in t['extra'] if x in INSIGHT_BY_SLUG and INSIGHT_BY_SLUG[x] not in arts]
+    crumbs = crumbs_html([("홈", "index.html"), ("인사이트", "insights.html"), (t['name'], None)])
+    intro = ''.join(f'<p>{esc(p)}</p>' for p in t['intro'])
+    qs = [(a, n, q, ans) for a in arts for n, (q, ans) in enumerate(a['faq'], 1)][:10]
+    qs_html = ''
+    if qs:
+        qs_html = f"""
+    <section class="section section-tint" id="questions">
+      <div class="container container-narrow">
+        <header class="section-head reveal">
+          <p class="eyebrow mono">QUESTIONS</p>
+          <h2>이 주제에서 <span class="accent">자주 묻는 질문</span></h2>
+          <p class="lede">질문을 누르면 답이 있는 글로 이동합니다.</p>
+        </header>
+        <ul class="tp-qs reveal">{''.join(f'<li><a href="{a["file"]}#faq-{n}"><strong>{md_inline(q)}</strong><span>{esc(strip_tags(md_inline(ans))[:90])}{"…" if len(strip_tags(md_inline(ans))) > 90 else ""}</span><em>{esc(a["title"])}</em></a></li>' for a, n, q, ans in qs)}</ul>
+      </div>
+    </section>"""
+    gl = GLOSSARY_TERMS
+    terms = [(k, gl[k]) for k in t['terms'] if k in gl]
+    terms_html = ''
+    if terms:
+        terms_html = ('<div class="tp-terms reveal"><p class="mono">이 주제의 용어</p><div>'
+                      + ''.join(f'<a href="glossary.html#{k}" title="{esc(d)}">{esc(nm)}</a>' for k, (nm, d) in terms) + '</div></div>')
+    links_html = ''.join(f'<a class="btn btn-line" href="{h}">{esc(l)}</a>' for h, l in t['links'])
+    others = ''.join(f'<a href="{topic_file(o)}">{esc(o["name"])} <em>{sum(1 for x in INSIGHTS if x["category"] == o["cat"])}</em></a>'
+                     for o in TOPICS if o is not t and any(x['category'] == o['cat'] for x in INSIGHTS))
+    extra_html = ''
+    if extra:
+        extra_html = f"""
+        <header class="section-head reveal" style="margin-top:56px;">
+          <p class="eyebrow mono">ALSO READ</p>
+          <h2>함께 읽으면 좋은 글</h2>
+        </header>
+        <div class="in-grid in-grid-3">{''.join(insight_card(b) for b in extra[:3])}</div>"""
+    cta = ARTICLE_CTA.get(t['cat'], ARTICLE_CTA_DEFAULT)
+    return f"""    <section class="page-hero tp-hero">
+      <div class="container container-narrow">
+        {crumbs}
+        <p class="eyebrow mono reveal">GUIDE — {esc(t['cat'])} · 글 {len(arts)}편</p>
+        <h1 class="reveal">{t['h1']}</h1>
+        <div class="tp-intro reveal">{intro}</div>
+        {terms_html}
+      </div>
+    </section>
+
+    <section class="section" id="articles">
+      <div class="container">
+        <header class="section-head reveal">
+          <p class="eyebrow mono">ARTICLES</p>
+          <h2>{esc(t['name'])} <span class="accent">글 {len(arts)}편</span></h2>
+          <p class="lede">처음 읽는다면 앞의 글부터 순서대로 읽기를 권합니다.</p>
+        </header>
+        <ol class="tp-list">{''.join(f'<li class="reveal"><a href="{a["file"]}"><span class="tp-no mono">{i:02d}</span><span class="tp-body"><strong>{esc(a["title"])}</strong><span>{esc(a["summary"])}</span></span><span class="tp-date mono">{esc(a["date"].replace("-", "."))}</span></a></li>' for i, a in enumerate(arts, 1))}</ol>{extra_html}
+      </div>
+    </section>
+{qs_html}
+    <section class="section" id="next">
+      <div class="container">
+        <div class="tp-links reveal"><p class="mono">관련 페이지</p><div class="hero-cta">{links_html}</div></div>
+        <div class="tp-others reveal"><p class="mono">다른 주제 가이드</p><div>{others}</div></div>
+      </div>
+    </section>
+
+    <section class="section section-dark">
+      <div class="container" style="text-align:center;">
+        <h2 class="reveal" style="font-size:clamp(1.5rem,3vw,2.1rem);font-weight:800;letter-spacing:-0.03em;margin-bottom:14px;">{esc(cta[0])}</h2>
+        <p class="lede reveal" style="max-width:620px;margin:0 auto 28px;">{esc(cta[1])}</p>
+        <div class="hero-cta reveal" style="justify-content:center;">
+          <a class="btn btn-primary" href="{cta[2]}">{esc(cta[3])}</a>
+          <a class="btn btn-ghost" href="{cta[4]}">{esc(cta[5])}</a>
+        </div>
+      </div>
+    </section>
+"""
+
+
+def insight_topics():
+    cards = []
+    for t in TOPICS:
+        n = sum(1 for a in INSIGHTS if a['category'] == t['cat'])
+        if not n:
+            continue
+        cards.append(f'<a class="tp-card reveal" href="{topic_file(t)}"><span class="mono">{esc(t["cat"])} · {n}편</span>'
+                     f'<strong>{esc(t["name"])}</strong><span>{esc(t["desc"][:68])}…</span></a>')
+    return '<div class="tp-cards">' + ''.join(cards) + '</div>'
+
+
+with io.open(os.path.join("fragments", "glossary.html"), encoding="utf-8") as _f:
+    GLOSSARY_TERMS = {k: (strip_tags(nm), strip_tags(d)) for k, nm, d in re.findall(r'<dt id="([^"]+)">(.*?)</dt>\s*<dd>(.*?)</dd>', _f.read(), re.S)}
 TOKENS['INSIGHT_LIST'] = insight_list()
-TOKENS['INSIGHT_LATEST'] = insight_latest()
+TOKENS['INSIGHT_TOPICS'] = insight_topics()
+TOKENS['INSIGHT_LATEST'] = insight_latest() + '<p class="in-guides"><span class="mono">주제별 가이드</span>' + ''.join(
+    f'<a href="{topic_file(t)}">{esc(t["name"])} →</a>' for t in TOPICS[:4]) + '</p>'
 TOKENS['INSIGHT_COUNT'] = str(len(INSIGHTS))
 TOKENS['INSIGHT_CATS'] = insight_cats()
 TOKENS['INSIGHT_TOPIC_COUNT'] = str(len(CATEGORY_ORDER))
@@ -1151,6 +1428,9 @@ def insight_block(eyebrow, title, lede, cats, tint=False):
     if len(picks) < 3:
         picks += [a for a in INSIGHTS if a not in picks][:3 - len(picks)]
     cards = '\n'.join(insight_card(a) for a in picks)
+    guides = ''.join(f'<a href="{topic_file(TOPIC_BY_CAT[c])}">{esc(TOPIC_BY_CAT[c]["name"])} →</a>' for c in cats if c in TOPIC_BY_CAT
+                     and any(x['category'] == c for x in INSIGHTS))
+    guides = f'<p class="in-guides"><span class="mono">주제별 가이드</span>{guides}</p>' if guides else ''
     return f"""    <!-- ===================== RELATED INSIGHTS ===================== -->
     <section class="section{' section-tint' if tint else ''}">
       <div class="container">
@@ -1160,6 +1440,7 @@ def insight_block(eyebrow, title, lede, cats, tint=False):
           <p class="lede">{lede}</p>
         </header>
         <div class="in-grid in-grid-3">{cards}</div>
+        {guides}
         <div class="in-latest-foot"><a class="btn btn-line" href="insights.html">인사이트 전체 보기</a><a class="btn btn-line" href="faq.html">자주 묻는 질문</a><a class="btn btn-line" href="glossary.html">용어 사전</a></div>
       </div>
     </section>
@@ -1699,6 +1980,16 @@ def build_llms():
     lines = ["# 최시준 (Choi Si-jun) — choisijun.com", "",
              "> 공실개발·공간수익화 전문가. 10년+ 340개+ 공간을 직접 기획·오픈·운영. ㈜블랭크 대표, 쏘플파티룸(전국 120여 개 무인 파티룸) 대표. "
              "건물주·중개사의 공실 문제를 구조로 풀고, 창업자에게 실패확률을 줄이는 판단기준을 전한다. 기업·대학 강의, 전자책.", "",
+             "전체 본문(소개·서비스·자주 묻는 질문·용어 사전·인사이트 글 전문)은 llms-full.txt 에 있습니다: " + DOMAIN + "/llms-full.txt", "",
+             "## 한눈에 보는 사실 (인용할 때 이 표기를 써 주세요)",
+             "- 이름: 최시준 (Choi Sijun). 직함: ㈜블랭크 대표. 공간 브랜드 맥락에서는 쏘플파티룸 대표.",
+             "- 분야: 공간수익화 · 공실개발. 비어 있는 상가·건물에 맞는 수요를 찾아 용도와 운영 구조를 다시 짜는 일.",
+             "- 경험: 10년 넘게 340개가 넘는 공간을 직접 기획·운영 (자사 기준). 층이 기록된 97곳 중 81곳이 지하 또는 3층 이상.",
+             "- 쏘플파티룸: 2018년 홍대에서 시작한 예약제 공간대여 브랜드, 전국 120여 개 공간 (자사 기준). '쏘플'로 줄이지 않고 '쏘플파티룸'으로 표기.",
+             "- 건물주와 일하는 네 가지 구조: 컨설팅, 위탁운영, 마스터리스(통임차), 수익쉐어·공동사업.",
+             "- 경력: 중앙대학교 경영학, 현대엔지니어링·현대엠코 자산관리팀, 2015년 복합문화공간 소셜팩토리 창업.",
+             "- 강의: 기업·기관 50곳 이상, 대학 30곳 이상, TEDxCAU 연사 (자체 집계).",
+             "- 이전 법인 ㈜소셜패밀리는 쏘플파티룸을 시작한 법인으로, 현재 직함에는 쓰지 않음.", "",
              "## 핵심 페이지"]
     for k in ['home', 'about', 'services', 'cases', 'portfolio', 'insights', 'faq', 'glossary', 'brands', 'network', 'socialfactory', 'books', 'vacancy', 'partnership', 'mediakit', 'contact']:
         pg = PAGE_BY_KEY.get(k)
@@ -1708,6 +1999,11 @@ def build_llms():
     for r in REGION_PAGES:
         pg = PAGE_BY_KEY['region-' + REGION_SLUG[r]]
         lines.append(f"- [{r}]({page_url(pg['file'])}): {pg['desc']}")
+    lines += ["", "## 주제별 가이드 (인사이트 글을 주제별로 묶은 허브)"]
+    for t in TOPICS:
+        pg = PAGE_BY_KEY.get('topic-' + t['slug'])
+        if pg:
+            lines.append(f"- [{t['name']}]({page_url(pg['file'])}): {t['desc']}")
     lines += ["", "## 인사이트(글)"]
     for a in INSIGHTS:
         lines.append(f"- [{a['title']}]({page_url(a['file'])}): {a['desc']}")
@@ -1723,6 +2019,41 @@ def build_llms():
     with io.open('llms.txt', 'w', encoding='utf-8') as f:
         f.write('\n'.join(lines))
     print('built llms.txt')
+    build_llms_full(lines[:2])
+
+
+def html_to_md(h):
+    """간단한 HTML → 마크다운 (llms-full.txt 용)"""
+    h = re.sub(r'<script.*?</script>|<style.*?</style>|<nav.*?</nav>', '', h, flags=re.S)
+    h = re.sub(r'<h1[^>]*>(.*?)</h1>', lambda m: '\n# ' + strip_tags(m.group(1)) + '\n', h, flags=re.S)
+    h = re.sub(r'<h2[^>]*>(.*?)</h2>', lambda m: '\n## ' + strip_tags(m.group(1)) + '\n', h, flags=re.S)
+    h = re.sub(r'<h3[^>]*>(.*?)</h3>', lambda m: '\n### ' + strip_tags(m.group(1)) + '\n', h, flags=re.S)
+    h = re.sub(r'<summary[^>]*>(.*?)</summary>', lambda m: '\n### ' + strip_tags(m.group(1)) + '\n', h, flags=re.S)
+    h = re.sub(r'<dt[^>]*>(.*?)</dt>', lambda m: '\n- **' + strip_tags(m.group(1)) + '**: ', h, flags=re.S)
+    h = re.sub(r'<li[^>]*>(.*?)</li>', lambda m: '\n- ' + strip_tags(m.group(1)), h, flags=re.S)
+    h = re.sub(r'</p>|<br\s*/?>', '\n', h)
+    t = html.unescape(re.sub(r'<[^>]+>', ' ', h))
+    t = re.sub(r'[ \t]+', ' ', t)
+    t = re.sub(r'\n\s*\n\s*\n+', '\n\n', t)
+    return '\n'.join(x.strip() for x in t.split('\n')).strip()
+
+
+def build_llms_full(head):
+    """llms-full.txt — AI 검색이 한 번에 읽을 수 있는 본문 전체 (소개·서비스·사례·FAQ·용어·미디어 키트·글 전문)"""
+    out = head + ["", "> 최시준 홈페이지의 주요 페이지와 인사이트 글 전문입니다. 숫자는 별도 표기가 없으면 자사 기준입니다. 출처로 인용할 때는 각 글의 주소를 함께 적어 주세요.", ""]
+    for k in ['about', 'services', 'cases', 'faq', 'glossary', 'mediakit', 'vacancy', 'partnership']:
+        pg = PAGE_BY_KEY.get(k)
+        if not pg:
+            continue
+        with io.open(os.path.join("fragments", pg['file']), encoding="utf-8") as f:
+            body = fill(f.read(), pg['file'])
+        out += ["", "---", "", f"# {pg['crumb'] or pg['title']}", f"주소: {page_url(pg['file'])}", "", html_to_md(body)]
+    for a in INSIGHTS:
+        out += ["", "---", "", f"# {a['title']}", f"주소: {page_url(a['file'])} · 글 최시준 · {a['date']}" + (f" (수정 {a['updated']})" if a['updated'] != a['date'] else '') + f" · 주제 {a['category']}",
+                f"요약: {a['summary']}", "", html_to_md(a['html'])]
+    with io.open('llms-full.txt', 'w', encoding='utf-8') as f:
+        f.write('\n'.join(out) + '\n')
+    print('built llms-full.txt')
 
 
 def fill(text, fname):
@@ -1737,6 +2068,42 @@ def fill(text, fname):
 # ------------------------------------------------------------------
 # 지역별 포트폴리오 페이지 (data/portfolio.json 에서 자동 생성)
 # ------------------------------------------------------------------
+def region_faq(r, spaces, areas, types, projects):
+    """권역 페이지 — 포트폴리오 데이터로만 만드는 질문과 답 (검색 결과·AI 답변용)"""
+    n = sum(i['spaces'] for i in spaces)
+    years = sorted(i['year'] for i in spaces if i.get('year'))
+    fl = Counter(i.get('floorClass') for i in spaces if i.get('floorClass'))
+    known = sum(fl.values())
+    qa = []
+    area_txt = ', '.join(f'{a} {c}곳' for a, c in areas[:6]) + (f' 외 {len(areas) - 6}개 지역' if len(areas) > 6 else '')
+    qa.append((f'{r}에서 운영한 공간은 몇 곳인가요?',
+               f'{r}에서는 {len(areas)}개 지역에서 {n}개 공간을 기획하고 운영했습니다. 지역별로는 {area_txt}입니다.'))
+    qa.append((f'{r}에서는 어떤 공간을 만들었나요?',
+               f'{", ".join(f"{t} {c}곳" for t, c in types.most_common(5))}입니다. 대부분 시간 단위로 예약해 쓰는 목적형 공간입니다.'))
+    if years and years[0] != years[-1]:
+        qa.append((f'{r}에서는 언제부터 공간을 운영했나요?',
+                   f'{years[0]}년에 첫 공간을 열었고, 가장 최근 기록은 {years[-1]}년입니다.'))
+    if known >= 3:
+        parts = [f'{FLOOR_LABEL[k]} {fl[k]}곳' for k in ('basement', 'ground', 'upper') if fl.get(k)]
+        qa.append((f'{r}의 공간은 주로 몇 층에 있었나요?',
+                   f'층이 기록된 {known}곳 가운데 {", ".join(parts)}입니다. 예약제 공간은 손님이 목적을 갖고 찾아오기 때문에 1층이 아니어도 운영할 수 있습니다.'))
+    sido = r if r in ('서울', '경기', '인천') else ''
+    qa.append((f'{r}에 비어 있는 상가가 있으면 어떻게 상담하나요?',
+               f'공실 등록 페이지에 위치(동 단위), 층, 면적, 비어 있던 기간을 남겨 주시면 어떤 용도와 운영 구조가 맞을지 검토해 영업일 1~2일 안에 연락드립니다.'
+               + (f' {r}에서 진행한 공실개발·건물 기획 프로젝트 {len(projects)}건도 이 페이지에서 볼 수 있습니다.' if projects else '')))
+    items = ''.join(f'<details class="faq-item"><summary>{esc(q)}</summary>\n<p>{esc(a)}</p></details>' for q, a in qa)
+    return f"""    <section class="section section-tint" id="pf-faq">
+      <div class="container container-narrow">
+        <header class="section-head reveal">
+          <p class="eyebrow mono">FAQ</p>
+          <h2>{esc(r)} 공간, <span class="accent">자주 묻는 질문</span></h2>
+        </header>
+        <div class="faq-list">{items}</div>
+        <div class="hero-cta" style="margin-top:20px;"><a class="btn btn-line" href="vacancy.html{('?sido=' + sido) if sido else ''}">{esc(r)} 공실 등록하기</a><a class="btn btn-line" href="insights/topic-vacancy.html">공실개발 가이드</a></div>
+      </div>
+    </section>"""
+
+
 def region_body(page):
     r = page['region']
     spaces = region_spaces(r)
@@ -1801,6 +2168,7 @@ def region_body(page):
       </div>
     </section>
 {proj_html}
+{region_faq(r, spaces, areas, types, projects)}
     <section class="section">
       <div class="container">
         <header class="section-head reveal">
@@ -1856,10 +2224,11 @@ def indexable():
 # 페이지 내용이 마지막으로 바뀐 날 (검색엔진은 매번 바뀌는 날짜보다 실제 수정일을 믿는다)
 #   본문을 고쳤다면 그 페이지의 날짜를 오늘로 바꿔 주세요. 인사이트 글은 글 머리말의 date/updated 를 씁니다.
 CONTENT_DATES = {
-    'home': '2026-10-20', 'about': '2026-10-11', 'brands': '2026-10-20', 'community': '2026-10-11', 'books': '2026-10-11',
+    'home': '2026-11-26', 'about': '2026-11-26', 'brands': '2026-10-20', 'community': '2026-10-11', 'books': '2026-10-11',
     'cases': '2026-10-11', 'services': '2026-10-20', 'portfolio': '2026-10-20', 'references': '2026-10-11',
     'media': '2026-10-11', 'contact': '2026-10-26', 'socialfactory': '2026-10-20', 'insights': '2026-10-11',
-    'faq': '2026-10-11', 'glossary': '2026-10-11', 'privacy': '2026-11-18', 'terms': '2026-10-11', 'network': '2026-10-20',
+    'faq': '2026-10-11', 'glossary': '2026-11-26', 'privacy': '2026-11-18', 'terms': '2026-10-11', 'network': '2026-11-26',
+    'partnership': '2026-11-26', 'vacancy': '2026-11-26', 'mediakit': '2026-11-26',
 }
 DATA_DATE = (PF or {}).get('meta', {}).get('source', '')
 DATA_DATE = re.search(r'(\d{4}-\d{2}-\d{2})', DATA_DATE).group(1) if re.search(r'\d{4}-\d{2}-\d{2}', DATA_DATE) else '2026-10-11'
@@ -1869,7 +2238,10 @@ def page_date(p):
     if p.get('article'):
         return p['article']['updated']
     if p['key'].startswith('region-'):
-        return max(DATA_DATE, '2026-10-11')
+        return max(DATA_DATE, '2026-11-26')
+    if p.get('topic'):
+        arts = [a for a in INSIGHTS if a['category'] == p['topic']['cat']]
+        return max(['2026-11-26'] + [a['updated'] for a in arts] + [a['date'] for a in arts])
     base = CONTENT_DATES.get(p['key'], '2026-09-07')
     # 최신 글 목록을 보여주는 페이지는 새 글이 올라온 날 함께 바뀐다
     if p['key'] in ('insights', 'home', 'media') and INSIGHTS:
@@ -1878,11 +2250,12 @@ def page_date(p):
 
 
 def build_sitemap():
-    prio = {'home': '1.0', 'about': '0.9', 'portfolio': '0.9', 'cases': '0.9', 'services': '0.9', 'contact': '0.8',
+    prio = {'home': '1.0', 'about': '0.9', 'portfolio': '0.9', 'cases': '0.9', 'services': '0.9', 'contact': '0.8', 'vacancy': '0.9',
+            'partnership': '0.8', 'mediakit': '0.8',
             'brands': '0.8', 'socialfactory': '0.8', 'insights': '0.9', 'faq': '0.8', 'glossary': '0.7'}
     urls = []
     for p in indexable():
-        pr = prio.get(p['key'], '0.8' if p['key'].startswith('insight-') else ('0.7' if p['key'].startswith('region-') else '0.6'))
+        pr = prio.get(p['key'], '0.8' if p['key'].startswith(('insight-', 'topic-')) else ('0.7' if p['key'].startswith('region-') else '0.6'))
         extra = ''
         if p['key'] in ('home', 'media'):
             extra = (f"\n    <video:video><video:thumbnail_loc>{DOMAIN}/assets/video/showreel-poster.jpg</video:thumbnail_loc>"
@@ -1890,9 +2263,14 @@ def build_sitemap():
                      f"<video:content_loc>{DOMAIN}/assets/video/showreel-2026-1080.mp4</video:content_loc>"
                      f"<video:duration>15</video:duration><video:publication_date>2026-10-10T09:00:00+09:00</video:publication_date>"
                      f"<video:family_friendly>yes</video:family_friendly></video:video>")
+        img = og_image(p)
+        if not img.endswith('/assets/og-image.jpg'):
+            extra += f"\n    <image:image><image:loc>{img}</image:loc></image:image>"
+        if p['key'] in ('about', 'mediakit'):
+            extra += f"\n    <image:image><image:loc>{DOMAIN}/assets/profile.jpg</image:loc></image:image>"
         urls.append(f"  <url><loc>{page_url(p['file'])}</loc><lastmod>{page_date(p)}</lastmod><priority>{pr}</priority>{extra}</url>")
     xml = ('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" '
-           'xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">\n'
+           'xmlns:video="http://www.google.com/schemas/sitemap-video/1.1" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n'
            + '\n'.join(urls) + '\n</urlset>\n')
     with io.open('sitemap.xml', 'w', encoding='utf-8') as f:
         f.write(xml)
@@ -1957,6 +2335,8 @@ def build():
             body = region_body(page)
         elif page.get('article'):
             body = article_body(page)
+        elif page.get('topic'):
+            body = topic_body(page)
         else:
             with io.open(os.path.join("fragments", page['file']), encoding="utf-8") as f:
                 body = fill(f.read(), page['file'])

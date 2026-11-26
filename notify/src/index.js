@@ -11,6 +11,7 @@ import { EmailMessage } from 'cloudflare:email';
 import { LEAD_SOURCES, KV_SOURCES, readSource, readKv, toMs, extraText, leadKey, STATUS_KO } from '../../functions/_lib/leads.js';
 import { buildMime } from './mime.js';
 import { runHealth, runPrep, runDigest, digestFlag } from './digest.js';
+import { runIndexNow, indexNowStatus } from './indexnow.js';
 
 const PER_SOURCE = 30;          // 출처마다 최근 몇 건까지 볼지 (일일 리포트 때는 60)
 const MAX_MAILS = 15;           // 한 번에 낱개로 보낼 최대 통수 (넘으면 나머지는 한 통으로 묶음)
@@ -170,6 +171,8 @@ async function tick(env, at) {
   if (isDigest || h === (dh + 1) % 24 || h === (dh + 2) % 24) {
     await runDigest(env, { collect, collected: got, send: sendDigest(env), reason: isDigest ? 'cron' : 'retry' }).catch(log('digest'));
   }
+  /* 검색엔진에 바뀐 주소 알리기 — 리포트 시각을 피해 매시간 (바뀐 주소가 없으면 사이트맵만 읽고 끝) */
+  if (!isDigest) await runIndexNow(env).catch(log('indexnow'));
 }
 
 /* 수동 실행 횟수 제한 (admin_flags 에 날짜·횟수를 남김) */
@@ -199,6 +202,11 @@ export default {
       /* 바로 한 번 확인 (10분에 한 번까지). 새 문의가 없으면 메일은 가지 않는다 */
       if (report && Date.now() - Date.parse(report.at) < 10 * 60 * 1000) return json({ ok: false, error: '10분 안에 이미 확인했습니다.', last: report }, 429);
       return json({ ok: true, report: (await run(env, 'manual')).report });
+    }
+    if (url.pathname === '/indexnow' && !post) return json({ ok: true, indexnow: await indexNowStatus(env) });
+    if (url.pathname === '/indexnow/run' && post) {
+      if (!(await allow(env.DB, 'indexnow_manual', 3))) return json({ ok: false, error: '오늘은 더 돌릴 수 없습니다.' }, 429);
+      return json({ ok: true, indexnow: await runIndexNow(env) });
     }
     if (url.pathname === '/test' && post) {
       /* 연결 확인 메일 한 통 (하루 3통까지) */
