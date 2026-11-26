@@ -179,6 +179,10 @@ PAGES = [
          title="미디어 — 쇼릴·언론 보도·방송 출연 | 최시준",
          desc="15초 쇼릴 2026, KBS·JTBC·CCTV 등 언론 보도와 방송 출연, 공식 채널, 그리고 공간사업 판단기준을 담은 최시준의 최근 글.",
          keywords=f"{BASE_KEYWORDS}, 최시준 인터뷰, 최시준 방송, 쇼릴, 공간사업 칼럼"),
+    dict(key="partnership", file="partnership.html", nav="제휴·협업", crumb="제휴·협업", schema="ContactPage",
+         title="제휴·협업 제안 — 공실 공동개발·공간 입점·서비스 제휴·강의 | 최시준",
+         desc="공실 건물 공동개발, 공간 입점·대관 제휴, 서비스·기술 제휴, 강의·행사, 미디어 협업, 투자·공동사업까지. 최시준과 함께 공간과 사업을 키울 파트너의 제안을 받습니다.",
+         keywords=f"{BASE_KEYWORDS}, 제휴 문의, 협업 제안, 공실 공동개발, 건물주 협업, 공간 입점, 대관 제휴, 무인공간 제휴, 강의 섭외, 공동사업"),
     dict(key="contact", file="contact.html", nav="문의하기", crumb="문의하기", schema="ContactPage",
          title="공실개발 상담·강의 문의 | 최시준",
          desc="공실개발 상담, 공간수익화 진단, 강의·인터뷰, 제휴 제안. 60초 자가진단으로 내 공간의 가능성을 확인하고 문의를 남겨주세요.",
@@ -389,7 +393,7 @@ for _a in INSIGHTS:
         title=f"{_a['title']} | 최시준", desc=_a["desc"],
         keywords=(_a["keywords"] + ", " if _a["keywords"] else "") + "최시준, 공실개발, 공간수익화"))
 
-NAV_ITEMS = sorted([p for p in PAGES if p['nav']], key=lambda p: p['key'] == 'contact')
+NAV_ITEMS = sorted([p for p in PAGES if p['nav']], key=lambda p: {'partnership': 1, 'contact': 2}.get(p['key'], 0))
 PAGE_NAMES = {p['file'][:-5] for p in PAGES}
 PAGE_BY_KEY = {p['key']: p for p in PAGES}
 
@@ -627,6 +631,8 @@ def header_nav(page):
     for p in NAV_ITEMS:
         on = p['key'] == active
         cls = ' class="nav-cta is-active"' if (p['key'] == "contact" and on) else (' class="nav-cta"' if p['key'] == "contact" else (' class="is-active"' if on else ""))
+        if p['key'] == "partnership":
+            cls = ' class="nav-partner is-active"' if on else ' class="nav-partner"'
         cur = ' aria-current="page"' if p['key'] == page['key'] else ""
         if p['key'] == "contact":
             acc_on = ' is-active' if page['key'] in ("login", "account") else ""
@@ -680,6 +686,7 @@ def footer():
             <a href="services.html">서비스 안내</a>
             <a href="books.html">전자책 스토어</a>
             <a href="contact.html">자가진단 & 문의</a>
+            <a href="partnership.html">제휴 · 협업 제안</a>
             <a href="community.html">커뮤니티</a>
           </div>
           <div>
@@ -1446,6 +1453,12 @@ def network_family_bar():
 
 TOKENS['NETWORK_GROUPS'] = network_groups_html()
 TOKENS['NETWORK_MORE'] = network_more_html()
+PARTNER_KINDS = ['공실 공동개발 · 건물 협업', '공간 입점 · 대관 제휴', '서비스 · 기술 제휴', '강의 · 교육 · 행사 협업',
+                 '미디어 · 콘텐츠 협업', '기관 · 지자체 협업', '투자 · 공동사업', '기타 제휴']   # functions/_lib/core.js 와 같게
+TOKENS['PARTNER_KIND_OPTIONS'] = ''.join(f'<option value="{esc(k)}">{esc(k)}</option>' for k in PARTNER_KINDS)
+TOKENS['PARTNER_BRAND_CHIPS'] = ''.join(
+    f'<label class="pt-chip"><input type="checkbox" name="brands" value="{esc(v)}" /><span>{esc(v)}</span></label>'
+    for v in [n['name'] for n in NETWORK if n['tier'] == 'main'] + ['함께 키우는 서비스', '최시준 강의·자문', '아직 정하지 않음'])
 TOKENS['NETWORK_FINDER'] = network_finder()
 TOKENS['NETWORK_HOME'] = network_home()
 TOKENS['NETWORK_COUNT'] = str(len(NETWORK))

@@ -10,6 +10,13 @@ export const INQUIRY_TYPES = [
   '인터뷰/미디어 문의', '제휴/공동사업 문의', '전자책 구매/단체구매 문의', '공간 이용·대관 문의', '기타 문의'
 ];
 export const INQUIRY_STATUS = ['접수', '진행중', '완료', '보관'];
+/* 제휴·협업 */
+export const PARTNER_KINDS = [
+  '공실 공동개발 · 건물 협업', '공간 입점 · 대관 제휴', '서비스 · 기술 제휴', '강의 · 교육 · 행사 협업',
+  '미디어 · 콘텐츠 협업', '기관 · 지자체 협업', '투자 · 공동사업', '기타 제휴'
+];
+export const PARTNER_STAGES = ['접수', '검토 중', '미팅', '조건 협의', '진행 확정', '보류', '종료', '스팸·무관'];
+export const PARTNER_OPEN = ['접수', '검토 중', '미팅', '조건 협의'];
 export const POST_CATEGORIES = ['제휴·협업', '질문', '정보공유', '후기·근황'];
 export const REF_CATEGORIES = ['공간개발', '브랜드', '강의·교육', '파트너십', '언론·미디어'];
 
@@ -240,7 +247,58 @@ const SCHEMA = [
     done_at TEXT
   )`,
   `CREATE INDEX IF NOT EXISTS idx_site_tasks_site ON site_tasks(site, status)`,
-  `CREATE TABLE IF NOT EXISTS admin_flags (k TEXT PRIMARY KEY, v TEXT NOT NULL DEFAULT '', at TEXT)`
+  `CREATE TABLE IF NOT EXISTS admin_flags (k TEXT PRIMARY KEY, v TEXT NOT NULL DEFAULT '', at TEXT)`,
+  /* 제휴·협업 제안 (/partnership) — 관리자 '제휴·협업'에서 단계별로 관리 */
+  `CREATE TABLE IF NOT EXISTS partnerships (
+     id INTEGER PRIMARY KEY AUTOINCREMENT,
+     created_at TEXT NOT NULL,
+     updated_at TEXT NOT NULL,
+     kind TEXT NOT NULL DEFAULT '기타 제휴',
+     company TEXT NOT NULL DEFAULT '',
+     name TEXT NOT NULL DEFAULT '',
+     role TEXT NOT NULL DEFAULT '',
+     phone TEXT NOT NULL DEFAULT '',
+     email TEXT NOT NULL DEFAULT '',
+     brands TEXT NOT NULL DEFAULT '',
+     message TEXT NOT NULL DEFAULT '',
+     budget TEXT NOT NULL DEFAULT '',
+     timing TEXT NOT NULL DEFAULT '',
+     link TEXT NOT NULL DEFAULT '',
+     call_id INTEGER,
+     page TEXT NOT NULL DEFAULT '',
+     stage TEXT NOT NULL DEFAULT '접수',
+     priority TEXT NOT NULL DEFAULT '보통',
+     next_at TEXT NOT NULL DEFAULT '',
+     next_note TEXT NOT NULL DEFAULT '',
+     value TEXT NOT NULL DEFAULT '',
+     memo TEXT NOT NULL DEFAULT '',
+     replied_at TEXT,
+     closed_at TEXT,
+     ip_hash TEXT NOT NULL DEFAULT ''
+   )`,
+  `CREATE INDEX IF NOT EXISTS idx_partnerships_stage ON partnerships(stage, created_at)`,
+  `CREATE TABLE IF NOT EXISTS partnership_log (
+     id INTEGER PRIMARY KEY AUTOINCREMENT,
+     partnership_id INTEGER NOT NULL,
+     at TEXT NOT NULL,
+     kind TEXT NOT NULL DEFAULT 'memo',
+     text TEXT NOT NULL DEFAULT ''
+   )`,
+  `CREATE INDEX IF NOT EXISTS idx_partnership_log ON partnership_log(partnership_id, at)`,
+  /* 지금 찾고 있는 파트너 — /partnership 페이지에 공개 */
+  `CREATE TABLE IF NOT EXISTS partner_calls (
+     id INTEGER PRIMARY KEY AUTOINCREMENT,
+     created_at TEXT NOT NULL,
+     updated_at TEXT NOT NULL,
+     kind TEXT NOT NULL DEFAULT '기타 제휴',
+     title TEXT NOT NULL DEFAULT '',
+     who TEXT NOT NULL DEFAULT '',
+     summary TEXT NOT NULL DEFAULT '',
+     offer TEXT NOT NULL DEFAULT '',
+     closes_at TEXT NOT NULL DEFAULT '',
+     visible INTEGER NOT NULL DEFAULT 1,
+     sort INTEGER NOT NULL DEFAULT 0
+   )`
 ];
 
 /** 예전에 만든 표에 새 칸 더하기 (이미 있으면 건너뜀) */

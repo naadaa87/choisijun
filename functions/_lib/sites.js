@@ -297,7 +297,9 @@ async function board(DB, env, request) {
     bindSite(DB.prepare(`SELECT site, substr(day, 1, 7) AS m, COUNT(*) AS pv, COUNT(DISTINCT vid) AS v FROM xpv WHERE day >= ? AND day <= ?${siteCond} GROUP BY site, m`), dayA, dayB), // 1
     bindSite(DB.prepare(`SELECT site, substr(day, 1, 7) AS m, kind, COUNT(*) AS n FROM xev WHERE day >= ? AND day <= ?${siteCond} GROUP BY site, m, kind`), dayA, dayB),             // 2
     DB.prepare('SELECT substr(day, 1, 7) AS m, COUNT(*) AS pv, COUNT(DISTINCT vid) AS v FROM pv WHERE day >= ? AND day <= ? GROUP BY m').bind(dayA, dayB),          // 3
-    DB.prepare("SELECT substr(datetime(created_at, '+9 hours'), 1, 7) AS m, COUNT(*) AS n FROM inquiries WHERE created_at >= ? AND created_at < ? GROUP BY m").bind(isoA, isoB), // 4
+    DB.prepare(`SELECT substr(datetime(created_at, '+9 hours'), 1, 7) AS m, COUNT(*) AS n FROM (
+        SELECT created_at FROM inquiries UNION ALL SELECT created_at FROM partnerships WHERE stage != '스팸·무관'
+      ) WHERE created_at >= ? AND created_at < ? GROUP BY m`).bind(isoA, isoB), // 4 문의 + 제휴 제안
     DB.prepare("SELECT substr(datetime(created_at, '+9 hours'), 1, 7) AS m, COUNT(*) AS n FROM members WHERE created_at >= ? AND created_at < ? GROUP BY m").bind(isoA, isoB),   // 5
     DB.prepare("SELECT substr(day, 1, 7) AS m, kind, COUNT(*) AS n FROM ev WHERE day >= ? AND day <= ? AND kind IN ('tel', 'kakao', 'mail') GROUP BY m, kind").bind(dayA, dayB), // 6
     DB.prepare('SELECT COUNT(*) AS n FROM members'),                                                                                                               // 7

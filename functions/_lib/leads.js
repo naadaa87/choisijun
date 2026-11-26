@@ -18,6 +18,9 @@ const P = (prefix, c) => `COALESCE('${prefix}' || NULLIF(${c}, ''), '')`;      /
 export const LEAD_SOURCES = [
   { site: SELF_ID, bind: 'DB', label: '문의', by: 'created_at',
     q: `SELECT id AS ref, created_at AS at, type AS kind, name, contact, message AS text, status FROM inquiries` },
+  { site: SELF_ID, bind: 'DB', label: '제휴·협업', by: 'created_at',
+    q: `SELECT id AS ref, created_at AS at, kind, ${J(N('company'), N('name'), P('· ', 'role'))} AS name, ${J(N('phone'), N('email'))} AS contact, message AS text, stage AS status,
+        json_object('함께하고 싶은 사업', brands, '규모·예산', budget, '희망 시기', timing, '참고 링크', link) AS extra FROM partnerships` },
   { site: 'ssople', bind: 'DB_SSOPLE', label: '문의', by: 'id',
     q: `SELECT id AS ref, created_at AS at, kind, ${J(N('name'), N('org'))} AS name, ${N('contact')} AS contact, ${N('body')} AS text, status FROM inquiries` },
   { site: 'restel', bind: 'DB_RESTEL', label: '문의', by: 'id',

@@ -83,7 +83,7 @@ WARN_TERMS = [
 ]
 ALLOWED_EXT = ("choisijun.com", "ssople.com", "playtion.kr", "socialfactory.co.kr", "megaspot.kr", "hellomingle.kr",
                "vacancy.co.kr", "coremood.kr", "orbis-estate.com", "tgrzspace.pages.dev", "yeodeol.kr",
-               "myworkspro.pages.dev", "go.kr", "or.kr", "reb.or.kr", "kostat.go.kr", "threads.com", "instagram.com")
+               "myworks.ai.kr", "go.kr", "or.kr", "reb.or.kr", "kostat.go.kr", "threads.com", "instagram.com")
 
 
 def check(path, pages, cats, all_meta, drafts_meta=None):

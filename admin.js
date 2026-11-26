@@ -134,6 +134,7 @@
     if (tab === 'kpi') loadKpi();
     if (tab === 'members') loadMembers();
     if (tab === 'inquiries') loadInquiries();
+    if (tab === 'partners') loadPartners(true);
     if (tab === 'community') loadCommunity();
     if (tab === 'refs') loadRefs();
     if (tab === 'content') loadContent();
@@ -159,6 +160,7 @@
       state.setup = d.setup || state.setup;
       const c = d.counts;
       q('#cntInq').textContent = c.inq_new ? String(c.inq_new) : '';
+      q('#cntPtn').textContent = c.ptn_new ? String(c.ptn_new) : '';
       q('#cntCom').textContent = (c.posts_pending + c.comments_pending) ? String(c.posts_pending + c.comments_pending) : '';
       q('#cntRef').textContent = c.refs ? String(c.refs) : '';
       const v = d.visits || {};
@@ -170,6 +172,7 @@
         ['kpi', fmtN(v.today_v || 0), '오늘 방문자', `어제 ${fmtN(v.yday_v || 0)}명 · 지금 ${v.live || 0}명`],
         ['sites', fmtN(st.total || 0), '운영 사이트', `주력 ${st.focus || 0}곳${st.down ? ' · 접속 문제 ' + st.down + '곳' : ''}`],
         ['kpi', fmtN(v.today_pv || 0), '오늘 페이지뷰', `어제 ${fmtN(v.yday_pv || 0)}회`],
+        ['partners', c.ptn_new || 0, '새 제휴 제안', `진행 중 ${c.ptn_open || 0}건 · 이번 달 ${c.ptn_month || 0}건`],
         ['inquiries', c.inq_progress, '진행 중', '상담·답변 진행'],
         ['inquiries', c.inq_month, '이번 달 문의', '전체 ' + c.inq_total + '건'],
         ['members', fmtN(c.members || 0), '회원', '이번 달 가입 ' + (c.members_month || 0) + '명'],
@@ -191,6 +194,8 @@
       if (c.inq_stale) todo.push(`<li class="is-late">2일 넘게 답하지 않은 문의가 <strong>${c.inq_stale}건</strong> 있습니다. <button class="link-btn" data-go="inquiries">문의 보기</button></li>`);
       if (st.down) todo.push(`<li class="is-late">접속 점검에서 문제가 있던 사이트가 <strong>${st.down}곳</strong> 있습니다. <button class="link-btn" data-go="sites">전체 사이트 보기</button></li>`);
       if (c.inq_new) todo.push(`<li>새 문의 <strong>${c.inq_new}건</strong>에 답해 주세요.</li>`);
+      if (c.ptn_new) todo.push(`<li>새 제휴·협업 제안 <strong>${c.ptn_new}건</strong>이 회신을 기다립니다. <button class="link-btn" data-go="partners">제안 보기</button></li>`);
+      if (c.ptn_overdue) todo.push(`<li class="is-late">다음 할 일 날짜가 지난 제휴 제안이 <strong>${c.ptn_overdue}건</strong> 있습니다. <button class="link-btn" data-go="partners">확인하기</button></li>`);
       if (c.posts_pending || c.comments_pending) todo.push(`<li>커뮤니티 글 ${c.posts_pending}건, 답글 ${c.comments_pending}건이 게시를 기다립니다. <button class="link-btn" data-go="community">확인하기</button></li>`);
       const s = state.setup;
       const mailCfg = Boolean((window.SITE_CONFIG || {}).formAccessKey);
@@ -340,10 +345,257 @@
       const d = await api('overview');
       const c = d.counts;
       q('#cntInq').textContent = c.inq_new ? String(c.inq_new) : '';
+      q('#cntPtn').textContent = c.ptn_new ? String(c.ptn_new) : '';
       q('#cntCom').textContent = (c.posts_pending + c.comments_pending) ? String(c.posts_pending + c.comments_pending) : '';
       q('#cntRef').textContent = c.refs ? String(c.refs) : '';
     } catch (_) { /* ignore */ }
   }
+
+  /* ---------------- 제휴·협업 ---------------- */
+  const PT = { data: null, view: 'open', stage: '', kind: '', q: '', open: null, detail: null, log: [] };
+  const PT_TONE = { '접수': 'is-ad', '검토 중': '', '미팅': 'is-mail', '조건 협의': 'is-mail', '진행 확정': 'is-ok', '보류': 'is-off', '종료': 'is-off', '스팸·무관': 'is-off' };
+  const PT_LOG = { stage: '진행', memo: '메모', call: '통화', meeting: '미팅', mail: '메일' };
+  const ptContact = (r) => [r.phone, r.email].filter(Boolean).join(' · ');
+  const ptWho = (r) => [r.company, r.name + (r.role ? ' ' + r.role : '')].filter(Boolean).join(' · ');
+  const ptDays = (a, b) => Math.round((Date.parse(a) - Date.parse(b)) / 86400000);
+
+  async function loadPartners(keepOpen) {
+    try {
+      PT.data = await api('partners');
+      const d = PT.data;
+      const kindSel = q('#ptnKind');
+      if (kindSel.options.length <= 1) kindSel.innerHTML = '<option value="">모든 유형</option>' + d.kinds.map((k) => `<option>${esc(k)}</option>`).join('');
+      q('#pcKind').innerHTML = d.kinds.map((k) => `<option>${esc(k)}</option>`).join('');
+      q('#cntPtn').textContent = d.stats.fresh ? String(d.stats.fresh) : '';
+      renderPartners();
+      renderCalls();
+      if (keepOpen && PT.open) openPartner(PT.open, true);
+    } catch (err) { showMsg(err.message, 'err'); }
+  }
+
+  function renderPartners() {
+    const d = PT.data;
+    if (!d) return;
+    const st = d.stats;
+    const tiles = [
+      ['fresh', st.fresh, '새 제안', '아직 회신 전'],
+      ['open', st.open, '진행 중', '검토 · 미팅 · 조건 협의'],
+      ['overdue', st.overdue, '할 일 지남', '다음 할 일 날짜가 지난 제안'],
+      ['month', st.thisMonth, '이번 달 접수', `전체 ${fmtN(st.total)}건`],
+      ['won', st.won, '진행 확정', `이번 달 ${st.wonMonth}건${st.winRate != null ? ' · 확정률 ' + fmtPct(st.winRate, 0) : ''}`],
+      ['reply', st.avgReply == null ? '-' : st.avgReply < 1 ? '당일' : st.avgReply + '일', '평균 첫 회신', '접수부터 첫 회신까지']
+    ];
+    q('#ptnKpis').innerHTML = tiles.map(([k, n, label, foot]) =>
+      `<li${k === 'overdue' && st.overdue ? ' class="is-late"' : ''}><button type="button" data-ptile="${k}"><span class="adm-kpi-num">${n}</span><span class="adm-kpi-label">${esc(label)}</span><span class="adm-kpi-foot">${esc(foot)}</span></button></li>`).join('');
+    qa('#ptnKpis [data-ptile]').forEach((b) => b.addEventListener('click', () => {
+      const k = b.dataset.ptile;
+      PT.stage = k === 'fresh' ? '접수' : k === 'won' ? '진행 확정' : '';
+      PT.view = k === 'overdue' ? 'due' : k === 'won' || k === 'month' ? 'all' : 'open';
+      syncPtView(); renderPartners();
+    }));
+
+    q('#ptnPipe').innerHTML = d.stages.map((s) => `<button type="button" class="pt-pipe-step${PT.stage === s ? ' is-active' : ''}${d.openStages.includes(s) ? '' : ' is-closed'}" data-pstage="${esc(s)}"><span>${esc(s)}</span><strong>${d.byStage[s] || 0}</strong></button>`).join('');
+    qa('#ptnPipe [data-pstage]').forEach((b) => b.addEventListener('click', () => {
+      PT.stage = PT.stage === b.dataset.pstage ? '' : b.dataset.pstage;
+      if (PT.stage && !d.openStages.includes(PT.stage)) PT.view = 'all';
+      syncPtView(); renderPartners();
+    }));
+
+    const kw = PT.q.toLowerCase();
+    let rows = d.items.filter((r) => {
+      if (PT.stage && r.stage !== PT.stage) return false;
+      if (!PT.stage && PT.view !== 'all' && !d.openStages.includes(r.stage)) return false;
+      if (PT.kind && r.kind !== PT.kind) return false;
+      if (kw && ![r.company, r.name, r.role, r.phone, r.email, r.message, r.memo, r.next_note, r.brands].join(' ').toLowerCase().includes(kw)) return false;
+      return true;
+    });
+    if (PT.view === 'due') {
+      const key = (r) => (r.next_at ? r.next_at : r.stage === '접수' ? r.created_at.slice(0, 10) : '9999');
+      rows = rows.slice().sort((a, b) => key(a).localeCompare(key(b)));
+    }
+    const list = q('#ptnList');
+    list.innerHTML = rows.length ? rows.map((r) => {
+      const late = r.next_at && r.next_at < d.today && d.openStages.includes(r.stage);
+      const next = r.next_at || r.next_note
+        ? `<p class="pt-next${late ? ' is-late' : ''}">${late ? '지남 · ' : ''}${esc(r.next_at ? r.next_at.slice(5).replace('-', '.') : '')} ${esc(r.next_note || '')}</p>`
+        : (r.stage === '접수' ? `<p class="pt-next${r.waiting_days >= 2 ? ' is-late' : ''}">회신 전 · ${r.waiting_days ? r.waiting_days + '일째' : '오늘 접수'}</p>` : '');
+      return `
+      <li class="adm-row${r.id === PT.open ? ' is-open' : ''}" tabindex="0" data-id="${r.id}">
+        <div class="acc-item-head"><span class="adm-tag">${esc(r.kind)}</span><span class="adm-tag ${PT_TONE[r.stage] || ''}">${esc(r.stage)}</span>${r.priority === '높음' ? '<span class="adm-tag is-ad">우선</span>' : ''}<span class="acc-date">${KST(r.created_at)}</span></div>
+        <p class="adm-row-title"><strong>${esc(r.company || r.name)}</strong><span>${esc(r.company ? r.name + (r.role ? ' ' + r.role : '') : ptContact(r))}</span></p>
+        <p class="adm-row-text">${esc(r.message.slice(0, 80))}${r.message.length > 80 ? '…' : ''}</p>
+        ${next}
+      </li>`;
+    }).join('') : `<li class="acc-empty">${d.items.length ? '조건에 맞는 제안이 없습니다.' : '아직 들어온 제휴·협업 제안이 없습니다. 홈 첫 화면과 메뉴의 \'제휴·협업\'에서 제안서를 받습니다.'}</li>`;
+    qa('.adm-row', list).forEach((li) => {
+      const open = () => openPartner(Number(li.dataset.id));
+      li.addEventListener('click', open);
+      li.addEventListener('keydown', (e) => { if (e.key === 'Enter') open(); });
+    });
+    if (!PT.open) q('#ptnDetail').innerHTML = '<p class="acc-empty">왼쪽에서 제안을 고르면 내용과 진행 기록이 여기에 열립니다.</p>';
+  }
+  function syncPtView() {
+    qa('#ptnView .f-chip').forEach((x) => x.classList.toggle('is-active', x.dataset.view === PT.view));
+  }
+
+  async function openPartner(id, quiet) {
+    PT.open = id;
+    qa('#ptnList .adm-row').forEach((li) => li.classList.toggle('is-open', Number(li.dataset.id) === id));
+    try {
+      const d = await api('partners/' + id);
+      PT.detail = d.item; PT.log = d.log;
+      renderPartnerDetail();
+      if (!quiet && window.matchMedia('(max-width: 900px)').matches) q('#ptnDetail').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (err) { showMsg(err.message, 'err'); }
+  }
+
+  function renderPartnerDetail() {
+    const r = PT.detail;
+    const d = PT.data;
+    const box = q('#ptnDetail');
+    if (!r || !d) return;
+    const contact = ptContact(r);
+    const linkHtml = r.link ? `<a href="${esc(r.link)}" target="_blank" rel="noopener">${esc(r.link.replace(/^https?:\/\//, '').slice(0, 60))} ↗</a>` : '';
+    const call = r.call_id ? (d.calls.find((c) => c.id === r.call_id) || null) : null;
+    const facts = [
+      ['함께하고 싶은 사업', r.brands], ['규모 · 예산', r.budget], ['희망 시기', r.timing],
+      ['보고 온 제안', call ? call.title : ''], ['참고 링크', linkHtml, true], ['보낸 곳', r.page]
+    ].filter(([, v]) => v);
+    box.innerHTML = `
+      <div class="acc-item-head"><span class="adm-tag">${esc(r.kind)}</span><span class="adm-tag ${PT_TONE[r.stage] || ''}">${esc(r.stage)}</span><span class="acc-date">${KST(r.created_at)} 접수</span></div>
+      <h2 class="adm-detail-name">${esc(r.company || r.name)}</h2>
+      <p class="acc-who">${esc(r.company ? r.name + (r.role ? ' · ' + r.role : '') : (r.role || ''))}</p>
+      <p class="adm-contact"><span>${esc(contact)}</span>${contactLinks(contact, { type: '제휴·협업 · ' + r.kind, name: r.name, created_at: r.created_at, message: r.message })}</p>
+      <div class="adm-message">${esc(r.message)}</div>
+      ${facts.length ? `<dl class="pt-facts-adm">${facts.map(([k, v, raw]) => `<div><dt>${esc(k)}</dt><dd>${raw ? v : esc(v)}</dd></div>`).join('')}</dl>` : ''}
+      <div class="adm-reply">
+        <p class="mono adm-label">진행 단계</p>
+        <div class="board-filters adm-status pt-stage-chips">${d.stages.map((s) => `<button type="button" class="f-chip${s === r.stage ? ' is-active' : ''}" data-pst="${esc(s)}">${esc(s)}</button>`).join('')}</div>
+        <div class="pt-edit">
+          <label><span class="mono adm-label">우선순위</span><select id="ptPri">${d.priorities.map((p) => `<option${p === r.priority ? ' selected' : ''}>${esc(p)}</option>`).join('')}</select></label>
+          <label><span class="mono adm-label">유형</span><select id="ptKindEdit">${d.kinds.map((k) => `<option${k === r.kind ? ' selected' : ''}>${esc(k)}</option>`).join('')}</select></label>
+          <label><span class="mono adm-label">다음 할 일 날짜</span><input type="date" id="ptNextAt" value="${esc(r.next_at || '')}" /></label>
+          <label class="pt-wide"><span class="mono adm-label">다음 할 일</span><input type="text" id="ptNextNote" maxlength="200" value="${esc(r.next_note || '')}" placeholder="예: 소개서 받고 현장 미팅 날짜 잡기" /></label>
+          <label class="pt-wide"><span class="mono adm-label">예상 규모 <small>(내부용)</small></span><input type="text" id="ptValue" maxlength="80" value="${esc(r.value || '')}" placeholder="예: 월 수익쉐어 15%, 강의 1회 등" /></label>
+        </div>
+        <label class="adm-memo"><span class="mono adm-label">내부 메모 <small>(상대에게 보이지 않습니다)</small></span><textarea rows="4" maxlength="4000" id="ptMemo" placeholder="조건, 담당자 성향, 결정에 필요한 것">${esc(r.memo || '')}</textarea></label>
+        <div class="adm-btns"><button type="button" class="btn btn-sm btn-primary" id="ptSave">저장</button>${r.replied_at ? `<span class="acc-help">첫 회신 ${KST(r.replied_at)} · ${ptDays(r.replied_at, r.created_at) < 1 ? '당일 회신' : ptDays(r.replied_at, r.created_at) + '일 걸림'}</span>` : '<button type="button" class="btn btn-sm btn-line" id="ptReplied">회신했어요</button>'}</div>
+      </div>
+      <div class="pt-log">
+        <p class="mono adm-label">진행 기록</p>
+        <form class="pt-log-form" id="ptLogForm">
+          <select id="ptLogKind" aria-label="기록 종류"><option value="memo">메모</option><option value="call">통화</option><option value="meeting">미팅</option><option value="mail">메일</option></select>
+          <input type="text" id="ptLogText" maxlength="2000" placeholder="예: 통화 — 다음 주 화요일 현장 미팅" aria-label="기록 내용" />
+          <button type="submit" class="btn btn-sm btn-line">남기기</button>
+        </form>
+        <ul class="pt-log-list">${PT.log.length ? PT.log.map((l) => `<li><span class="adm-tag ${l.kind === 'stage' ? 'is-off' : ''}">${esc(PT_LOG[l.kind] || l.kind)}</span><span class="pt-log-text">${esc(l.text)}</span><span class="acc-date">${KST(l.at)}</span></li>`).join('') : '<li class="acc-empty">기록이 없습니다.</li>'}</ul>
+      </div>`;
+
+    const patch = async (body, msg) => {
+      try {
+        const res = await api('partners/' + r.id, { method: 'PATCH', body });
+        PT.detail = res.item; PT.log = res.log;
+        showMsg(msg, 'ok');
+        await loadPartners(false);
+        renderPartnerDetail();
+      } catch (err) { showMsg(err.message, 'err'); }
+    };
+    qa('[data-pst]', box).forEach((b) => b.addEventListener('click', () => {
+      if (b.dataset.pst === r.stage) return;
+      patch({ stage: b.dataset.pst }, `'${r.company || r.name}' 제안을 '${b.dataset.pst}' 단계로 옮겼습니다.`);
+    }));
+    q('#ptSave', box).addEventListener('click', () => patch({
+      priority: q('#ptPri', box).value, kind: q('#ptKindEdit', box).value,
+      next_at: q('#ptNextAt', box).value, next_note: q('#ptNextNote', box).value.trim(),
+      value: q('#ptValue', box).value.trim(), memo: q('#ptMemo', box).value
+    }, '저장했습니다.'));
+    const rep = q('#ptReplied', box);
+    if (rep) rep.addEventListener('click', () => patch({ replied: true, stage: r.stage === '접수' ? '검토 중' : r.stage }, '회신 기록을 남겼습니다.'));
+    q('#ptLogForm', box).addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const text = q('#ptLogText', box).value.trim();
+      if (!text) return;
+      try {
+        const res = await api('partners/' + r.id + '/log', { method: 'POST', body: { kind: q('#ptLogKind', box).value, text } });
+        PT.detail = res.item; PT.log = res.log;
+        renderPartnerDetail();
+      } catch (err) { showMsg(err.message, 'err'); }
+    });
+    const copyBtn = q('[data-copy]', box);
+    if (copyBtn) copyBtn.addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(contact); showMsg('연락처를 복사했습니다.', 'ok'); } catch (_) { showMsg(contact, 'info'); }
+    });
+  }
+
+  function renderCalls() {
+    const d = PT.data;
+    const box = q('#ptnCalls');
+    const today = d.today;
+    box.innerHTML = d.calls.length ? d.calls.map((c) => {
+      const ended = c.closes_at && c.closes_at < today;
+      const state = !c.visible ? '<span class="adm-tag is-off">숨김</span>' : ended ? '<span class="adm-tag is-off">마감</span>' : '<span class="adm-tag is-ok">공개 중</span>';
+      const asks = d.items.filter((r) => r.call_id === c.id).length;
+      return `<li class="acc-item">
+        <div class="acc-item-head">${state}<span class="adm-tag">${esc(c.kind)}</span>${c.closes_at ? `<span class="acc-date">${esc(c.closes_at)}까지</span>` : '<span class="acc-date">상시</span>'}</div>
+        <p class="acc-who"><strong>${esc(c.title)}</strong>${c.who ? ' · ' + esc(c.who) : ''}${asks ? ` · 이 제안으로 온 연락 ${asks}건` : ''}</p>
+        <div class="adm-btns"><button type="button" class="btn btn-sm btn-line" data-pc-edit="${c.id}">고치기</button><button type="button" class="btn btn-sm btn-line" data-pc-toggle="${c.id}">${c.visible ? '숨기기' : '공개하기'}</button><button type="button" class="btn btn-sm btn-line" data-pc-del="${c.id}">삭제</button></div>
+      </li>`;
+    }).join('') : '<li class="acc-empty">올린 제안이 없습니다. 지금은 페이지에 기본 안내 세 가지가 보입니다.</li>';
+    qa('[data-pc-edit]', box).forEach((b) => b.addEventListener('click', () => editCall(d.calls.find((c) => c.id === Number(b.dataset.pcEdit)))));
+    qa('[data-pc-toggle]', box).forEach((b) => b.addEventListener('click', async () => {
+      const c = d.calls.find((x) => x.id === Number(b.dataset.pcToggle));
+      try { await api('partner-calls/' + c.id, { method: 'PATCH', body: { ...c, visible: !c.visible } }); showMsg(c.visible ? '페이지에서 내렸습니다.' : '페이지에 공개했습니다.', 'ok'); loadPartners(true); }
+      catch (err) { showMsg(err.message, 'err'); }
+    }));
+    qa('[data-pc-del]', box).forEach((b) => b.addEventListener('click', async () => {
+      const c = d.calls.find((x) => x.id === Number(b.dataset.pcDel));
+      if (!confirm(`'${c.title}' 제안을 지울까요? 잠시 내리려면 '숨기기'를 누르세요.`)) return;
+      try { await api('partner-calls/' + c.id, { method: 'DELETE' }); showMsg('삭제했습니다.', 'ok'); loadPartners(true); }
+      catch (err) { showMsg(err.message, 'err'); }
+    }));
+  }
+  const callForm = q('#ptnCallForm');
+  function editCall(c) {
+    callForm.hidden = false;
+    q('#pcId').value = c ? c.id : '';
+    q('#pcTitle').value = c ? c.title : '';
+    q('#pcKind').value = c ? c.kind : (PT.data ? PT.data.kinds[0] : '');
+    q('#pcWho').value = c ? c.who : '';
+    q('#pcCloses').value = c ? c.closes_at : '';
+    q('#pcSummary').value = c ? c.summary : '';
+    q('#pcOffer').value = c ? c.offer : '';
+    q('#pcSort').value = c ? c.sort : 0;
+    q('#pcVisible').checked = c ? Boolean(c.visible) : true;
+    q('#pcTitle').focus();
+  }
+  q('#ptnCallNew').addEventListener('click', () => editCall(null));
+  q('#pcCancel').addEventListener('click', () => { callForm.hidden = true; });
+  callForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = q('#pcId').value;
+    const body = {
+      title: q('#pcTitle').value.trim(), kind: q('#pcKind').value, who: q('#pcWho').value.trim(), closes_at: q('#pcCloses').value,
+      summary: q('#pcSummary').value.trim(), offer: q('#pcOffer').value.trim(), sort: Number(q('#pcSort').value || 0), visible: q('#pcVisible').checked
+    };
+    if (!body.title) { showMsg('제목을 적어 주세요.', 'err'); return; }
+    try {
+      await api('partner-calls' + (id ? '/' + id : ''), { method: id ? 'PATCH' : 'POST', body });
+      callForm.hidden = true;
+      showMsg(id ? '고쳤습니다.' : '올렸습니다. 페이지에는 1분 안에 반영됩니다.', 'ok');
+      loadPartners(true);
+    } catch (err) { showMsg(err.message, 'err'); }
+  });
+
+  qa('#ptnView .f-chip').forEach((b) => b.addEventListener('click', () => { PT.view = b.dataset.view; PT.stage = ''; syncPtView(); renderPartners(); }));
+  q('#ptnKind').addEventListener('change', (e) => { PT.kind = e.target.value; renderPartners(); });
+  let ptTimer;
+  q('#ptnSearch').addEventListener('input', (e) => { clearTimeout(ptTimer); ptTimer = setTimeout(() => { PT.q = e.target.value.trim(); renderPartners(); }, 250); });
+  q('#ptnCsv').addEventListener('click', () => {
+    const rows = PT.data ? PT.data.items : [];
+    if (!rows.length) { showMsg('내려받을 제안이 없습니다.', 'info'); return; }
+    downloadCsv(`제휴협업_${todayKST()}.csv`, [['번호', '접수일시', '유형', '회사·기관', '담당자', '직함', '휴대전화', '이메일', '함께하고 싶은 사업', '제안 내용', '규모·예산', '희망 시기', '참고 링크', '단계', '우선순위', '다음 할 일 날짜', '다음 할 일', '예상 규모', '메모', '첫 회신']]
+      .concat(rows.map((r) => [r.id, KST(r.created_at), r.kind, r.company, r.name, r.role, r.phone, r.email, r.brands, r.message, r.budget, r.timing, r.link, r.stage, r.priority, r.next_at, r.next_note, r.value, r.memo, r.replied_at ? KST(r.replied_at) : ''])));
+  });
 
   /* ---------------- 커뮤니티 ---------------- */
   qa('#comFilter .f-chip').forEach((b) => b.addEventListener('click', () => {
@@ -2858,7 +3110,7 @@
     const start = (location.hash || '').replace('#', '');
     /* 관리자가 쓰는 브라우저는 방문 통계에서 뺀다 (KPI 화면에서 바꿀 수 있음) */
     try { if (localStorage.getItem('csj_no_stats') === null) localStorage.setItem('csj_no_stats', 'true'); } catch (_) { /* ignore */ }
-    go(['ops', 'trend', 'sites', 'skpi', 'leads', 'kpi', 'inquiries', 'members', 'community', 'refs', 'content', 'system'].includes(start) ? start : 'dash');
+    go(['ops', 'trend', 'sites', 'skpi', 'leads', 'kpi', 'inquiries', 'partners', 'members', 'community', 'refs', 'content', 'system'].includes(start) ? start : 'dash');
   }
 
   boot();

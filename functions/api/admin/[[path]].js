@@ -9,6 +9,7 @@ import {
 } from '../../_lib/core.js';
 import { kpi } from '../../_lib/kpi.js';
 import { trend } from '../../_lib/trend.js';
+import { partnersRoute, callsRoute } from '../../_lib/partners.js';
 import { sitesRoute, sitesSummary, ensureSeed } from '../../_lib/sites.js';
 import { leads, markLead } from '../../_lib/leads.js';
 import { opsRoute } from '../../_lib/ops.js';
@@ -62,6 +63,8 @@ export async function onRequest(context) {
     if (route === 'trend' && method === 'GET') return trend(DB, env, request);
     if (parts[0] === 'ops') return opsRoute(DB, env, request, parts, method);
     if (parts[0] === 'seo') return seoRoute(DB, env, request, parts, method);
+    if (parts[0] === 'partners') return partnersRoute(DB, request, method, parts);
+    if (parts[0] === 'partner-calls') return callsRoute(DB, request, method, parts);
     if (parts[0] === 'sites' || parts[0] === 'skpi') return sitesRoute(DB, env, request, parts, method);
     if (route === 'leads' && method === 'GET') { await ensureSeed(DB); return leads(DB, env, request); }
     if (route === 'leads/mark' && method === 'POST') return markLead(DB, await readJson(request, 10_000));
@@ -184,13 +187,20 @@ async function overview(DB, env) {
     q('SELECT COUNT(*) AS n FROM members WHERE created_at >= ?', new Date(monthStart).toISOString())
   ]);
   const sites = await sitesSummary(DB).catch(() => ({ total: 0, focus: 0, down: 0, chk_at: null }));
+  const ptn = await DB.prepare(`SELECT
+      SUM(CASE WHEN stage = '접수' THEN 1 ELSE 0 END) AS fresh,
+      SUM(CASE WHEN stage IN ('검토 중', '미팅', '조건 협의') THEN 1 ELSE 0 END) AS open,
+      SUM(CASE WHEN stage IN ('접수', '검토 중', '미팅', '조건 협의') AND next_at != '' AND next_at < ? THEN 1 ELSE 0 END) AS overdue,
+      SUM(CASE WHEN created_at >= ? AND stage != '스팸·무관' THEN 1 ELSE 0 END) AS month
+    FROM partnerships`).bind(today, new Date(monthStart).toISOString()).first().catch(() => null) || {};
   return json({
     ok: true,
     sites,
     counts: {
       inq_new: n1.n, inq_progress: n2.n, inq_month: n3.n, inq_total: n4.n,
       posts_pending: p1.n, comments_pending: c1.n, refs: r1.n, inq_stale: stale.n,
-      members: mt.n, members_month: mn.n
+      members: mt.n, members_month: mn.n,
+      ptn_new: ptn.fresh || 0, ptn_open: ptn.open || 0, ptn_overdue: ptn.overdue || 0, ptn_month: ptn.month || 0
     },
     visits: { today_v: vt.v, today_pv: vt.pv, yday_v: vy.v, yday_pv: vy.pv, live: live.n },
     recent,

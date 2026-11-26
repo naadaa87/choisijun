@@ -908,6 +908,128 @@ const INQUIRY_MAP = {
   space: '공간 이용·대관 문의'
 };
 
+/* ---------------------------------------------------------
+   제휴·협업 제안서 (/partnership)
+   --------------------------------------------------------- */
+(function partnershipModule() {
+  const form = $('#ptForm');
+  if (!form) return;
+  const kindSel = $('#ptKind');
+  const callInput = $('#ptCallId');
+  const picked = $('#ptCallPicked');
+  const statusEl = $('#ptStatus');
+  const btn = form.querySelector('button[type="submit"]');
+  addHoneypot(form);
+  let captcha = { token: () => '', reset: () => {} };
+  cfHealth().then((h) => { if (h.ok) mountTurnstile(form).then((c) => { captcha = c; }); });
+
+  const show = (html, kind) => {
+    statusEl.innerHTML = html;
+    statusEl.className = 'pt-status is-' + kind;
+    statusEl.hidden = false;
+  };
+  const goForm = () => {
+    const top = form.getBoundingClientRect().top + window.scrollY - 90;
+    window.scrollTo({ top, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+  };
+  const setKind = (kind) => {
+    if (kind && kindSel && [...kindSel.options].some((o) => o.value === kind)) kindSel.value = kind;
+  };
+  const pickCall = (id, kind, title) => {
+    setKind(kind);
+    if (callInput) callInput.value = id && id !== '0' ? id : '';
+    if (picked) {
+      picked.innerHTML = `<span>선택한 제안</span><strong>${escapeHtml(title)}</strong><button type="button" class="pt-unpick" aria-label="선택 해제">×</button>`;
+      picked.hidden = false;
+    }
+    const msg = $('#ptMessage');
+    if (msg && !msg.value.trim()) msg.placeholder = `'${title}' 제안을 보고 연락드립니다. 회사 소개와 함께 하고 싶은 일을 적어 주세요.`;
+  };
+  if (picked) picked.addEventListener('click', (e) => {
+    if (!e.target.closest('.pt-unpick')) return;
+    picked.hidden = true; picked.innerHTML = '';
+    if (callInput) callInput.value = '';
+  });
+
+  /* 유형 카드 · 제안 카드 → 제안서로 */
+  document.addEventListener('click', (e) => {
+    const k = e.target.closest('[data-pt-kind]');
+    if (!k) return;
+    if (k.hasAttribute('data-pt-call')) pickCall(k.dataset.ptCall, k.dataset.ptKind, k.dataset.ptTitle || '');
+    else setKind(k.dataset.ptKind);
+    e.preventDefault();
+    goForm();
+    setTimeout(() => { const n = $('#ptName'); if (n && !n.value) n.focus({ preventScroll: true }); }, 450);
+  });
+  const params = new URLSearchParams(location.search);
+  if (params.get('kind')) setKind(params.get('kind'));
+
+  /* 관리자에서 올린 '지금 찾고 있는 파트너' */
+  const callsBox = $('#ptCalls');
+  if (callsBox) {
+    fetch('/api/partnership', { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!d || !Array.isArray(d.calls) || !d.calls.length) return;
+        callsBox.innerHTML = d.calls.map((c) => `
+          <article class="pt-call is-in">
+            <p class="pt-call-kind mono">${escapeHtml(c.kind || '')}${c.closes_at ? ` · ${escapeHtml(c.closes_at.replace(/-/g, '.'))}까지` : ''}</p>
+            <h3>${escapeHtml(c.title || '')}</h3>
+            ${c.who ? `<p class="pt-call-who">${escapeHtml(c.who)}</p>` : ''}
+            ${c.summary ? `<p>${escapeHtml(c.summary)}</p>` : ''}
+            ${c.offer ? `<p class="pt-call-offer"><span>함께 드리는 것</span>${escapeHtml(c.offer)}</p>` : ''}
+            <button type="button" class="btn btn-line btn-sm" data-pt-call="${Number(c.id) || 0}" data-pt-kind="${escapeHtml(c.kind || '')}" data-pt-title="${escapeHtml(c.title || '')}">이 제안으로 연락하기</button>
+          </article>`).join('');
+        const want = Number(params.get('call') || 0);
+        const hit = want && d.calls.find((c) => Number(c.id) === want);
+        if (hit) pickCall(String(hit.id), hit.kind, hit.title);
+      })
+      .catch(() => { /* 기본 카드 유지 */ });
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const v = (id) => (($('#' + id) || {}).value || '').trim();
+    const name = v('ptName');
+    const phone = v('ptPhone');
+    const email = v('ptEmail');
+    const message = v('ptMessage');
+    const fail = (msg, id) => { show(msg, 'err'); const el = id && $('#' + id); if (el) el.focus(); };
+    if (!name) return fail('담당자 성함을 적어 주세요.', 'ptName');
+    if (!phone && !email) return fail('연락받으실 휴대전화나 이메일 가운데 하나는 꼭 적어 주세요.', 'ptPhone');
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail('이메일 주소를 다시 확인해 주세요.', 'ptEmail');
+    if (message.length < 10) return fail('제안 내용을 10자 이상 적어 주세요.', 'ptMessage');
+    const agree = $('#ptAgree');
+    if (agree && !agree.checked) return fail('개인정보 수집·이용에 동의해 주셔야 보낼 수 있습니다.', 'ptAgree');
+
+    const body = {
+      kind: kindSel ? kindSel.value : '기타 제휴',
+      company: v('ptCompany'), name, role: v('ptRole'), phone, email,
+      brands: $$('input[name="brands"]:checked', form).map((x) => x.value),
+      message, budget: v('ptBudget'), timing: v('ptTiming'), link: v('ptLink'),
+      call_id: callInput && callInput.value ? Number(callInput.value) : null,
+      page: location.pathname + location.search, agree: true,
+      hp: honeypotValue(form), t: PAGE_LOADED_AT, turnstile: captcha.token()
+    };
+    const original = btn ? btn.textContent : '';
+    if (btn) { btn.disabled = true; btn.textContent = '보내는 중…'; }
+    show('제안서를 보내고 있습니다…', 'wait');
+    const r = await cfPost('partnership', body);
+    captcha.reset();
+    if (btn) { btn.disabled = false; btn.textContent = original; }
+    if (!r.ok) {
+      const mail = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(`[제휴·협업 제안] ${body.kind} · ${body.company || name}`)}&body=${encodeURIComponent(`${message}\n\n${name} ${phone} ${email}`)}`;
+      show(`${escapeHtml(r.error || '보내지 못했습니다.')} 잠시 뒤 다시 시도하시거나 <a href="${mail}">이메일로 보내 주세요</a>.`, 'err');
+      return;
+    }
+    Track.event('conv', '제휴·협업 제안 · ' + body.kind);
+    form.reset();
+    if (picked) { picked.hidden = true; picked.innerHTML = ''; }
+    show('<strong>제안서를 받았습니다.</strong> 담당 운영진이 내용을 살펴보고 영업일 기준 1~2일 안에 남겨 주신 연락처로 회신드립니다. 감사합니다.', 'ok');
+    statusEl.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'center' });
+  });
+})();
+
 (function contactModule() {
   const form = $('#contactForm');
   if (!form) return;
@@ -1463,7 +1585,7 @@ const SEED_REFS = [
   { id: 'r-27', year: '2026', category: '브랜드',     title: '개인 브랜드 허브 choisijun.com 구축', desc: '사례·포트폴리오·레퍼런스·미디어·커뮤니티·전자책을 한곳에 모은 공식 홈페이지.', link: '/' },
   { id: 'r-28', year: '2026', category: '강의·교육',  title: "전자책 시리즈 2종 기획 — '공실은 자산이다' 외", desc: "'예약되는 공간'까지 — 340개+ 공간의 판단기준을 담은 전자책 시리즈 준비.", link: '/books' },
   { id: 'r-29', year: '2026', category: '파트너십',   title: 'AI 에이전트 13종 구축 — 콘텐츠 제작부터 상권 분석까지', desc: '콘텐츠 자산화, 문의 선별·답변 초안, CS 응대, 리뷰 모니터링, 공실 매물·상권 스크리닝, 레퍼런스 아카이빙, 운영 이상감지, 강연 설계, 주간 브리핑, 가맹점 지원, 관계·기회 관리까지 실무에 적용.', link: '' },
-  { id: 'r-30', year: '2026', category: '파트너십',   title: '마이웍스 — 혼자 경영하는 사람의 업무 운영 시스템', desc: '업무·프로젝트·할 일을 한곳에서 관리하고, 사람과 AI로 연결하는 업무 운영 시스템을 만들어 공개.', link: 'https://myworkspro.pages.dev/' },
+  { id: 'r-30', year: '2026', category: '파트너십',   title: '마이웍스 — 혼자 경영하는 사람의 업무 운영 시스템', desc: '업무·프로젝트·할 일을 한곳에서 관리하고, 사람과 AI로 연결하는 업무 운영 시스템을 만들어 공개.', link: 'https://myworks.ai.kr/' },
   { id: 'r-31', year: '2026', category: '언론·미디어', title: '쇼릴 2026 공개', desc: '340개+ 공간부터 쏘플파티룸, AI 에이전트, 마이웍스, 강의와 전자책까지 15초로 담은 모션 쇼릴.', link: '/media#showreel' },
   { id: 'r-33', year: '2026', category: '공간개발',   title: '메가스팟 — 건대입구 190평 대형 행사장 오픈', desc: '세미나·워크숍·네트워킹 파티·공연·팝업·촬영을 최대 200명까지 받는 대형 행사 공간과 공식 사이트 공개.', link: 'https://megaspot.kr' },
   { id: 'r-34', year: '2026', category: '브랜드',     title: '코어무드 — 공간 브랜딩·인테리어 스튜디오 사이트 공개', desc: '컨셉·무드 기획부터 브랜드 개발, 설계·시공, 콘텐츠·마케팅까지 잇는 상업공간 스튜디오.', link: 'https://coremood.kr' },

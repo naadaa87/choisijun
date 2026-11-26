@@ -30,7 +30,7 @@
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" media="print" onload="this.media='all'" />
   <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" /></noscript>
-  <link rel="stylesheet" href="/styles.css?v=71bdf4e1f6" />
+  <link rel="stylesheet" href="/styles.css?v=07da9441cd" />
 </head>
 <body data-page="admin">
   <a class="skip-link" href="#main">본문 바로가기</a>
@@ -52,6 +52,7 @@
         <a href="/references">레퍼런스</a>
         <a href="/media">미디어</a>
         <a href="/insights">인사이트</a>
+        <a href="/partnership" class="nav-partner">제휴·협업</a>
         <a class="nav-account" href="/login" data-account-link aria-label="로그인 · 회원가입"><svg class="na-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg><span class="na-text">로그인</span></a>
         <a href="/contact" class="nav-cta">문의하기</a>
       </nav>
@@ -106,6 +107,7 @@
             <button type="button" role="tab" class="adm-tab" data-tab="leads" aria-selected="false">전체 문의 <em class="adm-count" id="cntLeads"></em></button>
             <button type="button" role="tab" class="adm-tab" data-tab="kpi" aria-selected="false">방문 통계 <small>choisijun.com</small></button>
             <button type="button" role="tab" class="adm-tab" data-tab="inquiries" aria-selected="false">문의 <em class="adm-count" id="cntInq"></em></button>
+            <button type="button" role="tab" class="adm-tab" data-tab="partners" aria-selected="false">제휴·협업 <em class="adm-count" id="cntPtn"></em></button>
             <button type="button" role="tab" class="adm-tab" data-tab="members" aria-selected="false">회원 <em class="adm-count is-quiet" id="cntMem"></em></button>
             <button type="button" role="tab" class="adm-tab" data-tab="community" aria-selected="false">커뮤니티 <em class="adm-count" id="cntCom"></em></button>
             <button type="button" role="tab" class="adm-tab" data-tab="refs" aria-selected="false">레퍼런스 <em class="adm-count is-quiet" id="cntRef"></em></button>
@@ -351,6 +353,47 @@
               </div>
             </section>
 
+            <!-- 제휴·협업: 제안 파이프라인 · 다음 할 일 · 공개 제안 -->
+            <section class="adm-panel" data-panel="partners" role="tabpanel" hidden>
+              <ul class="adm-kpis pt-kpis" id="ptnKpis"><li class="acc-empty">불러오는 중…</li></ul>
+              <div class="pt-pipe" id="ptnPipe" role="group" aria-label="단계별 보기"></div>
+              <div class="adm-toolbar">
+                <div class="board-filters" id="ptnView" role="group" aria-label="보기">
+                  <button class="f-chip is-active" type="button" data-view="open">진행 중인 것</button>
+                  <button class="f-chip" type="button" data-view="due">할 일 순</button>
+                  <button class="f-chip" type="button" data-view="all">전체</button>
+                </div>
+                <div class="adm-search">
+                  <select id="ptnKind" aria-label="제휴 유형"><option value="">모든 유형</option></select>
+                  <input type="search" id="ptnSearch" placeholder="회사 · 이름 · 연락처 · 내용 · 메모 검색" aria-label="제안 검색" />
+                  <button type="button" class="btn btn-sm btn-line" id="ptnCsv">CSV 내려받기</button>
+                </div>
+              </div>
+              <div class="adm-split">
+                <ul class="adm-rows" id="ptnList"><li class="acc-empty">불러오는 중…</li></ul>
+                <article class="acc-card adm-detail" id="ptnDetail"><p class="acc-empty">왼쪽에서 제안을 고르면 내용과 진행 기록이 여기에 열립니다.</p></article>
+              </div>
+              <article class="acc-card pt-calls-admin">
+                <div class="acc-head"><h2>지금 찾고 있는 파트너 <small>제휴·협업 페이지에 공개됩니다</small></h2><button type="button" class="btn btn-sm btn-primary" id="ptnCallNew">새 제안 올리기</button></div>
+                <p class="acc-help">아무것도 올리지 않으면 페이지에는 기본 안내 세 가지가 보입니다. 하나라도 공개하면 올린 것만 보입니다. 마감일이 지나면 자동으로 내려갑니다.</p>
+                <form class="pt-call-form" id="ptnCallForm" hidden>
+                  <input type="hidden" id="pcId" value="" />
+                  <div class="pt-call-grid">
+                    <label>제목<input type="text" id="pcTitle" maxlength="80" required placeholder="예: 공실 건물 공동개발 파트너" /></label>
+                    <label>유형<select id="pcKind"></select></label>
+                    <label>찾는 대상<input type="text" id="pcWho" maxlength="120" placeholder="예: 건물주 · 자산운용사 · 중개법인" /></label>
+                    <label>마감일 <small>(비우면 상시)</small><input type="date" id="pcCloses" /></label>
+                    <label class="pt-full">설명<textarea id="pcSummary" rows="3" maxlength="600" placeholder="어떤 파트너를, 왜 찾는지 두세 문장으로"></textarea></label>
+                    <label class="pt-full">함께 드리는 것 <small>(선택)</small><input type="text" id="pcOffer" maxlength="400" placeholder="예: 공간 진단과 운영, 전국 쏘플파티룸 네트워크 연결" /></label>
+                    <label>순서 <small>(작을수록 앞)</small><input type="number" id="pcSort" value="0" step="1" /></label>
+                    <label class="pc-visible"><input type="checkbox" id="pcVisible" checked /> 페이지에 공개</label>
+                  </div>
+                  <div class="adm-btns"><button type="submit" class="btn btn-sm btn-primary">저장</button><button type="button" class="btn btn-sm btn-line" id="pcCancel">취소</button></div>
+                </form>
+                <ul class="acc-list" id="ptnCalls"><li class="acc-empty">불러오는 중…</li></ul>
+              </article>
+            </section>
+
             <!-- 회원 -->
             <section class="adm-panel" data-panel="members" role="tabpanel" hidden>
               <ul class="adm-kpis" id="memStats"></ul>
@@ -469,6 +512,7 @@
             <a href="/services">서비스 안내</a>
             <a href="/books">전자책 스토어</a>
             <a href="/contact">자가진단 & 문의</a>
+            <a href="/partnership">제휴 · 협업 제안</a>
             <a href="/community">커뮤니티</a>
           </div>
           <div>
@@ -499,8 +543,8 @@
   <a class="float-cta" id="floatCta" href="/contact">공실개발 상담하기</a>
   <button class="to-top" id="toTop" aria-label="맨 위로">↑</button>
 
-  <script src="/site-config.js?v=71bdf4e1f6" defer></script>
-  <script src="/script.js?v=71bdf4e1f6" defer></script>
-  <script src="/admin.js?v=71bdf4e1f6" defer></script>
+  <script src="/site-config.js?v=07da9441cd" defer></script>
+  <script src="/script.js?v=07da9441cd" defer></script>
+  <script src="/admin.js?v=07da9441cd" defer></script>
 </body>
 </html>
