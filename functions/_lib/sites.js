@@ -299,6 +299,7 @@ async function board(DB, env, request) {
     DB.prepare('SELECT substr(day, 1, 7) AS m, COUNT(*) AS pv, COUNT(DISTINCT vid) AS v FROM pv WHERE day >= ? AND day <= ? GROUP BY m').bind(dayA, dayB),          // 3
     DB.prepare(`SELECT substr(datetime(created_at, '+9 hours'), 1, 7) AS m, COUNT(*) AS n FROM (
         SELECT created_at FROM inquiries UNION ALL SELECT created_at FROM partnerships WHERE stage != '스팸·무관'
+        UNION ALL SELECT created_at FROM vacancies WHERE stage != '스팸·무관'
       ) WHERE created_at >= ? AND created_at < ? GROUP BY m`).bind(isoA, isoB), // 4 문의 + 제휴 제안
     DB.prepare("SELECT substr(datetime(created_at, '+9 hours'), 1, 7) AS m, COUNT(*) AS n FROM members WHERE created_at >= ? AND created_at < ? GROUP BY m").bind(isoA, isoB),   // 5
     DB.prepare("SELECT substr(day, 1, 7) AS m, kind, COUNT(*) AS n FROM ev WHERE day >= ? AND day <= ? AND kind IN ('tel', 'kakao', 'mail') GROUP BY m, kind").bind(dayA, dayB), // 6

@@ -1,0 +1,137 @@
+    <section class="page-hero mk-hero">
+      <div class="container">
+       <div class="mk-hero-grid">
+        <div>
+          <p class="eyebrow mono reveal">MEDIA KIT · 미디어 키트</p>
+          <h1 class="reveal">섭외와 보도에 필요한 자료를 <span class="accent">한곳에</span> 모았습니다</h1>
+          <p class="lede reveal">기사, 행사 안내문, 강연 포스터에 바로 쓸 수 있는 공식 프로필과 사진, 강연 주제를 정리했습니다. 필요한 것만 복사하거나 내려받으세요. 내용은 {{MK_UPDATED}} 기준입니다.</p>
+          <div class="hero-cta reveal">
+            <a class="btn btn-primary" href="{{MK_PDF}}" download>프로필 PDF 내려받기</a>
+            <a class="btn btn-ghost" href="#request">강연 · 인터뷰 요청하기</a>
+          </div>
+        </div>
+        <figure class="mk-card reveal">
+          <img src="assets/profile-640.jpg" width="640" height="640" alt="최시준 공식 프로필 사진" />
+          <figcaption>
+            <strong>{{MK_NAME}}</strong><span class="mono">{{MK_NAME_EN}}</span>
+            <span>{{MK_TITLE}}</span><span>{{MK_FIELD}}</span>
+          </figcaption>
+        </figure>
+       </div>
+      </div>
+    </section>
+
+    <nav class="mk-jump" aria-label="미디어 키트 목차">
+      <div class="container">
+        <a href="#profile">공식 프로필</a><a href="#naming">표기 안내</a><a href="#photos">사진</a><a href="#topics">강연 주제</a><a href="#record">강의 · 출연</a><a href="#company">회사 · 브랜드</a><a href="#request">요청하기</a>
+      </div>
+    </nav>
+
+    <!-- 공식 프로필 -->
+    <section class="section" id="profile">
+      <div class="container">
+        <header class="section-head reveal">
+          <p class="eyebrow mono">OFFICIAL PROFILE</p>
+          <h2>쓰실 곳에 맞는 <span class="accent">길이</span>를 고르세요</h2>
+          <p class="lede">고치지 않고 그대로 쓰셔도 됩니다. 글자 수는 공백을 포함한 수입니다.</p>
+        </header>
+        <div class="mk-profiles reveal">
+          <div class="mk-tabs" role="tablist" aria-label="소개 길이">{{MK_PROFILE_TABS}}</div>
+          {{MK_PROFILE_PANELS}}
+        </div>
+      </div>
+    </section>
+
+    <!-- 표기 안내 -->
+    <section class="section section-tint" id="naming">
+      <div class="container">
+        <header class="section-head reveal">
+          <p class="eyebrow mono">STYLE GUIDE</p>
+          <h2>이름과 직함은 <span class="accent">이렇게</span> 적어 주세요</h2>
+        </header>
+        <dl class="mk-naming reveal">{{MK_NAMING}}</dl>
+      </div>
+    </section>
+
+    <!-- 사진 -->
+    <section class="section" id="photos">
+      <div class="container">
+        <header class="section-head reveal">
+          <p class="eyebrow mono">PHOTOS</p>
+          <h2>공식 <span class="accent">사진</span></h2>
+          <p class="lede">기사와 행사 홍보에 쓰실 수 있습니다. 출처는 '최시준 제공'으로 적어 주세요. 더 큰 원본이나 다른 컷이 필요하면 요청해 주세요.</p>
+        </header>
+        <div class="mk-photos">{{MK_PHOTOS}}</div>
+      </div>
+    </section>
+
+    <!-- 강연 주제 -->
+    <section class="section section-tint" id="topics">
+      <div class="container">
+        <header class="section-head reveal">
+          <p class="eyebrow mono">TOPICS</p>
+          <h2>강연 · 인터뷰 <span class="accent">주제</span></h2>
+          <p class="lede">대상과 목적에 맞춰 내용을 다시 구성합니다. 아래에 없는 주제도 편하게 물어봐 주세요.</p>
+        </header>
+        <div class="mk-topics">{{MK_TOPICS}}</div>
+        <p class="mk-formats reveal"><span class="mono">FORMAT</span>{{MK_FORMATS}}</p>
+      </div>
+    </section>
+
+    <!-- 강의 · 출연 -->
+    <section class="section" id="record">
+      <div class="container">
+        <header class="section-head reveal">
+          <p class="eyebrow mono">RECORD</p>
+          <h2>강의와 <span class="accent">출연</span> 이력</h2>
+        </header>
+        <ul class="lecture-kpis mk-stats reveal" aria-label="강의 활동 지표">{{MK_STATS}}</ul>
+        <p class="stat-foot mono reveal" style="margin:-18px 0 30px;">* 자체 집계 기준</p>
+        <div class="mk-record reveal">
+          <div><p class="mono">기업 · 기관</p><p>{{MK_ORGS}}</p></div>
+          <div><p class="mono">대학</p><p>{{MK_SCHOOLS}}</p></div>
+          <div><p class="mono">방송 · 언론</p><p>{{MK_MEDIA}}</p></div>
+          <div><p class="mono">무대</p><p>TEDxCAU 연사</p></div>
+        </div>
+        <div class="mk-career reveal">
+          <div><p class="mono">현재</p><ul>{{MK_CAREER_NOW}}</ul></div>
+          <div><p class="mono">이전</p><ul>{{MK_CAREER_BEFORE}}</ul></div>
+        </div>
+        <p class="mk-more reveal"><a href="media.html">언론 보도 전체 보기 →</a><a href="about.html">걸어온 길 자세히 보기 →</a></p>
+      </div>
+    </section>
+
+    <!-- 회사 · 브랜드 -->
+    <section class="section section-tint" id="company">
+      <div class="container">
+        <header class="section-head reveal">
+          <p class="eyebrow mono">COMPANY</p>
+          <h2>회사와 <span class="accent">브랜드</span></h2>
+          <p class="lede">㈜블랭크는 비어 있는 공간을 수익공간으로 바꾸는 회사입니다. 공실개발, 공간 운영, 중개, 공간 브랜딩까지 아래 브랜드로 함께 합니다.</p>
+        </header>
+        <div class="mk-brands reveal">{{MK_BRANDS}}</div>
+      </div>
+    </section>
+
+    <!-- 요청하기 -->
+    <section class="section" id="request">
+      <div class="container">
+        <header class="section-head reveal">
+          <p class="eyebrow mono">REQUEST</p>
+          <h2>강연 · 인터뷰 <span class="accent">요청하기</span></h2>
+          <p class="lede">일정과 대상, 원하시는 주제를 보내 주시면 영업일 기준 1~2일 안에 회신드립니다.</p>
+        </header>
+        <div class="mk-request">
+          <a class="mk-req reveal" href="partnership.html?kind=강의 · 교육 · 행사 협업#ptForm">
+            <span class="mono">LECTURE</span><strong>강연 · 교육 섭외</strong><span>기업 · 대학 · 기관 강연, 워크숍, 창업 교육</span><em>요청서 쓰기 →</em></a>
+          <a class="mk-req reveal" href="partnership.html?kind=미디어 · 콘텐츠 협업#ptForm">
+            <span class="mono">MEDIA</span><strong>인터뷰 · 출연 · 기고</strong><span>방송, 기사 인터뷰, 칼럼, 공동 콘텐츠</span><em>요청서 쓰기 →</em></a>
+          <div class="mk-req mk-direct reveal">
+            <span class="mono">DIRECT</span><strong>바로 연락하기</strong>
+            <a href="mailto:{{MK_EMAIL}}">{{MK_EMAIL}}</a>
+            <a href="tel:{{MK_PHONE}}">{{MK_PHONE}}</a>
+            <a href="{{MK_KAKAO}}" target="_blank" rel="noopener">카카오톡 1:1 ↗</a>
+          </div>
+        </div>
+      </div>
+    </section>

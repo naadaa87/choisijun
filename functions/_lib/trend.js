@@ -71,7 +71,7 @@ export async function trend(DB, env, request) {
     DB.prepare(`SELECT ${K} AS k, COALESCE(SUM(CASE WHEN kind = 'book' THEN 1 ELSE 0 END), 0) AS book,
         COALESCE(SUM(CASE WHEN kind IN ('tel', 'kakao', 'mail') THEN 1 ELSE 0 END), 0) AS ct
       FROM ev WHERE day BETWEEN ? AND ? GROUP BY k`).bind(from, today),                                                               // 3
-    DB.prepare("SELECT created_at FROM inquiries WHERE created_at >= ?1 UNION ALL SELECT created_at FROM partnerships WHERE created_at >= ?1 AND stage != '스팸·무관'")
+    DB.prepare("SELECT created_at FROM inquiries WHERE created_at >= ?1 UNION ALL SELECT created_at FROM partnerships WHERE created_at >= ?1 AND stage != '스팸·무관' UNION ALL SELECT created_at FROM vacancies WHERE created_at >= ?1 AND stage != '스팸·무관'")
       .bind(new Date(startMs(from)).toISOString()),                                                                                    // 4 문의 + 제휴 제안
     DB.prepare('SELECT site, MIN(day) AS d FROM xpv GROUP BY site'),                                                                    // 5
     DB.prepare('SELECT MIN(day) AS d FROM pv'),                                                                                         // 6

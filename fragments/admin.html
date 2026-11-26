@@ -41,6 +41,7 @@
             <button type="button" role="tab" class="adm-tab" data-tab="leads" aria-selected="false">전체 문의 <em class="adm-count" id="cntLeads"></em></button>
             <button type="button" role="tab" class="adm-tab" data-tab="kpi" aria-selected="false">방문 통계 <small>choisijun.com</small></button>
             <button type="button" role="tab" class="adm-tab" data-tab="inquiries" aria-selected="false">문의 <em class="adm-count" id="cntInq"></em></button>
+            <button type="button" role="tab" class="adm-tab" data-tab="vacancies" aria-selected="false">공실 등록 <em class="adm-count" id="cntVac"></em></button>
             <button type="button" role="tab" class="adm-tab" data-tab="partners" aria-selected="false">제휴·협업 <em class="adm-count" id="cntPtn"></em></button>
             <button type="button" role="tab" class="adm-tab" data-tab="members" aria-selected="false">회원 <em class="adm-count is-quiet" id="cntMem"></em></button>
             <button type="button" role="tab" class="adm-tab" data-tab="community" aria-selected="false">커뮤니티 <em class="adm-count" id="cntCom"></em></button>
@@ -284,6 +285,30 @@
               <div class="adm-split">
                 <ul class="adm-rows" id="inqList"></ul>
                 <article class="acc-card adm-detail" id="inqDetail"><p class="acc-empty">왼쪽에서 문의를 고르면 내용과 답장 도구가 여기에 열립니다.</p></article>
+              </div>
+            </section>
+
+            <!-- 공실 등록: 건물주·중개사가 남긴 공실 파이프라인 -->
+            <section class="adm-panel" data-panel="vacancies" role="tabpanel" hidden>
+              <ul class="adm-kpis pt-kpis" id="vacKpis"><li class="acc-empty">불러오는 중…</li></ul>
+              <div class="pt-pipe vc-pipe" id="vacPipe" role="group" aria-label="단계별 보기"></div>
+              <div class="vc-dist" id="vacDist"></div>
+              <div class="adm-toolbar">
+                <div class="board-filters" id="vacView" role="group" aria-label="보기">
+                  <button class="f-chip is-active" type="button" data-view="open">진행 중인 것</button>
+                  <button class="f-chip" type="button" data-view="due">할 일 순</button>
+                  <button class="f-chip" type="button" data-view="all">전체</button>
+                </div>
+                <div class="adm-search">
+                  <select id="vacSido" aria-label="지역"><option value="">모든 지역</option></select>
+                  <select id="vacFloor" aria-label="층"><option value="">모든 층</option></select>
+                  <input type="search" id="vacSearch" placeholder="지역 · 이름 · 연락처 · 메모 검색" aria-label="공실 검색" />
+                  <button type="button" class="btn btn-sm btn-line" id="vacCsv">CSV 내려받기</button>
+                </div>
+              </div>
+              <div class="adm-split">
+                <ul class="adm-rows" id="vacList"><li class="acc-empty">불러오는 중…</li></ul>
+                <article class="acc-card adm-detail" id="vacDetail"><p class="acc-empty">왼쪽에서 공실을 고르면 공간 정보와 진행 기록이 여기에 열립니다.</p></article>
               </div>
             </section>
 

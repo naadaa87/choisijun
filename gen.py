@@ -179,6 +179,14 @@ PAGES = [
          title="미디어 — 쇼릴·언론 보도·방송 출연 | 최시준",
          desc="15초 쇼릴 2026, KBS·JTBC·CCTV 등 언론 보도와 방송 출연, 공식 채널, 그리고 공간사업 판단기준을 담은 최시준의 최근 글.",
          keywords=f"{BASE_KEYWORDS}, 최시준 인터뷰, 최시준 방송, 쇼릴, 공간사업 칼럼"),
+    dict(key="vacancy", file="vacancy.html", nav=None, crumb="공실 등록", schema="ContactPage",
+         title="공실 등록 — 비어 있는 상가·건물, 수익공간으로 바꿀 수 있을지 검토해 드립니다 | 최시준",
+         desc="지하·고층·장기 공실, 건물 한 채까지. 위치와 층, 면적, 비어 있던 기간만 남겨 주시면 어떤 용도로 수익을 낼 수 있을지 검토해 연락드립니다. 건물주·중개사·자산 담당자 누구나 3분이면 등록할 수 있습니다.",
+         keywords=f"{BASE_KEYWORDS}, 공실 등록, 공실 상담, 상가 공실, 지하 공실, 고층 공실, 장기 공실, 공실 활용, 건물주 공실, 마스터리스, 위탁운영, 공실개발"),
+    dict(key="mediakit", file="mediakit.html", nav=None, crumb="미디어 키트", schema="ProfilePage",
+         title="미디어 키트 — 최시준 공식 프로필·사진·강연 주제 | 최시준",
+         desc="기사와 행사 안내, 강연 포스터에 바로 쓸 수 있는 최시준(㈜블랭크 대표, 공간수익화·공실개발 전문가)의 공식 프로필, 사진, 강연·인터뷰 주제, 강의·출연 이력을 모았습니다.",
+         keywords=f"{BASE_KEYWORDS}, 최시준 프로필, 최시준 강연, 공실개발 강연, 공간 창업 강의, 무인공간 강의, 연사 섭외, 인터뷰 요청, 미디어 키트"),
     dict(key="partnership", file="partnership.html", nav="제휴·협업", crumb="제휴·협업", schema="ContactPage",
          title="제휴·협업 제안 — 공실 공동개발·공간 입점·서비스 제휴·강의 | 최시준",
          desc="공실 건물 공동개발, 공간 입점·대관 제휴, 서비스·기술 제휴, 강의·행사, 미디어 협업, 투자·공동사업까지. 최시준과 함께 공간과 사업을 키울 파트너의 제안을 받습니다.",
@@ -679,6 +687,7 @@ def footer():
             <a href="portfolio.html">공간 포트폴리오</a>
             <a href="references.html">레퍼런스</a>
             <a href="media.html">미디어 & 쇼릴</a>
+            <a href="mediakit.html">미디어 키트</a>
           </div>
           <div>
             <p class="mono">WORK WITH ME</p>
@@ -686,6 +695,7 @@ def footer():
             <a href="services.html">서비스 안내</a>
             <a href="books.html">전자책 스토어</a>
             <a href="contact.html">자가진단 & 문의</a>
+            <a href="vacancy.html">공실 등록</a>
             <a href="partnership.html">제휴 · 협업 제안</a>
             <a href="community.html">커뮤니티</a>
           </div>
@@ -714,7 +724,7 @@ def footer():
     </div>
   </footer>
 
-  <a class="float-cta" id="floatCta" href="contact.html">공실개발 상담하기</a>
+  <a class="float-cta" id="floatCta" href="vacancy.html">공실개발 상담하기</a>
   <button class="to-top" id="toTop" aria-label="맨 위로">↑</button>
 
   <script src="site-config.js" defer></script>
@@ -1046,9 +1056,9 @@ def related_insights(a, n=3):
 
 ARTICLE_CTA = {
     '공실개발': ('내 공간, 수익화 가능할까?', '층과 면적, 지금 상태만 알려주시면 어떤 공간이 맞을지 함께 살펴보겠습니다.',
-             'contact.html?inquiry=vacancy', '공실개발 상담하기', 'cases.html', '유형별 사례 보기'),
+             'vacancy.html', '공실 등록하기', 'cases.html', '유형별 사례 보기'),
     '건물 기획': ('비어 있는 층이 있다면', '건물 한 채를 층마다 다른 수요로 채우는 기획을 함께 합니다.',
-              'contact.html?inquiry=vacancy', '건물 단위 개발 문의', 'portfolio.html', '공간 포트폴리오 보기'),
+              'vacancy.html', '건물 공실 등록하기', 'portfolio.html', '공간 포트폴리오 보기'),
     '창업': ('계약 전에 한 번 더', '이 공간, 해도 될까요? 입지·면적·고정비·수요를 기준으로 진단합니다.',
            'contact.html?inquiry=diagnosis', '공간수익화 진단 문의', 'books.html', '전자책으로 먼저 읽기'),
     '무인 운영': ('운영은 설계로 풉니다', '예약·출입·정산·청소를 프로세스로 옮기는 일을 함께 합니다.',
@@ -1058,7 +1068,7 @@ ARTICLE_CTA = {
     '사업 이야기': ('해 본 일만 말씀드립니다', '10년 동안 직접 만들고 운영하며 남은 기준으로 공간과 사업을 함께 봅니다.',
                 'contact.html', '문의하기', 'about.html', '걸어온 길 보기'),
     '강연 · 교육': ('강의 · 특강을 찾고 계신다면', '공실개발, 공간 창업, 무인 운영, 실행 — 대상과 시간에 맞춰 강의를 구성합니다.',
-                'contact.html?inquiry=lecture', '강의 문의하기', 'media.html', '강연 · 미디어 기록 보기'),
+                'partnership.html?kind=강의 · 교육 · 행사 협업#ptForm', '강의 섭외하기', 'mediakit.html', '미디어 키트 보기'),
 }
 ARTICLE_CTA_DEFAULT = ('함께 이야기해 보시죠', '공실, 창업, 강의 — 어떤 주제든 문의를 남겨주세요.',
                        'contact.html', '문의하기', 'about.html', '최시준 소개 보기')
@@ -1455,6 +1465,91 @@ TOKENS['NETWORK_GROUPS'] = network_groups_html()
 TOKENS['NETWORK_MORE'] = network_more_html()
 PARTNER_KINDS = ['공실 공동개발 · 건물 협업', '공간 입점 · 대관 제휴', '서비스 · 기술 제휴', '강의 · 교육 · 행사 협업',
                  '미디어 · 콘텐츠 협업', '기관 · 지자체 협업', '투자 · 공동사업', '기타 제휴']   # functions/_lib/core.js 와 같게
+# ---------- 공실 등록 (functions/_lib/core.js 의 VAC 와 같게) ----------
+VAC = dict(
+    roles=['건물주', '중개사', '자산운용 · 관리', '임차인 (양도 · 업종 전환)', '기타'],
+    sido=['서울', '경기', '인천', '부산', '대구', '광주', '대전', '울산', '세종', '강원', '충북', '충남', '전북', '전남', '경북', '경남', '제주'],
+    floors=['지하', '1층', '2층', '3~4층', '5층 이상', '건물 전체'],
+    vacantFor=['곧 비어요 (아직 운영 중)', '3개월 미만', '3~6개월', '6개월~1년', '1년 이상'],
+    states=['빈 상태 (원상복구됨)', '이전 시설이 남아 있음', '운영 중 (업종 전환 검토)', '신축 · 리모델링 중'],
+    features=['엘리베이터', '주차', '내부 화장실', '층고 높음', '창 · 채광', '24시간 출입', '방음 가능', '대로변'],
+    wants=['활용 방안 진단', '임차인 찾기', '운영 맡기기 (위탁운영)', '통째로 임차 (마스터리스)', '수익 나누기 (공동사업)', '매각 · 중개 상담', '아직 모르겠어요'],
+    times=['언제든', '평일 오전', '평일 오후', '평일 저녁', '주말'])
+
+
+def _chips(name, values, kind='checkbox', checked=None):
+    return ''.join('<label class="pt-chip"><input type="%s" name="%s" value="%s"%s /><span>%s</span></label>'
+                   % (kind, name, esc(v), ' checked' if v == checked else '', esc(v)) for v in values)
+
+
+_opts = lambda values: ''.join('<option value="%s">%s</option>' % (esc(v), esc(v)) for v in values)
+TOKENS['VAC_ROLE_CHIPS'] = _chips('role', VAC['roles'], 'radio', '건물주')
+TOKENS['VAC_SIDO_OPTIONS'] = _opts(VAC['sido'])
+TOKENS['VAC_FLOOR_CHIPS'] = _chips('floors', VAC['floors'])
+TOKENS['VAC_VACANT_OPTIONS'] = _opts(VAC['vacantFor'])
+TOKENS['VAC_STATE_OPTIONS'] = _opts(VAC['states'])
+TOKENS['VAC_FEATURE_CHIPS'] = _chips('features', VAC['features'])
+TOKENS['VAC_WANT_CHIPS'] = _chips('wants', VAC['wants'])
+TOKENS['VAC_TIME_OPTIONS'] = _opts(VAC['times'])
+
+# ---------- 미디어 키트 (data/mediakit.json) ----------
+with io.open(os.path.join("data", "mediakit.json"), encoding="utf-8") as _f:
+    MK = json.load(_f)
+
+
+def _mk_profiles():
+    tabs, panels = [], []
+    for i, p in enumerate(MK['profiles']):
+        on = i == 0
+        k = p['key']
+        tabs.append('<button type="button" role="tab" class="mk-tab%s" id="mkt-%s" aria-controls="mkp-%s" aria-selected="%s">%s</button>'
+                    % (' is-active' if on else '', k, k, 'true' if on else 'false', esc(p['label'])))
+        body = ''.join('<p>%s</p>' % esc(x) for x in p['text'].split('\n\n'))
+        n = len(p['text'].replace('\n\n', ' '))
+        panels.append('<div class="mk-panel" role="tabpanel" id="mkp-%s" aria-labelledby="mkt-%s"%s>'
+                      '<p class="mk-use mono">%s · <span>%d자</span></p><div class="mk-text" data-mk-text>%s</div>'
+                      '<button type="button" class="btn btn-sm btn-line mk-copy" data-mk-copy>복사하기</button></div>'
+                      % (k, k, '' if on else ' hidden', esc(p['use']), n, body))
+    return ''.join(tabs), ''.join(panels)
+
+
+def _mk_photo(p):
+    f = esc(p['file'])
+    return ('<figure class="mk-photo reveal"><a href="%s" target="_blank" rel="noopener"><img src="%s" alt="%s" loading="lazy" decoding="async" /></a>'
+            '<figcaption><strong>%s</strong><span class="mono">%s px · JPG</span><a class="btn btn-sm btn-line" href="%s" download>내려받기</a></figcaption></figure>'
+            % (f, f, esc(p['alt']), esc(p['label']), esc(p['size']), f))
+
+
+def _mk_topic(i, t):
+    return ('<article class="mk-topic reveal"><span class="mk-topic-no mono">%02d</span><h3>%s</h3><p class="mk-topic-sub">%s</p>'
+            '<p>%s</p><p class="mk-topic-who"><span class="mono">대상</span>%s</p></article>'
+            % (i, esc(t['title']), esc(t['sub']), esc(t['text']), esc(t['who'])))
+
+
+def _mk_brand(n):
+    host = n['url'].split('//')[1].rstrip('/')
+    return ('<a class="mk-brand" href="%s" target="_blank" rel="noopener"><strong>%s</strong><span>%s</span><em class="mono">%s ↗</em></a>'
+            % (esc(n['url']), esc(n['name']), esc(n.get('kind', '')), esc(host)))
+
+
+TOKENS['MK_PROFILE_TABS'], TOKENS['MK_PROFILE_PANELS'] = _mk_profiles()
+TOKENS['MK_UPDATED'] = esc(MK['updated'])
+for _k in ('name', 'name_en', 'title', 'field', 'pdf'):
+    TOKENS['MK_' + _k.upper()] = esc(MK[_k])
+TOKENS['MK_EMAIL'], TOKENS['MK_PHONE'], TOKENS['MK_KAKAO'] = (esc(MK['contact'][k]) for k in ('email', 'phone', 'kakao'))
+TOKENS['MK_NAMING'] = ''.join('<div><dt>%s</dt><dd>%s</dd></div>' % (esc(k), esc(v)) for k, v in MK['naming'])
+TOKENS['MK_PHOTOS'] = ''.join(_mk_photo(p) for p in MK['photos'])
+TOKENS['MK_TOPICS'] = ''.join(_mk_topic(i, t) for i, t in enumerate(MK['topics'], 1))
+TOKENS['MK_FORMATS'] = ''.join('<span>%s</span>' % esc(x) for x in MK['formats'])
+TOKENS['MK_STATS'] = ''.join('<li><strong>%s<em>%s</em></strong><span>%s</span></li>' % (esc(n[:-1]), esc(n[-1]), esc(l)) for n, l in MK['stats'])
+TOKENS['MK_ORGS'] = esc(' · '.join(MK['orgs']))
+TOKENS['MK_SCHOOLS'] = esc(' · '.join(MK['schools']))
+TOKENS['MK_MEDIA'] = esc(' · '.join(MK['media']))
+TOKENS['MK_CAREER_NOW'] = ''.join('<li>%s</li>' % esc(x) for x in MK['career_now'])
+TOKENS['MK_CAREER_BEFORE'] = ''.join('<li>%s</li>' % esc(x) for x in MK['career_before'])
+_by_name = {n['name']: n for n in NETWORK}
+TOKENS['MK_BRANDS'] = ''.join(_mk_brand(_by_name[b]) for b in MK['brands'] if b in _by_name)
+
 TOKENS['PARTNER_KIND_OPTIONS'] = ''.join(f'<option value="{esc(k)}">{esc(k)}</option>' for k in PARTNER_KINDS)
 TOKENS['PARTNER_BRAND_CHIPS'] = ''.join(
     f'<label class="pt-chip"><input type="checkbox" name="brands" value="{esc(v)}" /><span>{esc(v)}</span></label>'
@@ -1477,7 +1572,7 @@ def build_llms():
              "> 공실개발·공간수익화 전문가. 10년+ 340개+ 공간을 직접 기획·오픈·운영. ㈜블랭크 대표, 쏘플파티룸(전국 120여 개 무인 파티룸) 대표. "
              "건물주·중개사의 공실 문제를 구조로 풀고, 창업자에게 실패확률을 줄이는 판단기준을 전한다. 기업·대학 강의, 전자책.", "",
              "## 핵심 페이지"]
-    for k in ['home', 'about', 'services', 'cases', 'portfolio', 'insights', 'faq', 'glossary', 'brands', 'network', 'socialfactory', 'books', 'contact']:
+    for k in ['home', 'about', 'services', 'cases', 'portfolio', 'insights', 'faq', 'glossary', 'brands', 'network', 'socialfactory', 'books', 'vacancy', 'partnership', 'mediakit', 'contact']:
         pg = PAGE_BY_KEY.get(k)
         if pg:
             lines.append(f"- [{pg['crumb'] or '홈'}]({page_url(pg['file'])}): {pg['desc']}")
@@ -1496,7 +1591,7 @@ def build_llms():
     for n in NETWORK:
         if n['tier'] == 'more':
             lines.append(f"- [{n['name']}]({n['url']}): {n['kind']} — {n['line']}")
-    lines += ["", "## 연락", f"- 문의: {DOMAIN}/contact", "- Threads: https://www.threads.com/@sijun.choi", "- 쏘플파티룸: https://ssople.com", ""]
+    lines += ["", "## 연락", f"- 문의: {DOMAIN}/contact", f"- 공실 등록: {DOMAIN}/vacancy", f"- 제휴·협업 제안: {DOMAIN}/partnership", f"- 미디어 키트(공식 프로필·사진): {DOMAIN}/mediakit", "- Threads: https://www.threads.com/@sijun.choi", "- 쏘플파티룸: https://ssople.com", ""]
     with io.open('llms.txt', 'w', encoding='utf-8') as f:
         f.write('\n'.join(lines))
     print('built llms.txt')
@@ -1595,7 +1690,7 @@ def region_body(page):
         <h2 class="reveal" style="font-size:clamp(1.5rem,3vw,2.1rem);font-weight:800;letter-spacing:-0.03em;margin-bottom:14px;">{esc(r)}에 <span class="accent">비어 있는 공간</span>이 있다면</h2>
         <p class="lede reveal" style="max-width:620px;margin:0 auto 28px;">층과 면적, 지금 상태만 알려주시면 어떤 공간이 맞을지 함께 살펴보겠습니다.</p>
         <div class="hero-cta reveal" style="justify-content:center;">
-          <a class="btn btn-primary" href="contact.html?inquiry=vacancy">공실개발 상담하기</a>
+          <a class="btn btn-primary" href="vacancy.html?sido={esc(r)}">공실 등록하기</a>
           <a class="btn btn-ghost" href="cases.html">유형별 사례 보기</a>
         </div>
       </div>

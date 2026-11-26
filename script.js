@@ -662,6 +662,7 @@ async function refreshUnread(force) {
   const progressBar = $('#progressBar');
   const floatCta = $('#floatCta');
   const toTop = $('#toTop');
+  const ownForm = $('#vcForm, #ptForm, #contactForm');   // 양식이 있는 페이지에서는 떠 있는 상담 버튼을 띄우지 않는다
 
   function onScroll() {
     const y = window.scrollY;
@@ -671,7 +672,7 @@ async function refreshUnread(force) {
       progressBar.style.width = max > 0 ? `${(y / max) * 100}%` : '0%';
     }
     const show = y > 600;
-    if (floatCta) floatCta.classList.toggle('is-show', show);
+    if (floatCta) floatCta.classList.toggle('is-show', show && !ownForm);
     if (toTop) toTop.classList.toggle('is-show', show);
   }
   window.addEventListener('scroll', onScroll, { passive: true });
@@ -907,6 +908,196 @@ const INQUIRY_MAP = {
   book: '전자책 구매/단체구매 문의',
   space: '공간 이용·대관 문의'
 };
+
+/* ---------------------------------------------------------
+   공실 등록 (/vacancy) — 3단계 양식
+   --------------------------------------------------------- */
+(function vacancyModule() {
+  const form = $('#vcForm');
+  if (!form) return;
+  const steps = $$('.vc-step', form);
+  const dots = $$('[data-step-dot]', form);
+  const statusEl = $('#vcStatus');
+  const done = $('#vcDone');
+  const PY = 3.305785;
+  addHoneypot(form);
+  let captcha = { token: () => '', reset: () => {} };
+  cfHealth().then((h) => { if (h.ok) mountTurnstile(form).then((c) => { captcha = c; }); });
+
+  const show = (msg, kind) => {
+    statusEl.innerHTML = msg;
+    statusEl.className = 'pt-status is-' + kind;
+    statusEl.hidden = !msg;
+  };
+  const val = (id) => (($('#' + id) || {}).value || '').trim();
+  const checked = (name) => $$(`input[name="${name}"]:checked`, form).map((x) => x.value);
+  const unit = () => (checked('area_unit')[0] || '평');
+
+  /* ?sido=서울 로 들어오면 미리 골라 둔다 */
+  const params = new URLSearchParams(location.search);
+  const sidoSel = $('#vcSido');
+  if (params.get('sido') && sidoSel && [...sidoSel.options].some((o) => o.value === params.get('sido'))) sidoSel.value = params.get('sido');
+
+  /* 면적 단위 환산 안내 */
+  const areaHint = $('#vcAreaHint');
+  const paintArea = () => {
+    const n = Number(val('vcArea').replace(/[^\d.]/g, ''));
+    if (!areaHint) return;
+    if (!n) { areaHint.textContent = ''; return; }
+    areaHint.textContent = unit() === '㎡' ? `약 ${Math.round(n / PY * 10) / 10}평` : `약 ${Math.round(n * PY)}㎡`;
+  };
+  form.addEventListener('input', (e) => { if (e.target.id === 'vcArea') paintArea(); });
+  form.addEventListener('change', (e) => { if (e.target.name === 'area_unit') paintArea(); });
+
+  const check = (n) => {
+    if (n >= 1) {
+      if (!val('vcSido')) return ['공간이 있는 시·도를 골라 주세요.', '#vcSido'];
+      if (!val('vcSigungu')) return ['시·군·구를 적어 주세요.', '#vcSigungu'];
+      if (!checked('floors').length) return ['몇 층인지 하나 이상 골라 주세요.', 'input[name="floors"]'];
+    }
+    if (n >= 2 && !checked('wants').length) return ['원하시는 방향을 하나 이상 골라 주세요.', 'input[name="wants"]'];
+    if (n >= 3) {
+      if (!val('vcName')) return ['성함을 적어 주세요.', '#vcName'];
+      if (!val('vcPhone') && !val('vcEmail')) return ['연락받으실 휴대전화나 이메일 가운데 하나는 꼭 적어 주세요.', '#vcPhone'];
+      if (val('vcEmail') && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val('vcEmail'))) return ['이메일 주소를 다시 확인해 주세요.', '#vcEmail'];
+      if (!$('#vcAgree').checked) return ['개인정보 수집·이용에 동의해 주셔야 등록할 수 있습니다.', '#vcAgree'];
+    }
+    return null;
+  };
+  const stepOf = (sel) => { const el = $(sel, form); const st = el && el.closest('.vc-step'); return st ? Number(st.dataset.step) : 1; };
+  const go = (n, focus = true) => {
+    steps.forEach((st) => { st.hidden = Number(st.dataset.step) !== n; });
+    dots.forEach((d) => {
+      const k = Number(d.dataset.stepDot);
+      d.classList.toggle('is-on', k === n);
+      d.classList.toggle('is-done', k < n);
+    });
+    if (n === 3) paintSummary();
+    const top = form.getBoundingClientRect().top + window.scrollY - 100;
+    if (focus && window.scrollY > top) window.scrollTo({ top, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+    if (focus) { const first = $(`.vc-step[data-step="${n}"] input:not([type=hidden]), .vc-step[data-step="${n}"] select`, form); if (first) first.focus({ preventScroll: true }); }
+  };
+  const fail = ([msg, sel]) => {
+    show(msg, 'err');
+    const n = stepOf(sel);
+    if (steps.find((st) => !st.hidden) !== steps[n - 1]) go(n, false);
+    const el = $(sel, form);
+    if (el) el.focus();
+  };
+  $$('[data-step-go]', form).forEach((b) => b.addEventListener('click', () => {
+    const to = Number(b.dataset.stepGo);
+    const cur = Number(b.closest('.vc-step').dataset.step);
+    if (to > cur) { const bad = check(cur); if (bad) return fail(bad); }
+    show('', 'wait');
+    go(to);
+  }));
+
+  function paintSummary() {
+    const box = $('#vcSummary');
+    if (!box) return;
+    const n = val('vcArea');
+    const rows = [
+      ['위치', [val('vcSido'), val('vcSigungu'), val('vcDong')].filter(Boolean).join(' ')],
+      ['층', checked('floors').join(', ') + (val('vcFloorNote') ? ` (${val('vcFloorNote')})` : '')],
+      ['면적', n ? n + unit() : ''],
+      ['비어 있던 기간', val('vcVacant')],
+      ['원하는 방향', checked('wants').join(', ')]
+    ].filter(([, v]) => v);
+    box.innerHTML = `<p class="mono">등록할 내용</p><dl>${rows.map(([k, v]) => `<div><dt>${escapeHtml(k)}</dt><dd>${escapeHtml(v)}</dd></div>`).join('')}</dl>`;
+  }
+
+  const REGION = { 서울: 'seoul', 경기: 'gyeonggi', 인천: 'incheon', 대전: 'chungcheong', 세종: 'chungcheong', 충북: 'chungcheong', 충남: 'chungcheong',
+    부산: 'gyeongsang', 대구: 'gyeongsang', 울산: 'gyeongsang', 경북: 'gyeongsang', 경남: 'gyeongsang', 광주: 'jeolla', 전북: 'jeolla', 전남: 'jeolla' };
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const bad = check(3);
+    if (bad) return fail(bad);
+    const body = {
+      role: checked('role')[0] || '기타', sido: val('vcSido'), sigungu: val('vcSigungu'), dong: val('vcDong'),
+      floors: checked('floors'), floor_note: val('vcFloorNote'), area: val('vcArea'), area_unit: unit(),
+      vacant_for: val('vcVacant'), state: val('vcState'), deposit: val('vcDeposit'), rent: val('vcRent'), mgmt: val('vcMgmt'),
+      features: checked('features'), wants: checked('wants'), link: val('vcLink'), note: val('vcNote'),
+      name: val('vcName'), org: val('vcOrg'), phone: val('vcPhone'), email: val('vcEmail'), contact_time: val('vcTime'),
+      page: location.pathname + location.search, agree: true, hp: honeypotValue(form), t: PAGE_LOADED_AT, turnstile: captcha.token()
+    };
+    const btn = form.querySelector('button[type="submit"]');
+    const label = btn.textContent;
+    btn.disabled = true; btn.textContent = '등록하는 중…';
+    show('공실 정보를 보내고 있습니다…', 'wait');
+    const r = await cfPost('vacancy', body);
+    captcha.reset();
+    btn.disabled = false; btn.textContent = label;
+    if (!r.ok) {
+      const text = `위치: ${body.sido} ${body.sigungu} ${body.dong}\n층: ${body.floors.join(', ')}\n면적: ${body.area}${body.area_unit}\n원하는 방향: ${body.wants.join(', ')}\n${body.note}\n\n${body.name} ${body.phone} ${body.email}`;
+      const mail = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(`[공실 등록] ${body.sido} ${body.sigungu}`)}&body=${encodeURIComponent(text)}`;
+      show(`${escapeHtml(r.error || '등록하지 못했습니다.')} 잠시 뒤 다시 시도하시거나 <a href="${mail}">이메일로 보내 주세요</a>.`, 'err');
+      return;
+    }
+    Track.event('conv', '공실 등록 · ' + body.sido);
+    const where = [body.sido, body.sigungu].join(' ');
+    $('#vcDoneText').textContent = `${body.name}님, ${where} 공실 정보를 받았습니다${r.id ? ` (등록 번호 ${r.id})` : ''}. 영업일 기준 1~2일 안에 남겨 주신 연락처로 검토 의견과 함께 연락드립니다.`;
+    const slug = REGION[body.sido];
+    $('#vcDoneLinks').innerHTML = [
+      slug ? `<a href="portfolio-${slug}.html">${escapeHtml(body.sido)} 지역에서 운영한 공간 보기 →</a>` : '<a href="portfolio.html">공간 포트폴리오 보기 →</a>',
+      '<a href="insights/long-term-vacancy-five-checks.html">장기 공실, 먼저 볼 다섯 가지 →</a>',
+      '<a href="insights/landlord-four-structures.html">건물주와 일하는 네 가지 구조 →</a>'
+    ].join('');
+    form.hidden = true;
+    done.hidden = false;
+    done.classList.add('is-in');
+    done.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'center' });
+    done.focus({ preventScroll: true });
+  });
+  $('#vcAgain').addEventListener('click', () => {
+    form.reset(); paintArea(); show('', 'wait');
+    done.hidden = true; form.hidden = false; go(1);
+  });
+})();
+
+/* ---------------------------------------------------------
+   미디어 키트 (/mediakit) — 소개 길이 탭 · 복사
+   --------------------------------------------------------- */
+(function mediakitModule() {
+  const box = $('.mk-profiles');
+  if (!box) return;
+  const tabs = $$('.mk-tab', box);
+  const select = (tab) => {
+    tabs.forEach((t) => {
+      const on = t === tab;
+      t.classList.toggle('is-active', on);
+      t.setAttribute('aria-selected', String(on));
+      const panel = document.getElementById(t.getAttribute('aria-controls'));
+      if (panel) panel.hidden = !on;
+    });
+  };
+  tabs.forEach((t, i) => {
+    t.addEventListener('click', () => select(t));
+    t.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      const next = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+      select(next); next.focus();
+    });
+  });
+  $$('[data-mk-copy]', box).forEach((btn) => btn.addEventListener('click', async () => {
+    const panel = btn.closest('.mk-panel');
+    const text = $$('.mk-text p', panel).map((p) => p.textContent.trim()).join('\n\n');
+    let ok = false;
+    try { await navigator.clipboard.writeText(text); ok = true; } catch (_) {
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try { ok = document.execCommand('copy'); } catch (__) { ok = false; }
+      ta.remove();
+    }
+    const label = btn.textContent;
+    btn.textContent = ok ? '복사했습니다' : '길게 눌러 복사해 주세요';
+    btn.classList.toggle('is-done', ok);
+    setTimeout(() => { btn.textContent = label; btn.classList.remove('is-done'); }, 1800);
+    const tab = document.getElementById(panel.getAttribute('aria-labelledby'));
+    if (ok) Track.event('cta', '미디어 키트 복사 · ' + (tab ? tab.textContent : ''));
+  }));
+})();
 
 /* ---------------------------------------------------------
    제휴·협업 제안서 (/partnership)

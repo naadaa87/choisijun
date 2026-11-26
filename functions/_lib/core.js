@@ -17,6 +17,22 @@ export const PARTNER_KINDS = [
 ];
 export const PARTNER_STAGES = ['접수', '검토 중', '미팅', '조건 협의', '진행 확정', '보류', '종료', '스팸·무관'];
 export const PARTNER_OPEN = ['접수', '검토 중', '미팅', '조건 협의'];
+/* 공실 등록 — 공개 양식과 관리자가 같이 쓰는 선택지 */
+export const VAC = {
+  roles: ['건물주', '중개사', '자산운용 · 관리', '임차인 (양도 · 업종 전환)', '기타'],
+  sido: ['서울', '경기', '인천', '부산', '대구', '광주', '대전', '울산', '세종', '강원', '충북', '충남', '전북', '전남', '경북', '경남', '제주'],
+  floors: ['지하', '1층', '2층', '3~4층', '5층 이상', '건물 전체'],
+  vacantFor: ['곧 비어요 (아직 운영 중)', '3개월 미만', '3~6개월', '6개월~1년', '1년 이상'],
+  states: ['빈 상태 (원상복구됨)', '이전 시설이 남아 있음', '운영 중 (업종 전환 검토)', '신축 · 리모델링 중'],
+  features: ['엘리베이터', '주차', '내부 화장실', '층고 높음', '창 · 채광', '24시간 출입', '방음 가능', '대로변'],
+  wants: ['활용 방안 진단', '임차인 찾기', '운영 맡기기 (위탁운영)', '통째로 임차 (마스터리스)', '수익 나누기 (공동사업)', '매각 · 중개 상담', '아직 모르겠어요'],
+  times: ['언제든', '평일 오전', '평일 오후', '평일 저녁', '주말'],
+  stages: ['접수', '검토 중', '현장 확인', '제안', '계약 협의', '진행 확정', '보류', '종료', '스팸·무관'],
+  open: ['접수', '검토 중', '현장 확인', '제안', '계약 협의'],
+  fits: ['높음', '보통', '낮음', '미정'],
+  assigns: ['공백 공간백서', 'TGRZ SPACE', '오르비스중개법인', '쏘플파티룸', '코어무드', '직접 컨설팅'],
+  structures: ['컨설팅', '위탁운영', '마스터리스', '수익쉐어 · 공동사업', '임차인 연결 · 중개', '매각 중개']
+};
 export const POST_CATEGORIES = ['제휴·협업', '질문', '정보공유', '후기·근황'];
 export const REF_CATEGORIES = ['공간개발', '브랜드', '강의·교육', '파트너십', '언론·미디어'];
 
@@ -298,7 +314,57 @@ const SCHEMA = [
      closes_at TEXT NOT NULL DEFAULT '',
      visible INTEGER NOT NULL DEFAULT 1,
      sort INTEGER NOT NULL DEFAULT 0
-   )`
+   )`,
+  /* 공실 등록 — /vacancy 에서 건물주·중개사가 남긴 공실 정보 */
+  `CREATE TABLE IF NOT EXISTS vacancies (
+     id INTEGER PRIMARY KEY AUTOINCREMENT,
+     created_at TEXT NOT NULL,
+     updated_at TEXT NOT NULL,
+     role TEXT NOT NULL DEFAULT '',
+     sido TEXT NOT NULL DEFAULT '',
+     sigungu TEXT NOT NULL DEFAULT '',
+     dong TEXT NOT NULL DEFAULT '',
+     floors TEXT NOT NULL DEFAULT '',
+     floor_note TEXT NOT NULL DEFAULT '',
+     area REAL,
+     area_unit TEXT NOT NULL DEFAULT '평',
+     area_py REAL,
+     vacant_for TEXT NOT NULL DEFAULT '',
+     state TEXT NOT NULL DEFAULT '',
+     deposit TEXT NOT NULL DEFAULT '',
+     rent TEXT NOT NULL DEFAULT '',
+     mgmt TEXT NOT NULL DEFAULT '',
+     features TEXT NOT NULL DEFAULT '',
+     wants TEXT NOT NULL DEFAULT '',
+     link TEXT NOT NULL DEFAULT '',
+     note TEXT NOT NULL DEFAULT '',
+     name TEXT NOT NULL DEFAULT '',
+     org TEXT NOT NULL DEFAULT '',
+     phone TEXT NOT NULL DEFAULT '',
+     email TEXT NOT NULL DEFAULT '',
+     contact_time TEXT NOT NULL DEFAULT '',
+     page TEXT NOT NULL DEFAULT '',
+     stage TEXT NOT NULL DEFAULT '접수',
+     priority TEXT NOT NULL DEFAULT '보통',
+     fit TEXT NOT NULL DEFAULT '미정',
+     assign TEXT NOT NULL DEFAULT '',
+     structure TEXT NOT NULL DEFAULT '',
+     next_at TEXT NOT NULL DEFAULT '',
+     next_note TEXT NOT NULL DEFAULT '',
+     memo TEXT NOT NULL DEFAULT '',
+     replied_at TEXT,
+     closed_at TEXT,
+     ip_hash TEXT NOT NULL DEFAULT ''
+   )`,
+  `CREATE INDEX IF NOT EXISTS idx_vacancies_stage ON vacancies(stage, created_at)`,
+  `CREATE TABLE IF NOT EXISTS vacancy_log (
+     id INTEGER PRIMARY KEY AUTOINCREMENT,
+     vacancy_id INTEGER NOT NULL,
+     at TEXT NOT NULL,
+     kind TEXT NOT NULL DEFAULT 'memo',
+     text TEXT NOT NULL DEFAULT ''
+   )`,
+  `CREATE INDEX IF NOT EXISTS idx_vacancy_log ON vacancy_log(vacancy_id, at)`
 ];
 
 /** 예전에 만든 표에 새 칸 더하기 (이미 있으면 건너뜀) */

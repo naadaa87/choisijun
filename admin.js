@@ -135,6 +135,7 @@
     if (tab === 'members') loadMembers();
     if (tab === 'inquiries') loadInquiries();
     if (tab === 'partners') loadPartners(true);
+    if (tab === 'vacancies') loadVacancies(true);
     if (tab === 'community') loadCommunity();
     if (tab === 'refs') loadRefs();
     if (tab === 'content') loadContent();
@@ -161,6 +162,7 @@
       const c = d.counts;
       q('#cntInq').textContent = c.inq_new ? String(c.inq_new) : '';
       q('#cntPtn').textContent = c.ptn_new ? String(c.ptn_new) : '';
+      q('#cntVac').textContent = c.vac_new ? String(c.vac_new) : '';
       q('#cntCom').textContent = (c.posts_pending + c.comments_pending) ? String(c.posts_pending + c.comments_pending) : '';
       q('#cntRef').textContent = c.refs ? String(c.refs) : '';
       const v = d.visits || {};
@@ -172,6 +174,7 @@
         ['kpi', fmtN(v.today_v || 0), '오늘 방문자', `어제 ${fmtN(v.yday_v || 0)}명 · 지금 ${v.live || 0}명`],
         ['sites', fmtN(st.total || 0), '운영 사이트', `주력 ${st.focus || 0}곳${st.down ? ' · 접속 문제 ' + st.down + '곳' : ''}`],
         ['kpi', fmtN(v.today_pv || 0), '오늘 페이지뷰', `어제 ${fmtN(v.yday_pv || 0)}회`],
+        ['vacancies', c.vac_new || 0, '새 공실 등록', `진행 중 ${c.vac_open || 0}건 · 이번 달 ${c.vac_month || 0}건`],
         ['partners', c.ptn_new || 0, '새 제휴 제안', `진행 중 ${c.ptn_open || 0}건 · 이번 달 ${c.ptn_month || 0}건`],
         ['inquiries', c.inq_progress, '진행 중', '상담·답변 진행'],
         ['inquiries', c.inq_month, '이번 달 문의', '전체 ' + c.inq_total + '건'],
@@ -194,6 +197,8 @@
       if (c.inq_stale) todo.push(`<li class="is-late">2일 넘게 답하지 않은 문의가 <strong>${c.inq_stale}건</strong> 있습니다. <button class="link-btn" data-go="inquiries">문의 보기</button></li>`);
       if (st.down) todo.push(`<li class="is-late">접속 점검에서 문제가 있던 사이트가 <strong>${st.down}곳</strong> 있습니다. <button class="link-btn" data-go="sites">전체 사이트 보기</button></li>`);
       if (c.inq_new) todo.push(`<li>새 문의 <strong>${c.inq_new}건</strong>에 답해 주세요.</li>`);
+      if (c.vac_new) todo.push(`<li>새 공실 등록 <strong>${c.vac_new}건</strong>이 회신을 기다립니다. <button class="link-btn" data-go="vacancies">공실 보기</button></li>`);
+      if (c.vac_overdue) todo.push(`<li class="is-late">다음 할 일 날짜가 지난 공실이 <strong>${c.vac_overdue}건</strong> 있습니다. <button class="link-btn" data-go="vacancies">확인하기</button></li>`);
       if (c.ptn_new) todo.push(`<li>새 제휴·협업 제안 <strong>${c.ptn_new}건</strong>이 회신을 기다립니다. <button class="link-btn" data-go="partners">제안 보기</button></li>`);
       if (c.ptn_overdue) todo.push(`<li class="is-late">다음 할 일 날짜가 지난 제휴 제안이 <strong>${c.ptn_overdue}건</strong> 있습니다. <button class="link-btn" data-go="partners">확인하기</button></li>`);
       if (c.posts_pending || c.comments_pending) todo.push(`<li>커뮤니티 글 ${c.posts_pending}건, 답글 ${c.comments_pending}건이 게시를 기다립니다. <button class="link-btn" data-go="community">확인하기</button></li>`);
@@ -346,10 +351,215 @@
       const c = d.counts;
       q('#cntInq').textContent = c.inq_new ? String(c.inq_new) : '';
       q('#cntPtn').textContent = c.ptn_new ? String(c.ptn_new) : '';
+      q('#cntVac').textContent = c.vac_new ? String(c.vac_new) : '';
       q('#cntCom').textContent = (c.posts_pending + c.comments_pending) ? String(c.posts_pending + c.comments_pending) : '';
       q('#cntRef').textContent = c.refs ? String(c.refs) : '';
     } catch (_) { /* ignore */ }
   }
+
+  /* ---------------- 공실 등록 ---------------- */
+  const VC = { data: null, view: 'open', stage: '', sido: '', floor: '', q: '', open: null, detail: null, log: [] };
+  const VC_TONE = { '접수': 'is-ad', '검토 중': '', '현장 확인': 'is-mail', '제안': 'is-mail', '계약 협의': 'is-mail', '진행 확정': 'is-ok', '보류': 'is-off', '종료': 'is-off', '스팸·무관': 'is-off' };
+  const VC_LOG = { stage: '진행', memo: '메모', call: '통화', visit: '현장', mail: '메일' };
+  const vcWhere = (r) => [r.sido, r.sigungu, r.dong].filter(Boolean).join(' ');
+  const vcNum = (n) => (n == null || n === '' ? '' : String(Math.round(Number(n) * 10) / 10));
+  const vcSize = (r) => (r.area ? `${vcNum(r.area)}${r.area_unit}${r.area_unit === '㎡' && r.area_py ? ` (약 ${vcNum(r.area_py)}평)` : (r.area_unit === '평' ? ` (약 ${Math.round(r.area * 3.305785)}㎡)` : '')}` : '');
+
+  async function loadVacancies(keepOpen) {
+    try {
+      VC.data = await api('vacancies');
+      const d = VC.data;
+      const sidoSel = q('#vacSido');
+      sidoSel.innerHTML = '<option value="">모든 지역</option>' + d.opts.sido.filter((x) => d.bySido[x]).map((x) => `<option value="${esc(x)}"${x === VC.sido ? ' selected' : ''}>${esc(x)} (${d.bySido[x]})</option>`).join('');
+      const floorSel = q('#vacFloor');
+      floorSel.innerHTML = '<option value="">모든 층</option>' + d.opts.floors.filter((x) => d.byFloor[x]).map((x) => `<option value="${esc(x)}"${x === VC.floor ? ' selected' : ''}>${esc(x)} (${d.byFloor[x]})</option>`).join('');
+      q('#cntVac').textContent = d.stats.fresh ? String(d.stats.fresh) : '';
+      renderVacancies();
+      if (keepOpen && VC.open) openVacancy(VC.open, true);
+    } catch (err) { showMsg(err.message, 'err'); }
+  }
+
+  function renderVacancies() {
+    const d = VC.data;
+    if (!d) return;
+    const st = d.stats;
+    const tiles = [
+      ['fresh', st.fresh, '새 공실', '아직 회신 전'],
+      ['open', st.open, '진행 중', '검토 · 현장 확인 · 제안 · 계약 협의'],
+      ['overdue', st.overdue, '할 일 지남', '다음 할 일 날짜가 지난 공실'],
+      ['month', st.thisMonth, '이번 달 등록', `전체 ${fmtN(st.total)}건${st.avgPy ? ' · 평균 ' + st.avgPy + '평' : ''}`],
+      ['won', st.won, '진행 확정', `이번 달 ${st.wonMonth}건${st.winRate != null ? ' · 확정률 ' + fmtPct(st.winRate, 0) : ''}`],
+      ['reply', st.avgReply == null ? '-' : st.avgReply < 1 ? '당일' : st.avgReply + '일', '평균 첫 회신', '등록부터 첫 회신까지']
+    ];
+    q('#vacKpis').innerHTML = tiles.map(([k, n, label, foot]) =>
+      `<li${k === 'overdue' && st.overdue ? ' class="is-late"' : ''}><button type="button" data-vtile="${k}"><span class="adm-kpi-num">${n}</span><span class="adm-kpi-label">${esc(label)}</span><span class="adm-kpi-foot">${esc(foot)}</span></button></li>`).join('');
+    qa('#vacKpis [data-vtile]').forEach((b) => b.addEventListener('click', () => {
+      const k = b.dataset.vtile;
+      VC.stage = k === 'fresh' ? '접수' : k === 'won' ? '진행 확정' : '';
+      VC.view = k === 'overdue' ? 'due' : k === 'won' || k === 'month' ? 'all' : 'open';
+      syncVcView(); renderVacancies();
+    }));
+    q('#vacPipe').innerHTML = d.opts.stages.map((s) => `<button type="button" class="pt-pipe-step${VC.stage === s ? ' is-active' : ''}${d.opts.open.includes(s) ? '' : ' is-closed'}" data-vstage="${esc(s)}"><span>${esc(s)}</span><strong>${d.byStage[s] || 0}</strong></button>`).join('');
+    qa('#vacPipe [data-vstage]').forEach((b) => b.addEventListener('click', () => {
+      VC.stage = VC.stage === b.dataset.vstage ? '' : b.dataset.vstage;
+      if (VC.stage && !d.opts.open.includes(VC.stage)) VC.view = 'all';
+      syncVcView(); renderVacancies();
+    }));
+    const top = (o) => Object.entries(o).sort((a, b) => b[1] - a[1]).slice(0, 6);
+    const sidoTop = top(d.bySido);
+    const floorTop = d.opts.floors.filter((f) => d.byFloor[f]).map((f) => [f, d.byFloor[f]]);
+    q('#vacDist').innerHTML = sidoTop.length ? `
+      <div><span class="mono">지역</span>${sidoTop.map(([k, n]) => `<button type="button" class="vc-chip${VC.sido === k ? ' is-active' : ''}" data-vsido="${esc(k)}">${esc(k)} <b>${n}</b></button>`).join('')}</div>
+      <div><span class="mono">층</span>${floorTop.map(([k, n]) => `<button type="button" class="vc-chip${VC.floor === k ? ' is-active' : ''}" data-vfloor="${esc(k)}">${esc(k)} <b>${n}</b></button>`).join('')}</div>` : '';
+    qa('#vacDist [data-vsido]').forEach((b) => b.addEventListener('click', () => { VC.sido = VC.sido === b.dataset.vsido ? '' : b.dataset.vsido; q('#vacSido').value = VC.sido; renderVacancies(); }));
+    qa('#vacDist [data-vfloor]').forEach((b) => b.addEventListener('click', () => { VC.floor = VC.floor === b.dataset.vfloor ? '' : b.dataset.vfloor; q('#vacFloor').value = VC.floor; renderVacancies(); }));
+
+    const kw = VC.q.toLowerCase();
+    let rows = d.items.filter((r) => {
+      if (VC.stage && r.stage !== VC.stage) return false;
+      if (!VC.stage && VC.view !== 'all' && !d.opts.open.includes(r.stage)) return false;
+      if (VC.sido && r.sido !== VC.sido) return false;
+      if (VC.floor && !String(r.floors).split(', ').includes(VC.floor)) return false;
+      if (kw && ![vcWhere(r), r.floors, r.floor_note, r.name, r.org, r.phone, r.email, r.note, r.memo, r.next_note, r.assign].join(' ').toLowerCase().includes(kw)) return false;
+      return true;
+    });
+    if (VC.view === 'due') {
+      const key = (r) => (r.next_at ? r.next_at : r.stage === '접수' ? r.created_at.slice(0, 10) : '9999');
+      rows = rows.slice().sort((a, b) => key(a).localeCompare(key(b)));
+    }
+    const list = q('#vacList');
+    list.innerHTML = rows.length ? rows.map((r) => {
+      const late = r.next_at && r.next_at < d.today && d.opts.open.includes(r.stage);
+      const next = r.next_at || r.next_note
+        ? `<p class="pt-next${late ? ' is-late' : ''}">${late ? '지남 · ' : ''}${esc(r.next_at ? r.next_at.slice(5).replace('-', '.') : '')} ${esc(r.next_note || '')}</p>`
+        : (r.stage === '접수' ? `<p class="pt-next${r.waiting_days >= 2 ? ' is-late' : ''}">회신 전 · ${r.waiting_days ? r.waiting_days + '일째' : '오늘 등록'}</p>` : '');
+      return `
+      <li class="adm-row${r.id === VC.open ? ' is-open' : ''}" tabindex="0" data-id="${r.id}">
+        <div class="acc-item-head"><span class="adm-tag">${esc(r.role)}</span><span class="adm-tag ${VC_TONE[r.stage] || ''}">${esc(r.stage)}</span>${r.priority === '높음' ? '<span class="adm-tag is-ad">우선</span>' : ''}${r.fit === '높음' ? '<span class="adm-tag is-ok">적합 높음</span>' : ''}<span class="acc-date">${KST(r.created_at)}</span></div>
+        <p class="adm-row-title"><strong>${esc(vcWhere(r))}</strong><span>${esc(r.floors)}${r.area ? ' · ' + esc(vcNum(r.area_py)) + '평' : ''}</span></p>
+        <p class="adm-row-text">${esc([r.vacant_for, r.wants].filter(Boolean).join(' · ').slice(0, 90))}</p>
+        <p class="pt-next">${esc(r.name)}${r.org ? ' · ' + esc(r.org) : ''}${r.assign ? ' → ' + esc(r.assign) : ''}</p>
+        ${next}
+      </li>`;
+    }).join('') : `<li class="acc-empty">${d.items.length ? '조건에 맞는 공실이 없습니다.' : '아직 등록된 공실이 없습니다. 홈 첫 화면의 \'공실개발 상담하기\'와 공실 등록 페이지에서 받습니다.'}</li>`;
+    qa('.adm-row', list).forEach((li) => {
+      const open = () => openVacancy(Number(li.dataset.id));
+      li.addEventListener('click', open);
+      li.addEventListener('keydown', (e) => { if (e.key === 'Enter') open(); });
+    });
+    if (!VC.open) q('#vacDetail').innerHTML = '<p class="acc-empty">왼쪽에서 공실을 고르면 공간 정보와 진행 기록이 여기에 열립니다.</p>';
+  }
+  function syncVcView() { qa('#vacView .f-chip').forEach((x) => x.classList.toggle('is-active', x.dataset.view === VC.view)); }
+
+  async function openVacancy(id, quiet) {
+    VC.open = id;
+    qa('#vacList .adm-row').forEach((li) => li.classList.toggle('is-open', Number(li.dataset.id) === id));
+    try {
+      const d = await api('vacancies/' + id);
+      VC.detail = d.item; VC.log = d.log;
+      renderVacancyDetail();
+      if (!quiet && window.matchMedia('(max-width: 900px)').matches) q('#vacDetail').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (err) { showMsg(err.message, 'err'); }
+  }
+
+  function renderVacancyDetail() {
+    const r = VC.detail;
+    const d = VC.data;
+    const box = q('#vacDetail');
+    if (!r || !d) return;
+    const contact = [r.phone, r.email].filter(Boolean).join(' · ');
+    const map = `https://map.naver.com/p/search/${encodeURIComponent(vcWhere(r))}`;
+    const money = [r.deposit && '보증금 ' + r.deposit, r.rent && '월 ' + r.rent, r.mgmt && '관리비 ' + r.mgmt].filter(Boolean).join(' · ');
+    const facts = [
+      ['위치', `${esc(vcWhere(r))} <a href="${map}" target="_blank" rel="noopener">지도 ↗</a>`, true],
+      ['층', r.floors + (r.floor_note ? ` (${r.floor_note})` : '')], ['면적', vcSize(r)],
+      ['비어 있던 기간', r.vacant_for], ['지금 상태', r.state], ['임대 조건', money],
+      ['건물 조건', r.features], ['원하는 방향', r.wants],
+      ['사진 · 자료', r.link ? `<a href="${esc(r.link)}" target="_blank" rel="noopener">${esc(r.link.replace(/^https?:\/\//, '').slice(0, 50))} ↗</a>` : '', true],
+      ['연락 편한 시간', r.contact_time], ['보낸 곳', r.page]
+    ].filter(([, v]) => v);
+    const sel = (id, list, cur, empty) => `<select id="${id}">${empty ? `<option value="">${empty}</option>` : ''}${list.map((x) => `<option${x === cur ? ' selected' : ''}>${esc(x)}</option>`).join('')}</select>`;
+    box.innerHTML = `
+      <div class="acc-item-head"><span class="adm-tag">${esc(r.role)}</span><span class="adm-tag ${VC_TONE[r.stage] || ''}">${esc(r.stage)}</span><span class="acc-date">${KST(r.created_at)} 등록 · #${r.id}</span></div>
+      <h2 class="adm-detail-name">${esc(vcWhere(r))} · ${esc(r.floors)}${r.area ? ' · ' + esc(vcNum(r.area)) + esc(r.area_unit) : ''}</h2>
+      <p class="acc-who"><strong>${esc(r.name)}</strong>${r.org ? ' · ' + esc(r.org) : ''}</p>
+      <p class="adm-contact"><span>${esc(contact)}</span>${contactLinks(contact, { type: '공실 등록', name: r.name, created_at: r.created_at, message: `${vcWhere(r)} · ${r.floors} · ${vcSize(r)}\n원하는 방향: ${r.wants}\n${r.note || ''}` })}</p>
+      <dl class="pt-facts-adm">${facts.map(([k, v, raw]) => `<div><dt>${esc(k)}</dt><dd>${raw ? v : esc(v)}</dd></div>`).join('')}</dl>
+      ${r.note ? `<div class="adm-message">${esc(r.note)}</div>` : ''}
+      <div class="adm-reply">
+        <p class="mono adm-label">진행 단계</p>
+        <div class="board-filters adm-status pt-stage-chips">${d.opts.stages.map((s) => `<button type="button" class="f-chip${s === r.stage ? ' is-active' : ''}" data-vst="${esc(s)}">${esc(s)}</button>`).join('')}</div>
+        <div class="pt-edit">
+          <label><span class="mono adm-label">우선순위</span>${sel('vcPri', d.opts.priorities, r.priority)}</label>
+          <label><span class="mono adm-label">적합도</span>${sel('vcFit', d.opts.fits, r.fit)}</label>
+          <label><span class="mono adm-label">다음 할 일 날짜</span><input type="date" id="vcNextAt" value="${esc(r.next_at || '')}" /></label>
+          <label><span class="mono adm-label">연결 사업</span>${sel('vcAssign', d.opts.assigns, r.assign, '정하지 않음')}</label>
+          <label><span class="mono adm-label">예상 구조</span>${sel('vcStruct', d.opts.structures, r.structure, '정하지 않음')}</label>
+          <label><span class="mono adm-label">&nbsp;</span><button type="button" class="btn btn-sm btn-line" id="vcCopy">공간 정보 복사</button></label>
+          <label class="pt-wide"><span class="mono adm-label">다음 할 일</span><input type="text" id="vcNextNote" maxlength="200" value="${esc(r.next_note || '')}" placeholder="예: 현장 방문 날짜 잡기, 도면 받기" /></label>
+        </div>
+        <label class="adm-memo"><span class="mono adm-label">내부 메모 <small>(등록한 분에게 보이지 않습니다)</small></span><textarea rows="4" maxlength="4000" id="vcMemo" placeholder="현장 상태, 임대인 요구, 수요 판단 근거">${esc(r.memo || '')}</textarea></label>
+        <div class="adm-btns"><button type="button" class="btn btn-sm btn-primary" id="vcSave">저장</button>${r.replied_at ? `<span class="acc-help">첫 회신 ${KST(r.replied_at)}</span>` : '<button type="button" class="btn btn-sm btn-line" id="vcReplied">회신했어요</button>'}</div>
+      </div>
+      <div class="pt-log">
+        <p class="mono adm-label">진행 기록</p>
+        <form class="pt-log-form" id="vcLogForm">
+          <select id="vcLogKind" aria-label="기록 종류"><option value="memo">메모</option><option value="call">통화</option><option value="visit">현장</option><option value="mail">메일</option></select>
+          <input type="text" id="vcLogText" maxlength="2000" placeholder="예: 현장 확인 — 층고 3.2m, 환기 양호" aria-label="기록 내용" />
+          <button type="submit" class="btn btn-sm btn-line">남기기</button>
+        </form>
+        <ul class="pt-log-list">${VC.log.length ? VC.log.map((l) => `<li><span class="adm-tag ${l.kind === 'stage' ? 'is-off' : ''}">${esc(VC_LOG[l.kind] || l.kind)}</span><span class="pt-log-text">${esc(l.text)}</span><span class="acc-date">${KST(l.at)}</span></li>`).join('') : '<li class="acc-empty">기록이 없습니다.</li>'}</ul>
+      </div>`;
+
+    const patch = async (body, msg) => {
+      try {
+        const res = await api('vacancies/' + r.id, { method: 'PATCH', body });
+        VC.detail = res.item; VC.log = res.log;
+        showMsg(msg, 'ok');
+        await loadVacancies(false);
+        renderVacancyDetail();
+      } catch (err) { showMsg(err.message, 'err'); }
+    };
+    qa('[data-vst]', box).forEach((b) => b.addEventListener('click', () => {
+      if (b.dataset.vst !== r.stage) patch({ stage: b.dataset.vst }, `${vcWhere(r)} 공실을 '${b.dataset.vst}' 단계로 옮겼습니다.`);
+    }));
+    q('#vcSave', box).addEventListener('click', () => patch({
+      priority: q('#vcPri', box).value, fit: q('#vcFit', box).value, assign: q('#vcAssign', box).value, structure: q('#vcStruct', box).value,
+      next_at: q('#vcNextAt', box).value, next_note: q('#vcNextNote', box).value.trim(), memo: q('#vcMemo', box).value
+    }, '저장했습니다.'));
+    const rep = q('#vcReplied', box);
+    if (rep) rep.addEventListener('click', () => patch({ replied: true, stage: r.stage === '접수' ? '검토 중' : r.stage }, '회신 기록을 남겼습니다.'));
+    q('#vcCopy', box).addEventListener('click', async () => {
+      const text = [`[공실 #${r.id}] ${vcWhere(r)}`, ...facts.filter(([k]) => !['보낸 곳'].includes(k)).map(([k, v]) => `${k}: ${String(v).replace(/<[^>]+>/g, '').replace(/\s*지도 ↗/, '').replace(/ ↗$/, '')}`), r.note ? `설명: ${r.note}` : ''].filter(Boolean).join('\n');
+      try { await navigator.clipboard.writeText(text); showMsg('공간 정보를 복사했습니다. 연결할 사업 담당자에게 붙여 넣으세요.', 'ok'); } catch (_) { showMsg(text, 'info'); }
+    });
+    q('#vcLogForm', box).addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const text = q('#vcLogText', box).value.trim();
+      if (!text) return;
+      try {
+        const res = await api('vacancies/' + r.id + '/log', { method: 'POST', body: { kind: q('#vcLogKind', box).value, text } });
+        VC.detail = res.item; VC.log = res.log;
+        renderVacancyDetail();
+      } catch (err) { showMsg(err.message, 'err'); }
+    });
+    const copyBtn = q('[data-copy]', box);
+    if (copyBtn) copyBtn.addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(contact); showMsg('연락처를 복사했습니다.', 'ok'); } catch (_) { showMsg(contact, 'info'); }
+    });
+  }
+
+  qa('#vacView .f-chip').forEach((b) => b.addEventListener('click', () => { VC.view = b.dataset.view; VC.stage = ''; syncVcView(); renderVacancies(); }));
+  q('#vacSido').addEventListener('change', (e) => { VC.sido = e.target.value; renderVacancies(); });
+  q('#vacFloor').addEventListener('change', (e) => { VC.floor = e.target.value; renderVacancies(); });
+  let vcTimer;
+  q('#vacSearch').addEventListener('input', (e) => { clearTimeout(vcTimer); vcTimer = setTimeout(() => { VC.q = e.target.value.trim(); renderVacancies(); }, 250); });
+  q('#vacCsv').addEventListener('click', () => {
+    const rows = VC.data ? VC.data.items : [];
+    if (!rows.length) { showMsg('내려받을 공실이 없습니다.', 'info'); return; }
+    downloadCsv(`공실등록_${todayKST()}.csv`, [['번호', '등록일시', '등록한 분', '시·도', '시·군·구', '동', '층', '층 자세히', '면적', '단위', '면적(평)', '비어 있던 기간', '지금 상태', '보증금', '월 임대료', '관리비', '건물 조건', '원하는 방향', '자료', '설명', '성함', '소속', '휴대전화', '이메일', '연락 시간', '단계', '우선순위', '적합도', '연결 사업', '예상 구조', '다음 할 일 날짜', '다음 할 일', '메모', '첫 회신']]
+      .concat(rows.map((r) => [r.id, KST(r.created_at), r.role, r.sido, r.sigungu, r.dong, r.floors, r.floor_note, r.area, r.area_unit, r.area_py, r.vacant_for, r.state, r.deposit, r.rent, r.mgmt, r.features, r.wants, r.link, r.note, r.name, r.org, r.phone, r.email, r.contact_time, r.stage, r.priority, r.fit, r.assign, r.structure, r.next_at, r.next_note, r.memo, r.replied_at ? KST(r.replied_at) : ''])));
+  });
 
   /* ---------------- 제휴·협업 ---------------- */
   const PT = { data: null, view: 'open', stage: '', kind: '', q: '', open: null, detail: null, log: [] };
@@ -3110,7 +3320,7 @@
     const start = (location.hash || '').replace('#', '');
     /* 관리자가 쓰는 브라우저는 방문 통계에서 뺀다 (KPI 화면에서 바꿀 수 있음) */
     try { if (localStorage.getItem('csj_no_stats') === null) localStorage.setItem('csj_no_stats', 'true'); } catch (_) { /* ignore */ }
-    go(['ops', 'trend', 'sites', 'skpi', 'leads', 'kpi', 'inquiries', 'partners', 'members', 'community', 'refs', 'content', 'system'].includes(start) ? start : 'dash');
+    go(['ops', 'trend', 'sites', 'skpi', 'leads', 'kpi', 'inquiries', 'vacancies', 'partners', 'members', 'community', 'refs', 'content', 'system'].includes(start) ? start : 'dash');
   }
 
   boot();
