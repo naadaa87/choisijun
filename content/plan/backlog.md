@@ -151,7 +151,7 @@
   근거: GUIDE 6장 건대 구성, /network 의 하루 동선(10시 세미나 → 12시 반 카페 → 18시 행사 → 21시 게임). /insights/whole-building-portfolio 와 겹치지 않게 손님 동선 중심
 - [x] 2026-11-21 `ref-basement-spaces` 지하 공간 21곳을 운영하며 알게 된 것 — 어떤 용도가 지하에 맞았나
   근거: data/portfolio.json(floorClass basement 21곳, B1 19·B2 2), /insights/basement-upper-floor-vacancy 와 겹치지 않게 환기·방음·동선 등 운영 관점
-- [ ] `megaspot-190` 190평 행사장 메가스팟을 연 이유 · 사업 이야기
+- [x] 2026-11-28 `megaspot-190` 190평 행사장 메가스팟을 연 이유 — 40명과 200명 사이의 빈칸
   근거: 2층 190평 한 층 단독, 최대 200명, 200인치 빔프로젝터·음향, 네트워킹 파티·행사 수요. https://megaspot.kr
 - [ ] `ref-upper-floors` 3층 이상 공간 60곳 — 엘리베이터 없는 층에도 예약이 차는 조건 · 공실개발 (레퍼런스)
   근거: data/portfolio.json(floorClass upper 60곳, 층 분포 3F·4F·5F·6F·13F·14F 등)

@@ -6,34 +6,49 @@
     <atom:link href="https://choisijun.com/rss.xml" rel="self" type="application/rss+xml" />
     <description>최시준 공식 홈페이지의 새 소식 — 공간 포트폴리오, 공실개발 사례, 브랜드, 강의·미디어.</description>
     <language>ko</language>
-    <lastBuildDate>Fri, 27 Nov 2026 06:48:59 +0900</lastBuildDate>
+    <lastBuildDate>Sat, 28 Nov 2026 06:49:31 +0900</lastBuildDate>
     <item>
-      <title>공간 창업 강의에서 가장 많이 받는 질문 다섯 — 시기, 비용, 매물, 본업, 무인 | 최시준</title>
-      <link>https://choisijun.com/insights/questions-from-lectures</link>
-      <guid isPermaLink="true">https://choisijun.com/insights/questions-from-lectures</guid>
-      <description>공간대여 창업 강의가 끝나면 비슷한 질문이 되풀이됩니다. 지금 시작해도 되는지, 얼마가 드는지, 어떤 매물을 고를지, 본업과 병행할 수 있는지, 무인이면 손이 덜 가는지. 강의에서 하는 답을 그대로 적었습니다.</description>
-      <category>강연 · 교육</category>
-      <pubDate>Fri, 27 Nov 2026 09:00:00 +0900</pubDate>
+      <title>190평 행사장 메가스팟을 연 이유 — 40명과 200명 사이의 빈칸 | 최시준</title>
+      <link>https://choisijun.com/insights/megaspot-190</link>
+      <guid isPermaLink="true">https://choisijun.com/insights/megaspot-190</guid>
+      <description>건대입구 2층 190평을 나누지 않고 최대 200명이 모이는 행사장 메가스팟으로 열었습니다. 그동안 연 공간들이 비워 둔 규모가 어디였는지, 큰 한 층을 어떻게 채우려 했는지 정리했습니다.</description>
+      <category>사업 이야기</category>
+      <pubDate>Sat, 28 Nov 2026 09:00:00 +0900</pubDate>
     </item>
     <item>
       <title>최시준 | 공실개발·공간수익화 전문가, 쏘플파티룸 대표</title>
       <link>https://choisijun.com/</link>
       <guid isPermaLink="true">https://choisijun.com/</guid>
       <description>비어 있는 공간을 수익공간으로 바꾸는 최시준. 10년+ 340개+ 공간을 직접 기획·오픈·운영했고, 전국 15개 시·도의 파티룸·모임공간·게임파티룸 기록과 공실개발 상담, 강의, 전자책을 한곳에 모았습니다.</description>
-      <pubDate>Fri, 27 Nov 2026 09:00:00 +0900</pubDate>
+      <pubDate>Sat, 28 Nov 2026 09:00:00 +0900</pubDate>
     </item>
     <item>
       <title>미디어 — 쇼릴·언론 보도·방송 출연 | 최시준</title>
       <link>https://choisijun.com/media</link>
       <guid isPermaLink="true">https://choisijun.com/media</guid>
       <description>15초 쇼릴 2026, KBS·JTBC·CCTV 등 언론 보도와 방송 출연, 공식 채널, 그리고 공간사업 판단기준을 담은 최시준의 최근 글.</description>
-      <pubDate>Fri, 27 Nov 2026 09:00:00 +0900</pubDate>
+      <pubDate>Sat, 28 Nov 2026 09:00:00 +0900</pubDate>
     </item>
     <item>
       <title>인사이트 — 공실개발·파티룸 창업·무인공간 운영의 판단기준 | 최시준</title>
       <link>https://choisijun.com/insights</link>
       <guid isPermaLink="true">https://choisijun.com/insights</guid>
       <description>340개+ 공간을 만들며 굳어진 판단기준을 글로 정리합니다. 상가 공실 해결, 지하·고층 공실 활용, 파티룸·공간대여 창업, 무인공간 운영, 건물 단위 기획.</description>
+      <pubDate>Sat, 28 Nov 2026 09:00:00 +0900</pubDate>
+    </item>
+    <item>
+      <title>최시준의 사업 이야기 — 모임공간 하나에서 340개 공간까지 | 최시준</title>
+      <link>https://choisijun.com/insights/topic-story</link>
+      <guid isPermaLink="true">https://choisijun.com/insights/topic-story</guid>
+      <description>대기업 자산관리팀에서 소셜팩토리, 쏘플파티룸, 공실개발까지. 최시준이 직접 겪은 사업과 프로젝트, 실패와 확장의 기록을 모았습니다.</description>
+      <pubDate>Sat, 28 Nov 2026 09:00:00 +0900</pubDate>
+    </item>
+    <item>
+      <title>공간 창업 강의에서 가장 많이 받는 질문 다섯 — 시기, 비용, 매물, 본업, 무인 | 최시준</title>
+      <link>https://choisijun.com/insights/questions-from-lectures</link>
+      <guid isPermaLink="true">https://choisijun.com/insights/questions-from-lectures</guid>
+      <description>공간대여 창업 강의가 끝나면 비슷한 질문이 되풀이됩니다. 지금 시작해도 되는지, 얼마가 드는지, 어떤 매물을 고를지, 본업과 병행할 수 있는지, 무인이면 손이 덜 가는지. 강의에서 하는 답을 그대로 적었습니다.</description>
+      <category>강연 · 교육</category>
       <pubDate>Fri, 27 Nov 2026 09:00:00 +0900</pubDate>
     </item>
     <item>
@@ -203,13 +218,6 @@
       <pubDate>Thu, 26 Nov 2026 09:00:00 +0900</pubDate>
     </item>
     <item>
-      <title>최시준의 사업 이야기 — 모임공간 하나에서 340개 공간까지 | 최시준</title>
-      <link>https://choisijun.com/insights/topic-story</link>
-      <guid isPermaLink="true">https://choisijun.com/insights/topic-story</guid>
-      <description>대기업 자산관리팀에서 소셜팩토리, 쏘플파티룸, 공실개발까지. 최시준이 직접 겪은 사업과 프로젝트, 실패와 확장의 기록을 모았습니다.</description>
-      <pubDate>Thu, 26 Nov 2026 09:00:00 +0900</pubDate>
-    </item>
-    <item>
       <title>공간 사업의 원칙 — 최시준의 생각과 판단 기준 | 최시준</title>
       <link>https://choisijun.com/insights/topic-thinking</link>
       <guid isPermaLink="true">https://choisijun.com/insights/topic-thinking</guid>
@@ -294,14 +302,6 @@
       <description>2013년 첫 직장에 들어간 해, 모교 졸업생 특강 한 번으로 시작해 강연기획 단체 ASE Project를 만들었습니다. 7기까지 134명이 거쳐 간 이 단체에서 사람을 모으고 같은 자리를 되풀이해 여는 법을 처음 배웠습니다.</description>
       <category>사업 이야기</category>
       <pubDate>Tue, 17 Nov 2026 09:00:00 +0900</pubDate>
-    </item>
-    <item>
-      <title>호실 공실을 객실형 공간으로 — 천안 두 개 층 11실에서 배운 것 | 최시준</title>
-      <link>https://choisijun.com/insights/room-type-from-office-units</link>
-      <guid isPermaLink="true">https://choisijun.com/insights/room-type-from-office-units</guid>
-      <description>한 층에 작은 호실이 여러 개 비어 있으면 호실마다 임차인을 찾기가 어렵습니다. 호실을 하나씩 채우는 대신 묶어서 객실형 공간으로 쓰는 방법을 천안 한 건물 7·9층 11실 사례로 설명합니다.</description>
-      <category>공실개발</category>
-      <pubDate>Mon, 16 Nov 2026 09:00:00 +0900</pubDate>
     </item>
   </channel>
 </rss>
